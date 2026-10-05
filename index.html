@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework M.113</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Sarabun', 'Plus Jakarta Sans', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        /* Gradient Background Blobs */
+        .bg-blob-1 {
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        .bg-blob-2 {
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        .bg-blob-3 {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4 sm:p-6 min-h-screen relative overflow-x-hidden antialiased">
+
+    <!-- Background Decorative Mesh -->
+    <div class="fixed top-[-20%] left-[-10%] w-[600px] h-[600px] bg-blob-1 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-blob-2 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed top-[40%] right-[20%] w-[400px] h-[400px] bg-blob-3 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- ==================== หน้าที่ 1: Sign In ==================== -->
+    <div id="login-page" class="w-full max-w-sm bg-white/80 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 my-auto transition-all duration-300">
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-indigo-500/30 transform -rotate-3 hover:rotate-0 transition duration-300">
+                <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน</p>
+        </div>
+
+        <!-- Username -->
+        <div class="space-y-1.5 mb-4">
+            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน</label>
+            <div class="relative">
+                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="username" placeholder="Username" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition placeholder-slate-300">
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="space-y-1.5 mb-6">
+            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">รหัสผ่าน</label>
+            <div class="relative">
+                <i class="fa-regular fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="password" id="password" placeholder="••••••••" class="w-full pl-10 pr-10 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition placeholder-slate-300">
+                <button type="button" onclick="togglePassword()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                    <i id="pass-icon" class="fa-regular fa-eye-slash text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button onclick="login()" class="w-full py-3.5 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-xs tracking-wide shadow-xl shadow-slate-900/10 hover:shadow-indigo-500/25 active:scale-[0.98] transition duration-200">
+            เข้าสู่ระบบ
+        </button>
+
+        <div class="relative flex py-4 items-center">
+            <div class="flex-grow border-t border-slate-200/80"></div>
+            <span class="flex-shrink mx-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">หรือ</span>
+            <div class="flex-grow border-t border-slate-200/80"></div>
+        </div>
+
+        <!-- Guest Button -->
+        <button onclick="loginAsGuest()" class="w-full py-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition shadow-sm">
+            <i class="fa-regular fa-eye text-slate-400"></i> เข้าชมแบบผู้เยี่ยมชม (Guest)
+        </button>
+
+        <div class="mt-8 text-[11px] text-slate-400 text-center font-medium">
+            <span>Developed for Room M.113 • V.3.0</span>
+        </div>
+    </div>
+
+    <!-- ==================== หน้าที่ 2: Dashboard ==================== -->
+    <div id="main-page" class="hidden w-full max-w-lg bg-white/80 backdrop-blur-2xl rounded-3xl p-6 border border-white/80 shadow-2xl shadow-slate-200/60 relative z-10 my-auto transition-all duration-300">
+        <!-- Header Profile -->
+        <div class="flex justify-between items-center pb-5 mb-5 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">การบ้าน M.113 📚</h2>
+                    <p id="user-role" class="text-[11px] text-indigo-600 font-bold mt-0.5">สิทธิ์การใช้งาน: -</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-2 rounded-xl font-bold active:scale-95 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>ออก</span>
+            </button>
+        </div>
+
+        <!-- ฟอร์มเพิ่มการบ้าน (เฉพาะ Admin) -->
+        <div id="admin-form" class="hidden bg-slate-50/80 p-4 rounded-2xl border border-slate-200/60 mb-6 space-y-3">
+            <div class="flex items-center gap-2 mb-1">
+                <div class="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <h3 class="text-xs font-bold text-slate-700">เพิ่มรายการการบ้านใหม่</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input type="text" id="task-subject" placeholder="ชื่อวิชา (เช่น คณิต, อังกฤษ)" class="w-full p-2.5 text-xs bg-white rounded-xl outline-none border border-slate-200 text-slate-700 font-medium placeholder-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition">
+                <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2.5 text-xs bg-white rounded-xl outline-none border border-slate-200 text-slate-700 font-medium placeholder-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition">
+            </div>
+            
+            <!-- 1. ส่วนเลือก "วันสั่ง" -->
+            <div class="space-y-1">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">📅 วันที่สั่งงาน</label>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <select id="assign-day-name" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="">วัน</option>
+                        <option value="จันทร์">จันทร์</option>
+                        <option value="อังคาร">อังคาร</option>
+                        <option value="พุธ">พุธ</option>
+                        <option value="พฤหัสบดี">พฤหัสฯ</option>
+                        <option value="ศุกร์">ศุกร์</option>
+                        <option value="เสาร์">เสาร์</option>
+                        <option value="อาทิตย์">อาทิตย์</option>
+                    </select>
+
+                    <select id="assign-day-num" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="">วันที่</option>
+                    </select>
+
+                    <select id="assign-month" onchange="updateAssignDayOptions()" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="">เดือน</option>
+                        <option value="ม.ค.">ม.ค.</option>
+                        <option value="ก.พ.">ก.พ.</option>
+                        <option value="มี.ค.">มี.ค.</option>
+                        <option value="เม.ย.">เม.ย.</option>
+                        <option value="พ.ค.">พ.ค.</option>
+                        <option value="มิ.ย.">มิ.ย.</option>
+                        <option value="ก.ค.">ก.ค.</option>
+                        <option value="ส.ค.">ส.ค.</option>
+                        <option value="ก.ย.">ก.ย.</option>
+                        <option value="ต.ค.">ต.ค.</option>
+                        <option value="พ.ย.">พ.ย.</option>
+                        <option value="ธ.ค.">ธ.ค.</option>
+                    </select>
+
+                    <select id="assign-year" onchange="updateAssignDayOptions()" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="2569">2569</option>
+                        <option value="2570">2570</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 2. ส่วนเลือก "วันส่ง" -->
+            <div class="space-y-1 pt-1">
+                <label class="block text-[10px] font-bold text-rose-500 uppercase tracking-wider">⏰ กำหนดวันส่ง</label>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <select id="due-day-name" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="">วัน</option>
+                        <option value="จันทร์">จันทร์</option>
+                        <option value="อังคาร">อังคาร</option>
+                        <option value="พุธ">พุธ</option>
+                        <option value="พฤหัสบดี">พฤหัสฯ</option>
+                        <option value="ศุกร์">ศุกร์</option>
+                        <option value="เสาร์">เสาร์</option>
+                        <option value="อาทิตย์">อาทิตย์</option>
+                    </select>
+
+                    <select id="due-day-num" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="">วันที่</option>
+                    </select>
+
+                    <select id="due-month" onchange="updateDueDayOptions()" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="">เดือน</option>
+                        <option value="ม.ค.">ม.ค.</option>
+                        <option value="ก.พ.">ก.พ.</option>
+                        <option value="มี.ค.">มี.ค.</option>
+                        <option value="เม.ย.">เม.ย.</option>
+                        <option value="พ.ค.">พ.ค.</option>
+                        <option value="มิ.ย.">มิ.ย.</option>
+                        <option value="ก.ค.">ก.ค.</option>
+                        <option value="ส.ค.">ส.ค.</option>
+                        <option value="ก.ย.">ก.ย.</option>
+                        <option value="ต.ค.">ต.ค.</option>
+                        <option value="พ.ย.">พ.ย.</option>
+                        <option value="ธ.ค.">ธ.ค.</option>
+                    </select>
+
+                    <select id="due-year" onchange="updateDueDayOptions()" class="p-2 text-[11px] bg-white rounded-xl outline-none border border-slate-200 text-slate-600 font-medium">
+                        <option value="2569">2569</option>
+                        <option value="2570">2570</option>
+                    </select>
+                </div>
+            </div>
+
+            <button onclick="addTask()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-500/20 active:scale-95 transition mt-2">
+                + บันทึกรายการการบ้าน
+            </button>
+        </div>
+
+        <!-- รายการการบ้าน -->
+        <div class="space-y-3">
+            <div class="flex justify-between items-center mb-1">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">รายการการบ้านทั้งหมด</h3>
+                <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">0 งาน</span>
+            </div>
+            
+            <div id="task-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
+                <!-- รายการการบ้านจะแสดงที่นี่ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JavaScript ==================== -->
+    <script>
+        const USERS = {
+            'admin': { pass: '1234', role: 'admin', name: 'Admin (ผู้ดูแลระบบ)' },
+            'guest': { pass: '1234', role: 'guest', name: 'Guest (ผู้เยี่ยมชม)' }
+        };
+
+        const MONTH_MAP = {
+            'ม.ค.': 1, 'ก.พ.': 2, 'มี.ค.': 3, 'เม.ย.': 4,
+            'พ.ค.': 5, 'มิ.ย.': 6, 'ก.ค.': 7, 'ส.ค.': 8,
+            'ก.ย.': 9, 'ต.ค.': 10, 'พ.ย.': 11, 'ธ.ค.': 12
+        };
+
+        let currentRole = 'guest';
+        let mockTasks = [];
+
+        function getDaysInMonth(month, year) {
+            let maxDays = 31;
+            if (['เม.ย.', 'มิ.ย.', 'ก.ย.', 'พ.ย.'].includes(month)) {
+                maxDays = 30;
+            } else if (month === 'ก.พ.') {
+                const ceYear = (parseInt(year) || 2569) - 543;
+                const isLeap = (ceYear % 4 === 0 && ceYear % 100 !== 0) || (ceYear % 400 === 0);
+                maxDays = isLeap ? 29 : 28;
+            }
+            return maxDays;
+        }
+
+        function updateAssignDayOptions() {
+            const month = document.getElementById('assign-month').value;
+            const year = document.getElementById('assign-year').value;
+            const daySelect = document.getElementById('assign-day-num');
+            const selectedVal = daySelect.value;
+            const maxDays = getDaysInMonth(month, year);
+
+            daySelect.innerHTML = '<option value="">วันที่</option>';
+            for (let i = 1; i <= maxDays; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = i;
+                if (parseInt(selectedVal) === i) opt.selected = true;
+                daySelect.appendChild(opt);
+            }
+        }
+
+        function updateDueDayOptions() {
+            const month = document.getElementById('due-month').value;
+            const year = document.getElementById('due-year').value;
+            const daySelect = document.getElementById('due-day-num');
+            const selectedVal = daySelect.value;
+            const maxDays = getDaysInMonth(month, year);
+
+            daySelect.innerHTML = '<option value="">วันที่</option>';
+            for (let i = 1; i <= maxDays; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = i;
+                if (parseInt(selectedVal) === i) opt.selected = true;
+                daySelect.appendChild(opt);
+            }
+        }
+
+        function togglePassword() {
+            const passInput = document.getElementById('password');
+            const icon = document.getElementById('pass-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                passInput.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+
+        function login() {
+            const user = document.getElementById('username').value.trim().toLowerCase();
+            const pass = document.getElementById('password').value.trim();
+
+            if (USERS[user] && USERS[user].pass === pass) {
+                currentRole = USERS[user].role;
+                openDashboard(USERS[user].name);
+            } else {
+                alert('Username หรือ Password ไม่ถูกต้อง!');
+            }
+        }
+
+        function loginAsGuest() {
+            currentRole = 'guest';
+            openDashboard('Guest (ผู้เยี่ยมชม)');
+        }
+
+        function openDashboard(roleName) {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+            document.getElementById('user-role').innerText = `สิทธิ์การใช้งาน: ${roleName}`;
+
+            if (currentRole === 'admin') {
+                document.getElementById('admin-form').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-form').classList.add('hidden');
+            }
+
+            renderTasks();
+        }
+
+        function logout() {
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('task-list');
+
+            mockTasks.sort((a, b) => a.sortValue - b.sortValue);
+
+            document.getElementById('task-count').innerText = `${mockTasks.length} งาน`;
+
+            if (mockTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="bg-slate-50/60 p-8 rounded-2xl border border-dashed border-slate-200 text-center">
+                        <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <p class="text-xs text-slate-400 font-bold">ไม่มีรายการการบ้านค้างอยู่ในขณะนี้</p>
+                    </div>
+                `;
+                return;
+            }
+
+            taskList.innerHTML = '';
+            mockTasks.forEach((item, index) => {
+                const deleteBtnHTML = currentRole === 'admin' 
+                    ? `<button onclick="deleteTask(${index})" class="text-slate-300 hover:text-rose-500 text-xs p-1.5 rounded-lg hover:bg-rose-50 transition"><i class="fa-solid fa-trash-can"></i></button>`
+                    : '';
+
+                const newTaskHTML = `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-start hover:shadow-md hover:border-indigo-100 transition duration-200">
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-indigo-50 text-indigo-600 text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg border border-indigo-100">${item.subject}</span>
+                                <span class="bg-amber-50 text-amber-600 text-[10px] font-bold px-2 py-0.5 rounded-lg border border-amber-100">${item.status}</span>
+                            </div>
+                            <h4 class="text-xs font-bold text-slate-800">${item.detail}</h4>
+                            <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] pt-1">
+                                <p class="text-slate-400 font-medium flex items-center gap-1"><i class="fa-regular fa-calendar text-slate-400 text-[10px]"></i> สั่ง: ${item.assignDate || 'ไม่ระบุ'}</p>
+                                <p class="text-rose-500 font-bold flex items-center gap-1"><i class="fa-regular fa-clock text-rose-500 text-[10px]"></i> ส่ง: ${item.dueDate || 'ไม่ระบุ'}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            ${deleteBtnHTML}
+                        </div>
+                    </div>
+                `;
+                taskList.insertAdjacentHTML('beforeend', newTaskHTML);
+            });
+        }
+
+        function formatFullDate(dayName, dayNum, month, year) {
+            if (!dayName && !dayNum && !month && !year) return "ไม่ระบุ";
+            const dayPrefix = dayName ? `วัน${dayName}ที่ ` : '';
+            const dayString = dayNum ? `${dayNum} ` : '';
+            const monthString = month ? `${month} ` : '';
+            const yearString = year ? `${year}` : '';
+            return `${dayPrefix}${dayString}${monthString}${yearString}`.trim();
+        }
+
+        function addTask() {
+            const subject = document.getElementById('task-subject').value.trim();
+            const detail = document.getElementById('task-detail').value.trim();
+
+            const assignDayName = document.getElementById('assign-day-name').value;
+            const assignDayNum = document.getElementById('assign-day-num').value;
+            const assignMonth = document.getElementById('assign-month').value;
+            const assignYear = document.getElementById('assign-year').value;
+
+            const dueDayName = document.getElementById('due-day-name').value;
+            const dueDayNum = document.getElementById('due-day-num').value;
+            const dueMonth = document.getElementById('due-month').value;
+            const dueYear = document.getElementById('due-year').value;
+
+            if (!subject || !detail) {
+                alert('กรุณากรอกชื่อวิชาและรายละเอียด');
+                return;
+            }
+
+            const y = parseInt(dueYear) || 9999;
+            const m = MONTH_MAP[dueMonth] || 99;
+            const d = parseInt(dueDayNum) || 99;
+            const sortValue = (y * 10000) + (m * 100) + d;
+
+            const assignDateFormatted = formatFullDate(assignDayName, assignDayNum, assignMonth, assignYear);
+            const dueDateFormatted = formatFullDate(dueDayName, dueDayNum, dueMonth, dueYear);
+
+            mockTasks.push({
+                id: Date.now(),
+                subject: subject,
+                detail: detail,
+                assignDate: assignDateFormatted,
+                dueDate: dueDateFormatted,
+                sortValue: sortValue,
+                status: 'ยังไม่ส่ง'
+            });
+
+            document.getElementById('task-subject').value = '';
+            document.getElementById('task-detail').value = '';
+            document.getElementById('assign-day-name').value = '';
+            document.getElementById('assign-day-num').value = '';
+            document.getElementById('assign-month').value = '';
+            document.getElementById('due-day-name').value = '';
+            document.getElementById('due-day-num').value = '';
+            document.getElementById('due-month').value = '';
+
+            renderTasks();
+            alert('เพิ่มการบ้านเรียบร้อยแล้ว!');
+        }
+
+        function deleteTask(index) {
+            if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
+                mockTasks.splice(index, 1);
+                renderTasks();
+            }
+        }
+
+        updateAssignDayOptions();
+        updateDueDayOptions();
+    </script>
+</body>
+</html>
