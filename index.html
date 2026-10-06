@@ -510,6 +510,7 @@
             }
         }
 
+        // ปรับการสร้าง HTML การ์ด โดยลบ Badge ตัวเลขส่งงาน (0/40) ออก
         function createTaskCardHTML(item, isPinned) {
             const pinIconColor = isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500';
 
@@ -526,7 +527,6 @@
                     <div class="flex justify-between items-start gap-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
                             <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.subject}</span>
-                            <span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full"><i class="fa-regular fa-clipboard"></i> ${item.count || '0/40'}</span>
                         </div>
                         <div class="flex items-center gap-1">
                             ${pinBtn}
@@ -627,7 +627,6 @@
             document.getElementById('success-popup').classList.add('hidden');
         }
 
-        // เพิ่มการบ้านแบบ Instant UI Display (แสดงผลทันทีไม่รอเซิร์ฟเวอร์)
         async function addTask() {
             if (currentRole !== 'admin') {
                 alert('คุณอยู่ในโหมดผู้เยี่ยมชม สามารถดูได้อย่างเดียว');
@@ -654,30 +653,24 @@
                 assignDate: normalizeDateStr(assignDate),
                 dueDate: normalizeDateStr(dueDate),
                 isPinned: false,
-                count: '0/40',
                 action: 'add'
             };
 
-            // อัปเดตใน Array หลักของหน้าเว็บทันที
             tasks.unshift(newTask);
 
-            // เคลียร์ค่าในฟอร์ม
             document.getElementById('task-subject').value = '';
             document.getElementById('task-detail').value = '';
             document.getElementById('assign-date-input').value = '';
             document.getElementById('due-date-input').value = '';
 
-            // บังคับเปลี่ยนปฏิทินไปเลือกที่วันส่งของงานที่เพิ่งสร้าง เพื่อให้เห็นทันที
             selectedDateStr = newTask.dueDate;
 
-            // วาดหน้าจอใหม่ทันที
             renderTasks();
             renderCalendar();
             selectDate(selectedDateStr);
 
             showSuccessPopup();
 
-            // ส่งข้อมูลไปยัง Google Apps Script เบื้องหลัง
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
