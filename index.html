@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.236</title>
+    <title>Homework M.113 - V1.237</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.236)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.237)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -202,7 +202,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.236
+            Version 1.237
         </span>
     </footer>
 
@@ -230,7 +230,7 @@
                 <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
             </div>
             
-            <p class="text-[11px] text-slate-400">คุณสามารถล้างหรือซ่อนรหัสวิชาหรือชื่อวิชาที่ไม่ต้องการออกจากระบบตัวเลือกได้ (ระบบจะแทนที่ค่าที่ลบด้วยค่าว่างในรายการที่เกี่ยวข้อง)</p>
+            <p class="text-[11px] text-slate-400">คุณสามารถล้างหรือซ่อนรหัสวิชาหรือชื่อวิชาที่ไม่ต้องการออกจากระบบตัวเลือกได้</p>
 
             <div class="space-y-3 max-h-[260px] overflow-y-auto pr-1">
                 <div>
@@ -551,8 +551,6 @@
                     renderManageLists();
                     alert('ลบประวัติเรียบร้อยแล้ว');
                     
-                    // ซิงค์ข้อมูลอัปเดตกลับไปยัง backend ถ้าต้องการ (ส่งรายการที่แก้ไขทั้งหมดหรือปรับตามสคริปต์)
-                    // ตัวอย่างส่งรีเฟรชข้อมูลหรืออัปเดต
                     await fetch(SCRIPT_URL, { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -716,6 +714,12 @@
 
             if (!code || !subject || !detail || !assignDate || !dueDate) {
                 alert('กรุณากรอกข้อมูลให้ครบทุกช่อง (รหัสวิชา, ชื่อวิชา, รายละเอียด, วันสั่ง และวันส่ง)');
+                return;
+            }
+
+            // เพิ่มระบบตรวจสอบไม่ให้วันสั่งมากกว่าวันส่ง
+            if (assignDate > dueDate) {
+                alert('❌ วันที่สั่งงานไม่สามารถอยู่หลังวันที่ส่งงานได้ครับ!');
                 return;
             }
 
