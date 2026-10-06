@@ -36,7 +36,6 @@
 </head>
 <body class="flex flex-col items-center justify-between p-3 sm:p-6 min-h-screen relative antialiased">
 
-    <!-- Spacer สำหรับจัดตำแหน่งกึ่งกลาง -->
     <div class="flex-grow"></div>
 
     <!-- ==================== หน้าที่ 1: Sign In ==================== -->
@@ -203,10 +202,9 @@
 
     </div>
 
-    <!-- Spacer สำหรับดัน Footer ลงท้ายสุดเสมอ -->
     <div class="flex-grow"></div>
 
-    <!-- Footer แสดง Version 1.2 เสมอที่ด้านล่างสุด -->
+    <!-- Footer Version 1.2 -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
             Version 1.2
@@ -238,7 +236,7 @@
         let currentRole = 'guest';
         let currentTab = 'calendar';
         let currentDate = new Date();
-        
+
         function getFormattedDate(d) {
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -254,9 +252,27 @@
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
+        function normalizeDateStr(dateInput) {
+            if (!dateInput) return '';
+            let dateObj;
+            if (typeof dateInput === 'string') {
+                if (dateInput.includes('T')) {
+                    dateInput = dateInput.split('T')[0];
+                }
+                const parts = dateInput.split('-');
+                if (parts.length === 3) {
+                    return `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
+                }
+                dateObj = new Date(dateInput);
+            } else {
+                dateObj = new Date(dateInput);
+            }
+            return isNaN(dateObj.getTime()) ? '' : getFormattedDate(dateObj);
+        }
+
         function formatThaiShortDate(dateStr) {
-            if (!dateStr) return '-';
             const cleanStr = normalizeDateStr(dateStr);
+            if (!cleanStr) return '-';
             const parts = cleanStr.split('-');
             if (parts.length < 3) return dateStr;
             
@@ -270,14 +286,6 @@
             const thaiYearShort = (year + 543).toString().slice(-2);
 
             return `${dayName}${day} ${monthName} ${thaiYearShort}`;
-        }
-
-        function normalizeDateStr(dateInput) {
-            if (!dateInput) return '';
-            if (typeof dateInput === 'string') {
-                return dateInput.split('T')[0].trim();
-            }
-            return getFormattedDate(new Date(dateInput));
         }
 
         function togglePassword() {
@@ -349,6 +357,8 @@
                 viewCalendar.classList.remove('hidden');
                 viewTasks.classList.add('hidden');
                 noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน";
+                renderCalendar();
+                selectDate(selectedDateStr);
             } else {
                 if (tab === 'daily') {
                     btnDaily.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
@@ -409,17 +419,17 @@
         }
 
         function selectDate(dateStr) {
-            selectedDateStr = dateStr;
+            selectedDateStr = normalizeDateStr(dateStr);
             renderCalendar();
 
-            const parts = dateStr.split('-');
+            const parts = selectedDateStr.split('-');
             const year = parseInt(parts[0]) + 543;
             const month = MONTH_NAMES_TH[parseInt(parts[1]) - 1];
             const day = parseInt(parts[2]);
 
             document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${day} ${month} ${year}`;
 
-            const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === dateStr || normalizeDateStr(t.assignDate) === dateStr);
+            const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             const container = document.getElementById('selected-date-tasks');
             
             document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
@@ -617,6 +627,7 @@
             document.getElementById('success-popup').classList.add('hidden');
         }
 
+        // เพิ่มการบ้านแบบ Instant UI Display (แสดงผลทันทีไม่รอเซิร์ฟเวอร์)
         async function addTask() {
             if (currentRole !== 'admin') {
                 alert('คุณอยู่ในโหมดผู้เยี่ยมชม สามารถดูได้อย่างเดียว');
@@ -640,26 +651,33 @@
                 id: Date.now(),
                 subject: subject,
                 detail: detail,
-                assignDate: assignDate,
-                dueDate: dueDate,
+                assignDate: normalizeDateStr(assignDate),
+                dueDate: normalizeDateStr(dueDate),
                 isPinned: false,
                 count: '0/40',
                 action: 'add'
             };
 
+            // อัปเดตใน Array หลักของหน้าเว็บทันที
             tasks.unshift(newTask);
 
+            // เคลียร์ค่าในฟอร์ม
             document.getElementById('task-subject').value = '';
             document.getElementById('task-detail').value = '';
             document.getElementById('assign-date-input').value = '';
             document.getElementById('due-date-input').value = '';
 
+            // บังคับเปลี่ยนปฏิทินไปเลือกที่วันส่งของงานที่เพิ่งสร้าง เพื่อให้เห็นทันที
+            selectedDateStr = newTask.dueDate;
+
+            // วาดหน้าจอใหม่ทันที
             renderTasks();
             renderCalendar();
             selectDate(selectedDateStr);
 
             showSuccessPopup();
 
+            // ส่งข้อมูลไปยัง Google Apps Script เบื้องหลัง
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -668,7 +686,7 @@
                     body: JSON.stringify(newTask)
                 });
             } catch (err) {
-                console.error("เพิ่มข้อมูลไม่สำเร็จ:", err);
+                console.error("บันทึกข้อมูลลงเซิร์ฟเวอร์ไม่สำเร็จ:", err);
             }
         }
 
