@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- โค้ดป้องกันการจำแคช -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <title>Homework M.113 - V1.21</title>
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -219,7 +224,6 @@
     </div>
 
     <script>
-        // เพิ่มข้อมูลผู้ใช้งาน (admin และ 1234)
         const USERS = {
             'admin': { pass: 'Sk@2026_Student', role: 'admin', name: 'ADMIN' },
             '1234': { pass: '1234', role: 'student', name: 'STUDENT' }
@@ -351,7 +355,6 @@
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
 
-            // ควบคุมการแสดงฟอร์มเพิ่มการบ้านเฉพาะ Admin เท่านั้น
             const adminForm = document.getElementById('admin-form');
             if (currentRole === 'admin') {
                 adminForm.classList.remove('hidden');
@@ -554,7 +557,6 @@
         function createTaskCardHTML(item, isPinned) {
             const pinIconColor = isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500';
 
-            // ปุ่มลบและปักหมุด (แสดงเฉพาะ Admin เท่านั้น)
             let actionButtons = '';
             if (currentRole === 'admin') {
                 const deleteBtn = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>`;
