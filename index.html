@@ -1,228 +1,3 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- โค้ดป้องกันการจำแคช (No-Cache) -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <title>Homework M.113 - V1.22</title>
-    <!-- Tailwind CSS & FontAwesome -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Sarabun', 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #fce7f3 0%, #e0e7ff 50%, #f3e8ff 100%);
-            min-height: 100vh;
-        }
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        @keyframes modalPop {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop {
-            animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-    </style>
-</head>
-<body class="flex flex-col items-center justify-between p-3 sm:p-6 min-h-screen relative antialiased">
-
-    <div class="flex-grow"></div>
-
-    <!-- ==================== หน้าที่ 1: Sign In ==================== -->
-    <div id="login-page" class="w-full max-w-sm bg-white/80 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 transition-all duration-300">
-        <div class="text-center mb-8">
-            <div class="w-14 h-14 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-pink-500/30 transform -rotate-3 hover:rotate-0 transition duration-300">
-                <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.22)</p>
-        </div>
-
-        <div class="space-y-1.5 mb-4">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน</label>
-            <div class="relative">
-                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" id="username" placeholder="Username" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
-            </div>
-        </div>
-
-        <div class="space-y-1.5 mb-6">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">รหัสผ่าน</label>
-            <div class="relative">
-                <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="password" id="password" placeholder="••••••••" class="w-full pl-10 pr-10 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
-                <button type="button" onclick="togglePassword()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                    <i id="pass-icon" class="fa-regular fa-eye-slash text-xs"></i>
-                </button>
-            </div>
-        </div>
-
-        <button onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs tracking-wide shadow-lg shadow-pink-500/30 active:scale-[0.98] transition duration-200">
-            เข้าสู่ระบบ
-        </button>
-    </div>
-
-    <!-- ==================== หน้าที่ 2: Dashboard ==================== -->
-    <div id="main-page" class="hidden w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-3xl p-5 border border-white/80 shadow-2xl shadow-slate-200/60 relative z-10 transition-all duration-300">
-        
-        <!-- Header -->
-        <div class="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
-            <div class="flex items-center gap-2">
-                <span class="font-extrabold text-pink-500 text-lg tracking-wider">HOMEWORK</span>
-                <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
-                <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">ADMIN</span>
-            </div>
-            <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
-                LOGOUT
-            </button>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/80 rounded-2xl mb-4 text-center text-xs font-bold">
-            <button id="tab-daily" onclick="switchTab('daily')" class="py-2 rounded-xl transition text-slate-500">ส่งวันนี้</button>
-            <button id="tab-pending" onclick="switchTab('pending')" class="py-2 rounded-xl transition text-slate-500">งานค้าง</button>
-            <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2 rounded-xl transition bg-pink-500 text-white shadow-sm">ปฏิทินงาน</button>
-        </div>
-
-        <!-- NOTICE Banner -->
-        <div class="bg-slate-100/70 p-2.5 rounded-2xl flex items-center justify-between mb-4 text-xs font-semibold text-slate-600">
-            <span class="bg-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
-                <i class="fa-solid fa-bullhorn"></i> NOTICE
-            </span>
-            <span id="notice-text" class="text-slate-500 text-[11px]">คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน</span>
-        </div>
-
-        <!-- ================= VIEW 1: CALENDAR VIEW ================= -->
-        <div id="view-calendar" class="space-y-4">
-            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">ปฏิทินงาน</span>
-                <div class="flex gap-1">
-                    <button onclick="changeMonth(-1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">PREV</button>
-                    <button onclick="changeMonth(1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">NEXT</button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
-                <div class="flex items-center gap-2 mb-3">
-                    <i class="fa-regular fa-calendar-days text-pink-500"></i>
-                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน</h3>
-                </div>
-
-                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold mb-2">
-                    <span class="text-pink-500">SUN</span>
-                    <span class="text-slate-400">MON</span>
-                    <span class="text-slate-400">TUE</span>
-                    <span class="text-slate-400">WED</span>
-                    <span class="text-slate-400">THU</span>
-                    <span class="text-slate-400">FRI</span>
-                    <span class="text-sky-400">SAT</span>
-                </div>
-
-                <div id="calendar-days" class="grid grid-cols-7 gap-1"></div>
-            </div>
-
-            <div class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-list-check text-pink-500"></i>
-                        <span id="selected-date-label">การบ้านของวันที่เลือก</span>
-                    </span>
-                    <span id="selected-task-count" class="bg-pink-100 text-pink-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
-                </div>
-                <div id="selected-date-tasks" class="space-y-2 max-h-[200px] overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-
-        <!-- ================= VIEW 2: TASKS VIEW (Daily / Pending) ================= -->
-        <div id="view-tasks" class="hidden space-y-4">
-            
-            <!-- ฟอร์มเพิ่มการบ้าน (แสดงเฉพาะ Admin) -->
-            <div id="admin-form" class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
-                <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน
-                </h3>
-                <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="task-code" placeholder="รหัสวิชา (เช่น ท21101)" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
-                    <input type="text" id="task-subject" placeholder="ชื่อวิชา" class="col-span-2 w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
-                </div>
-                <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <label for="assign-date-input" class="flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer active:border-pink-500">
-                        <span class="text-[11px] font-extrabold text-slate-500 whitespace-nowrap mr-1">วันสั่ง:</span>
-                        <input type="date" id="assign-date-input" class="w-full text-xs text-slate-700 bg-transparent outline-none cursor-pointer">
-                    </label>
-
-                    <label for="due-date-input" class="flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer active:border-pink-500">
-                        <span class="text-[11px] font-extrabold text-rose-500 whitespace-nowrap mr-1">วันส่ง:</span>
-                        <input type="date" id="due-date-input" class="w-full text-xs text-slate-700 bg-transparent outline-none cursor-pointer">
-                    </label>
-                </div>
-
-                <button onclick="addTask()" class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-[0.99] text-white font-bold rounded-xl text-xs transition shadow-md shadow-pink-500/20">
-                    บันทึกข้อมูล
-                </button>
-            </div>
-
-            <!-- SECTION: ปักหมุดไว้ -->
-            <div id="pinned-section" class="bg-amber-50/60 border border-amber-100 rounded-3xl p-4 space-y-3">
-                <div class="flex items-center gap-2 text-amber-800 text-xs font-bold">
-                    <i class="fa-solid fa-thumbtack text-amber-500"></i>
-                    <span>ปักหมุดไว้</span>
-                </div>
-                <div id="pinned-list" class="space-y-2.5"></div>
-            </div>
-
-            <!-- SECTION: รายการการบ้าน -->
-            <div class="space-y-2.5">
-                <div class="flex justify-between items-center">
-                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
-                    <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ITEMS</span>
-                </div>
-                <div id="task-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="flex-grow"></div>
-
-    <!-- Footer Version 1.22 -->
-    <footer class="py-4 text-center z-20 w-full">
-        <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.22
-        </span>
-    </footer>
-
-    <!-- POPUP SUCCESS MODAL -->
-    <div id="success-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-3xl p-6 w-80 text-center shadow-2xl border border-slate-100 animate-pop">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-emerald-500/20">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800 mb-1">เพิ่มงานสำเร็จ</h3>
-            <p class="text-xs text-slate-400 mb-5">บันทึกข้อมูลการบ้านลงระบบเรียบร้อยแล้ว</p>
-            <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 active:scale-95 transition">
-                ตกลง
-            </button>
-        </div>
-    </div>
-
     <script>
         const USERS = {
             'admin': { pass: 'Sk@2026_Student', role: 'admin', name: 'ADMIN' },
@@ -240,7 +15,7 @@
         let sessionCheckInterval = null;
 
         function resetInactivityTimer() {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
                 clearTimeout(inactivityTimer);
                 inactivityTimer = setTimeout(() => {
                     alert('คุณไม่ได้ใช้งานระบบเกิน 10 นาที ระบบได้ทำการออกจากระบบให้อัตโนมัติเพื่อความปลอดภัย');
@@ -256,8 +31,8 @@
         function startSessionChecker(mySessionId) {
             clearInterval(sessionCheckInterval);
             sessionCheckInterval = setInterval(() => {
-                if (localStorage.getItem('isLoggedIn') === 'true') {
-                    const activeSession = localStorage.getItem('activeSessionId');
+                if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                    const activeSession = sessionStorage.getItem('activeSessionId');
                     if (activeSession && activeSession !== mySessionId) {
                         clearInterval(sessionCheckInterval);
                         alert('มีการเข้าสู่ระบบบัญชีนี้จากอุปกรณ์หรือแท็บอื่น ระบบจะนำคุณออกจากระบบ');
@@ -339,10 +114,10 @@
             if (USERS[user] && USERS[user].pass === pass) {
                 currentRole = USERS[user].role;
                 const mySessionId = 'sess_' + Date.now() + '_' + Math.random();
-                localStorage.setItem('activeSessionId', mySessionId);
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userRole', currentRole);
-                localStorage.setItem('userName', USERS[user].name);
+                sessionStorage.setItem('activeSessionId', mySessionId);
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userRole', currentRole);
+                sessionStorage.setItem('userName', USERS[user].name);
 
                 openDashboard(USERS[user].name, mySessionId);
             } else {
@@ -368,10 +143,10 @@
         }
 
         function logout(isForced = false) {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('activeSessionId');
+            sessionStorage.removeItem('isLoggedIn');
+            sessionStorage.removeItem('userRole');
+            sessionStorage.removeItem('userName');
+            sessionStorage.removeItem('activeSessionId');
             clearTimeout(inactivityTimer);
             clearInterval(sessionCheckInterval);
 
@@ -713,10 +488,10 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            const savedRole = localStorage.getItem('userRole');
-            const savedName = localStorage.getItem('userName');
-            const activeSessionId = localStorage.getItem('activeSessionId');
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            const savedRole = sessionStorage.getItem('userRole');
+            const savedName = sessionStorage.getItem('userName');
+            const activeSessionId = sessionStorage.getItem('activeSessionId');
 
             if (isLoggedIn === 'true' && savedRole && savedName && activeSessionId) {
                 currentRole = savedRole;
@@ -727,5 +502,3 @@
             }
         });
     </script>
-</body>
-</html>
