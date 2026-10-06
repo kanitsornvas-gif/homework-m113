@@ -119,7 +119,7 @@
             <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
                 <div class="flex items-center gap-2 mb-3">
                     <i class="fa-regular fa-calendar-days text-pink-500"></i>
-                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน: ตุลาคม (2569)</h3>
+                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน: กันยายน (2569)</h3>
                 </div>
 
                 <!-- Days of week -->
@@ -219,12 +219,19 @@
         let currentRole = 'guest';
         let currentTab = 'calendar';
         
-        let currentDate = new Date(2026, 9, 6);
-        let selectedDateStr = '2026-10-06';
+        // ตั้งค่าปฏิทินเริ่มต้นให้อิงตามวันปัจจุบันของระบบจริงๆ
+        let currentDate = new Date();
+        
+        // ฟังก์ชันช่วยจัดรูปแบบวันที่เป็น YYYY-MM-DD
+        function getFormattedDate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-        // คำนวณวันปัจจุบันรูปแบบ YYYY-MM-DD
-        const todayObj = new Date();
-        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+        const todayStr = getFormattedDate(new Date());
+        let selectedDateStr = todayStr;
 
         let tasks = [
             {
@@ -244,15 +251,6 @@
                 dueDate: '2026-09-07',
                 isPinned: true,
                 count: '0/40'
-            },
-            {
-                id: 3,
-                subject: 'ส21102 พระพุทธศาสนา 1',
-                detail: 'ส่งงานเพื่อเก็บคะแนนหลังกลางภาค',
-                assignDate: '2026-10-05',
-                dueDate: '2026-10-06',
-                isPinned: false,
-                count: '0/40'
             }
         ];
 
@@ -270,7 +268,7 @@
 
         function formatThaiShortDate(dateStr) {
             if (!dateStr) return '-';
-            const parts = dateStr.split('-');
+            const parts = dateStr.split('T')[0].split('-');
             if (parts.length < 3) return dateStr;
             
             const year = parseInt(parts[0]);
@@ -283,6 +281,16 @@
             const thaiYearShort = (year + 543).toString().slice(-2);
 
             return `${dayName}${day} ${monthName} ${thaiYearShort}`;
+        }
+
+        // ฟังก์ชันปรับรูปแบบวันที่จาก Google Sheets หรือสตริงให้อยู่ในฟอร์แมต YYYY-MM-DD
+        function normalizeDateStr(dateInput) {
+            if (!dateInput) return '';
+            if (typeof dateInput === 'string') {
+                return dateInput.split('T')[0];
+            }
+            const d = new Date(dateInput);
+            return getFormattedDate(d);
         }
 
         function togglePassword() {
@@ -392,8 +400,8 @@
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
-                // ตรวจสอบเฉพาะ dueDate (วันส่ง) เท่านั้นเพื่อขึ้นจุดสีแดง
-                const hasDueTask = tasks.some(t => t.dueDate === dateStr);
+                // ตรวจสอบว่ามีงานชิ้นไหนตั้ง dueDate ตรงกับวันนี้หรือไม่
+                const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
                 const isSelected = (dateStr === selectedDateStr);
                 
                 let boxStyle = "bg-slate-50 border border-slate-100 hover:border-pink-300";
@@ -428,8 +436,8 @@
 
             document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${day} ${month} ${year}`;
 
-            // รายการการบ้านด้านล่างจะแสดงงานที่ต้องส่ง หรือ งานที่สั่งในวันที่เลือก
-            const matchedTasks = tasks.filter(t => t.dueDate === dateStr || t.assignDate === dateStr);
+            // ดึงรายการงานที่มีกำหนดส่ง หรือ สั่งในวันที่เลือก
+            const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === dateStr || normalizeDateStr(t.assignDate) === dateStr);
             const container = document.getElementById('selected-date-tasks');
             
             document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
@@ -477,7 +485,7 @@
             let filteredTasks = tasks;
 
             if (currentTab === 'daily') {
-                filteredTasks = tasks.filter(t => t.dueDate === todayStr);
+                filteredTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === todayStr);
                 pinnedSection.classList.add('hidden');
                 taskSectionTitle.innerText = "TASKS DUE TODAY";
             } else {
