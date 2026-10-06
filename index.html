@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.232</title>
+    <title>Homework M.113 - V1.233</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.232)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.233)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -88,9 +88,9 @@
 
         <!-- Navigation Tabs -->
         <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/80 rounded-2xl mb-4 text-center text-xs font-bold">
-            <button id="tab-daily" onclick="switchTab('daily')" class="py-2 rounded-xl transition text-slate-500">ส่งวันนี้</button>
+            <button id="tab-daily" onclick="switchTab('daily')" class="py-2 rounded-xl transition bg-pink-500 text-white shadow-sm">ส่งวันนี้</button>
             <button id="tab-pending" onclick="switchTab('pending')" class="py-2 rounded-xl transition text-slate-500">งานค้าง</button>
-            <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2 rounded-xl transition bg-pink-500 text-white shadow-sm">ปฏิทินงาน</button>
+            <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
         </div>
 
         <!-- NOTICE Banner -->
@@ -98,11 +98,11 @@
             <span class="bg-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
                 <i class="fa-solid fa-bullhorn"></i> NOTICE
             </span>
-            <span id="notice-text" class="text-slate-500 text-[11px]">คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน</span>
+            <span id="notice-text" class="text-slate-500 text-[11px]">แสดงเฉพาะรายการการบ้านที่มีกำหนดส่งวันนี้</span>
         </div>
 
         <!-- ================= VIEW 1: CALENDAR VIEW ================= -->
-        <div id="view-calendar" class="space-y-4">
+        <div id="view-calendar" class="hidden space-y-4">
             <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
                 <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">ปฏิทินงาน</span>
                 <div class="flex gap-1">
@@ -143,7 +143,7 @@
         </div>
 
         <!-- ================= VIEW 2: TASKS VIEW ================= -->
-        <div id="view-tasks" class="hidden space-y-4">
+        <div id="view-tasks" class="space-y-4">
             
             <div id="admin-form" class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
                 <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
@@ -182,7 +182,7 @@
 
             <div class="space-y-2.5">
                 <div class="flex justify-between items-center">
-                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
+                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">TASKS DUE TODAY</span>
                     <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ITEMS</span>
                 </div>
                 <div id="task-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1"></div>
@@ -195,7 +195,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.232
+            Version 1.233
         </span>
     </footer>
 
@@ -222,7 +222,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
 
         let currentRole = 'student';
-        let currentTab = 'calendar';
+        let currentTab = 'daily'; // เริ่มต้นที่หน้า "ส่งวันนี้"
         let currentDate = new Date();
 
         function getFormattedDate(d) {
@@ -322,6 +322,9 @@
             } else {
                 adminForm.classList.add('hidden');
             }
+            
+            // ตั้งค่าเริ่มต้นให้เปิดแท็บ "ส่งวันนี้" ทันที
+            switchTab('daily');
             fetchHomeworks();
         }
 
@@ -408,19 +411,24 @@
             renderCalendar();
 
             const parts = selectedDateStr.split('-');
-            document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
+            const dateLabelEl = document.getElementById('selected-date-label');
+            if (dateLabelEl) {
+                dateLabelEl.innerText = `การบ้านวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
+            }
 
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             const container = document.getElementById('selected-date-tasks');
-            document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
-            container.innerHTML = '';
-
-            if (matchedTasks.length === 0) {
-                container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-regular fa-folder-open text-base mb-1 block text-slate-300"></i>ไม่มีการบ้านสำหรับวันนี้</div>`;
-            } else {
-                matchedTasks.forEach(task => {
-                    container.innerHTML += createTaskCardHTML(task, task.isPinned);
-                });
+            const countEl = document.getElementById('selected-task-count');
+            if (countEl) countEl.innerText = `${matchedTasks.length} รายการ`;
+            if (container) {
+                container.innerHTML = '';
+                if (matchedTasks.length === 0) {
+                    container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-regular fa-folder-open text-base mb-1 block text-slate-300"></i>ไม่มีการบ้านสำหรับวันนี้</div>`;
+                } else {
+                    matchedTasks.forEach(task => {
+                        container.innerHTML += createTaskCardHTML(task, task.isPinned);
+                    });
+                }
             }
         }
 
@@ -435,24 +443,27 @@
             const pinnedSection = document.getElementById('pinned-section');
             const taskSectionTitle = document.getElementById('task-section-title');
 
+            if (!pinnedContainer || !taskContainer) return;
+
             pinnedContainer.innerHTML = '';
             taskContainer.innerHTML = '';
 
             let filteredTasks = tasks;
             if (currentTab === 'daily') {
                 filteredTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === todayStr);
-                pinnedSection.classList.add('hidden');
-                taskSectionTitle.innerText = "TASKS DUE TODAY";
+                if (pinnedSection) pinnedSection.classList.add('hidden');
+                if (taskSectionTitle) taskSectionTitle.innerText = "TASKS DUE TODAY";
             } else {
-                pinnedSection.classList.remove('hidden');
-                taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
+                if (pinnedSection) pinnedSection.classList.remove('hidden');
+                if (taskSectionTitle) taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
             }
 
             const pinnedTasks = filteredTasks.filter(t => t.isPinned);
             const normalTasks = filteredTasks.filter(t => !t.isPinned);
-            document.getElementById('task-count').innerText = `${filteredTasks.length} ITEMS`;
+            const countEl = document.getElementById('task-count');
+            if (countEl) countEl.innerText = `${filteredTasks.length} ITEMS`;
 
-            if (currentTab !== 'daily') {
+            if (currentTab !== 'daily' && pinnedSection) {
                 if (pinnedTasks.length === 0) {
                     pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
                 } else {
@@ -492,9 +503,7 @@
         }
 
         async function fetchHomeworks(force = false) {
-            const container = document.getElementById('selected-date-tasks');
-
-            // ใช้ระบบ Cache จาก sessionStorage ทันทีเพื่อความเร็ว (ถ้าไม่ได้บังคับกดรีเฟรช)
+            // ใช้ Cache จาก sessionStorage ทันทีเพื่อความเร็ว
             if (!force) {
                 const cachedData = sessionStorage.getItem('homework_tasks');
                 if (cachedData) {
@@ -503,16 +512,13 @@
                         renderTasks();
                         renderCalendar();
                         selectDate(selectedDateStr);
-                        // ดึงข้อมูลเบื้องหลังเงียบๆ เพื่อซิงค์ให้เป็นปัจจุบัน
-                        backgroundFetch();
+                        backgroundFetch(); // โหลดข้อมูลสดเบื้องหลังเงียบๆ
                         return;
                     } catch (e) {
                         console.error(e);
                     }
                 }
             }
-
-            container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-solid fa-spinner fa-spin text-pink-500 text-base mb-1 block"></i>กำลังโหลดข้อมูลจากระบบ...</div>`;
 
             try {
                 const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
@@ -526,7 +532,6 @@
                 }
             } catch (err) {
                 console.error(err);
-                container.innerHTML = `<div class="text-center py-5 text-xs text-rose-500 font-bold bg-white rounded-2xl border border-slate-100">โหลดข้อมูลไม่สำเร็จ (ตรวจสอบสิทธิ์การ Deploy ใน Apps Script)</div>`;
             }
         }
 
