@@ -101,7 +101,7 @@
             <span class="bg-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
                 <i class="fa-solid fa-bullhorn"></i> NOTICE
             </span>
-            <span class="text-slate-500 text-[11px]">คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน</span>
+            <span id="notice-text" class="text-slate-500 text-[11px]">คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน</span>
         </div>
 
         <!-- ================= VIEW 1: CALENDAR VIEW ================= -->
@@ -183,7 +183,7 @@
             </div>
 
             <!-- SECTION: ปักหมุดไว้ (Pinned Tasks) -->
-            <div class="bg-amber-50/60 border border-amber-100 rounded-3xl p-4 space-y-3">
+            <div id="pinned-section" class="bg-amber-50/60 border border-amber-100 rounded-3xl p-4 space-y-3">
                 <div class="flex items-center gap-2 text-amber-800 text-xs font-bold">
                     <i class="fa-solid fa-thumbtack text-amber-500"></i>
                     <span>ปักหมุดไว้</span>
@@ -193,14 +193,14 @@
                 </div>
             </div>
 
-            <!-- SECTION: รายการการบ้านทั้งหมด -->
+            <!-- SECTION: รายการการบ้าน -->
             <div class="space-y-2.5">
                 <div class="flex justify-between items-center">
-                    <span class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
+                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
                     <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ITEMS</span>
                 </div>
                 <div id="task-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                    <!-- รายการงานทั่วไปจะแสดงที่นี่ -->
+                    <!-- รายการงานจะแสดงที่นี่ -->
                 </div>
             </div>
         </div>
@@ -221,6 +221,10 @@
         
         let currentDate = new Date(2026, 9, 6);
         let selectedDateStr = '2026-10-06';
+
+        // คำนวณวันปัจจุบันรูปแบบ YYYY-MM-DD
+        const todayObj = new Date();
+        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
 
         let tasks = [
             {
@@ -246,7 +250,7 @@
                 subject: 'ส21102 พระพุทธศาสนา 1',
                 detail: 'ส่งงานเพื่อเก็บคะแนนหลังกลางภาค',
                 assignDate: '2026-10-05',
-                dueDate: '2026-10-10',
+                dueDate: '2026-10-06',
                 isPinned: false,
                 count: '0/40'
             }
@@ -342,6 +346,7 @@
             
             const viewCalendar = document.getElementById('view-calendar');
             const viewTasks = document.getElementById('view-tasks');
+            const noticeText = document.getElementById('notice-text');
 
             [btnDaily, btnPending, btnCalendar].forEach(b => {
                 b.className = "py-2 rounded-xl transition text-slate-500";
@@ -351,12 +356,19 @@
                 btnCalendar.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
                 viewCalendar.classList.remove('hidden');
                 viewTasks.classList.add('hidden');
+                noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน";
             } else {
-                if (tab === 'daily') btnDaily.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
-                if (tab === 'pending') btnPending.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                if (tab === 'daily') {
+                    btnDaily.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                    noticeText.innerText = "แสดงเฉพาะรายการการบ้านที่มีกำหนดส่งวันนี้";
+                } else if (tab === 'pending') {
+                    btnPending.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                    noticeText.innerText = "แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด";
+                }
                 
                 viewCalendar.classList.add('hidden');
                 viewTasks.classList.remove('hidden');
+                renderTasks();
             }
         }
 
@@ -379,7 +391,9 @@
 
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const hasTask = tasks.some(t => t.dueDate === dateStr || t.assignDate === dateStr);
+                
+                // ตรวจสอบเฉพาะ dueDate (วันส่ง) เท่านั้นเพื่อขึ้นจุดสีแดง
+                const hasDueTask = tasks.some(t => t.dueDate === dateStr);
                 const isSelected = (dateStr === selectedDateStr);
                 
                 let boxStyle = "bg-slate-50 border border-slate-100 hover:border-pink-300";
@@ -390,7 +404,7 @@
                     textStyle = "text-white font-extrabold";
                 }
 
-                let dotHTML = hasTask 
+                let dotHTML = hasDueTask 
                     ? `<span class="w-2 h-2 ${isSelected ? 'bg-white' : 'bg-rose-500'} rounded-full inline-block mt-0.5"></span>` 
                     : '';
 
@@ -414,6 +428,7 @@
 
             document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${day} ${month} ${year}`;
 
+            // รายการการบ้านด้านล่างจะแสดงงานที่ต้องส่ง หรือ งานที่สั่งในวันที่เลือก
             const matchedTasks = tasks.filter(t => t.dueDate === dateStr || t.assignDate === dateStr);
             const container = document.getElementById('selected-date-tasks');
             
@@ -453,25 +468,41 @@
         function renderTasks() {
             const pinnedContainer = document.getElementById('pinned-list');
             const taskContainer = document.getElementById('task-list');
+            const pinnedSection = document.getElementById('pinned-section');
+            const taskSectionTitle = document.getElementById('task-section-title');
 
             pinnedContainer.innerHTML = '';
             taskContainer.innerHTML = '';
 
-            const pinnedTasks = tasks.filter(t => t.isPinned);
-            const normalTasks = tasks.filter(t => !t.isPinned);
+            let filteredTasks = tasks;
 
-            document.getElementById('task-count').innerText = `${tasks.length} ITEMS`;
-
-            if (pinnedTasks.length === 0) {
-                pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
+            if (currentTab === 'daily') {
+                filteredTasks = tasks.filter(t => t.dueDate === todayStr);
+                pinnedSection.classList.add('hidden');
+                taskSectionTitle.innerText = "TASKS DUE TODAY";
             } else {
-                pinnedTasks.forEach(item => {
-                    pinnedContainer.innerHTML += createTaskCardHTML(item, true);
-                });
+                pinnedSection.classList.remove('hidden');
+                taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
             }
 
-            if (normalTasks.length === 0) {
-                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold">ไม่มีรายการงานทั่วไป</div>`;
+            const pinnedTasks = filteredTasks.filter(t => t.isPinned);
+            const normalTasks = filteredTasks.filter(t => !t.isPinned);
+
+            document.getElementById('task-count').innerText = `${filteredTasks.length} ITEMS`;
+
+            if (currentTab !== 'daily') {
+                if (pinnedTasks.length === 0) {
+                    pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
+                } else {
+                    pinnedTasks.forEach(item => {
+                        pinnedContainer.innerHTML += createTaskCardHTML(item, true);
+                    });
+                }
+            }
+
+            if (normalTasks.length === 0 && (currentTab === 'daily' || pinnedTasks.length === 0)) {
+                const emptyMsg = currentTab === 'daily' ? 'ไม่มีงานที่ต้องส่งวันนี้' : 'ไม่มีรายการงานทั่วไป';
+                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">${emptyMsg}</div>`;
             } else {
                 normalTasks.forEach(item => {
                     taskContainer.innerHTML += createTaskCardHTML(item, false);
