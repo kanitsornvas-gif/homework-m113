@@ -207,10 +207,10 @@
 
     <div class="flex-grow"></div>
 
-    <!-- Footer Version 1.2 -->
+    <!-- Footer Version 1.3 -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.2
+            Version 1.3 (Timeout 15m)
         </span>
     </footer>
 
@@ -239,6 +239,25 @@
         let currentRole = 'guest';
         let currentTab = 'calendar';
         let currentDate = new Date();
+
+        // ระบบ Timeout (15 นาที = 900,000 มิลลิวินาที)
+        const TIMEOUT_DURATION = 15 * 60 * 1000;
+        let inactivityTimer = null;
+
+        function resetInactivityTimer() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = setTimeout(() => {
+                    alert('คุณไม่ได้ใช้งานระบบเกิน 15 นาที ระบบได้ทำการออกจากระบบให้อัตโนมัติเพื่อความปลอดภัย');
+                    logout();
+                }, TIMEOUT_DURATION);
+            }
+        }
+
+        // คอยดักจับกิจกรรมของผู้ใช้เพื่อรีเซ็ตเวลา Timeout
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, resetInactivityTimer, { passive: true });
+        });
 
         function getFormattedDate(d) {
             const year = d.getFullYear();
@@ -337,6 +356,7 @@
                 document.getElementById('admin-form').classList.add('hidden');
             }
 
+            resetInactivityTimer();
             fetchHomeworks();
         }
 
@@ -344,6 +364,7 @@
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userRole');
             localStorage.removeItem('userName');
+            clearTimeout(inactivityTimer);
 
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
@@ -457,7 +478,8 @@
                 `;
             } else {
                 matchedTasks.forEach(task => {
-                    const displayLabel = task.code ? task.code : task.subject;
+                    // แสดงเฉพาะรหัสวิชาโดยตรง (ถ้าไม่มีรหัสวิชา ให้แสดงชื่อวิชาแทน)
+                    const displayLabel = (task.code && task.code.trim() !== "") ? task.code : task.subject;
                     container.innerHTML += `
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
                             <div class="flex justify-between items-center">
@@ -535,7 +557,8 @@
                                 <i class="fa-solid fa-thumbtack"></i>
                             </button>`;
 
-            const displayLabel = item.code ? item.code : item.subject;
+            // แสดงเฉพาะรหัสวิชาโดยตรง (ถ้าไม่มีรหัสวิชา ให้แสดงชื่อวิชาแทน)
+            const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
 
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
