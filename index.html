@@ -207,10 +207,10 @@
 
     <div class="flex-grow"></div>
 
-    <!-- Footer Version 1.4 -->
+    <!-- Footer Version 1.13 -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.4 (Single Session & Timeout)
+            Version 1.13 (Cloud Sync Fixed)
         </span>
     </footer>
 
@@ -240,7 +240,6 @@
         let currentTab = 'calendar';
         let currentDate = new Date();
 
-        // ระบบ Timeout (15 นาที = 900,000 มิลลิวินาที)
         const TIMEOUT_DURATION = 15 * 60 * 1000;
         let inactivityTimer = null;
         let sessionCheckInterval = null;
@@ -259,7 +258,6 @@
             window.addEventListener(evt, resetInactivityTimer, { passive: true });
         });
 
-        // ตรวจสอบการเข้าสู่ระบบซ้ำซ้อนจากเครื่องอื่น (Single Session)
         function startSessionChecker(mySessionId) {
             clearInterval(sessionCheckInterval);
             sessionCheckInterval = setInterval(() => {
@@ -268,12 +266,12 @@
                     if (activeSession && activeSession !== mySessionId) {
                         clearInterval(sessionCheckInterval);
                         alert('มีการเข้าสู่ระบบบัญชีนี้จากอุปกรณ์หรือแท็บอื่น ระบบจะนำคุณออกจากระบบ');
-                        logout(true); // ออกจากระบบแบบเงียบๆ ไม่เด้งแจ้งเตือนซ้ำซ้อน
+                        logout(true);
                     }
                 } else {
                     clearInterval(sessionCheckInterval);
                 }
-            }, 1000); // เช็คทุกๆ 1 วินาที
+            }, 1000);
         }
 
         function getFormattedDate(d) {
@@ -345,8 +343,6 @@
 
             if (USERS[user] && USERS[user].pass === pass) {
                 currentRole = USERS[user].role;
-                
-                // สร้าง Session ID เฉพาะกิจของเครื่องนี้
                 const mySessionId = 'sess_' + Date.now() + '_' + Math.random();
                 localStorage.setItem('activeSessionId', mySessionId);
                 localStorage.setItem('isLoggedIn', 'true');
@@ -640,8 +636,6 @@
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'togglePin',
                             id: id,
@@ -669,8 +663,6 @@
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'delete',
                             id: id
@@ -740,8 +732,6 @@
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newTask)
                 });
             } catch (err) {
