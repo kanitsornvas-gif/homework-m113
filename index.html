@@ -457,11 +457,11 @@
                 `;
             } else {
                 matchedTasks.forEach(task => {
-                    const codeDisplay = task.code ? `(${task.code})` : '';
+                    const displayLabel = task.code ? task.code : task.subject;
                     container.innerHTML += `
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
                             <div class="flex justify-between items-center">
-                                <span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">${task.subject} ${codeDisplay}</span>
+                                <span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
                                 <div class="text-[10px] flex flex-col items-end space-y-0.5">
                                     <span class="text-slate-400">สั่ง: ${formatThaiShortDate(task.assignDate)}</span>
                                     <span class="text-rose-500 font-bold">ส่ง: ${formatThaiShortDate(task.dueDate)}</span>
@@ -535,13 +535,13 @@
                                 <i class="fa-solid fa-thumbtack"></i>
                             </button>`;
 
-            const codeDisplay = item.code ? `(${item.code})` : '';
+            const displayLabel = item.code ? item.code : item.subject;
 
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
                     <div class="flex justify-between items-start gap-2">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${item.subject} ${codeDisplay}</span>
+                            <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
                         </div>
                         <div class="flex items-center gap-1">
                             ${pinBtn}
