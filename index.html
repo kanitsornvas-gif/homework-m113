@@ -207,10 +207,10 @@
 
     <div class="flex-grow"></div>
 
-    <!-- Footer Version 1.3 -->
+    <!-- Footer Version 1.4 -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.3 (Timeout 15m)
+            Version 1.4 (Single Session & Timeout)
         </span>
     </footer>
 
@@ -243,6 +243,7 @@
         // ระบบ Timeout (15 นาที = 900,000 มิลลิวินาที)
         const TIMEOUT_DURATION = 15 * 60 * 1000;
         let inactivityTimer = null;
+        let sessionCheckInterval = null;
 
         function resetInactivityTimer() {
             if (localStorage.getItem('isLoggedIn') === 'true') {
@@ -254,10 +255,26 @@
             }
         }
 
-        // คอยดักจับกิจกรรมของผู้ใช้เพื่อรีเซ็ตเวลา Timeout
         ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
             window.addEventListener(evt, resetInactivityTimer, { passive: true });
         });
+
+        // ตรวจสอบการเข้าสู่ระบบซ้ำซ้อนจากเครื่องอื่น (Single Session)
+        function startSessionChecker(mySessionId) {
+            clearInterval(sessionCheckInterval);
+            sessionCheckInterval = setInterval(() => {
+                if (localStorage.getItem('isLoggedIn') === 'true') {
+                    const activeSession = localStorage.getItem('activeSessionId');
+                    if (activeSession && activeSession !== mySessionId) {
+                        clearInterval(sessionCheckInterval);
+                        alert('มีการเข้าสู่ระบบบัญชีนี้จากอุปกรณ์หรือแท็บอื่น ระบบจะนำคุณออกจากระบบ');
+                        logout(true); // ออกจากระบบแบบเงียบๆ ไม่เด้งแจ้งเตือนซ้ำซ้อน
+                    }
+                } else {
+                    clearInterval(sessionCheckInterval);
+                }
+            }, 1000); // เช็คทุกๆ 1 วินาที
+        }
 
         function getFormattedDate(d) {
             const year = d.getFullYear();
@@ -328,10 +345,15 @@
 
             if (USERS[user] && USERS[user].pass === pass) {
                 currentRole = USERS[user].role;
+                
+                // สร้าง Session ID เฉพาะกิจของเครื่องนี้
+                const mySessionId = 'sess_' + Date.now() + '_' + Math.random();
+                localStorage.setItem('activeSessionId', mySessionId);
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userRole', currentRole);
                 localStorage.setItem('userName', USERS[user].name);
-                openDashboard(USERS[user].name);
+
+                openDashboard(USERS[user].name, mySessionId);
             } else {
                 alert('Username หรือ Password ไม่ถูกต้อง!');
             }
@@ -339,13 +361,15 @@
 
         function loginAsGuest() {
             currentRole = 'guest';
+            const mySessionId = 'sess_' + Date.now() + '_' + Math.random();
+            localStorage.setItem('activeSessionId', mySessionId);
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', 'guest');
             localStorage.setItem('userName', 'GUEST');
-            openDashboard('GUEST');
+            openDashboard('GUEST', mySessionId);
         }
 
-        function openDashboard(roleName) {
+        function openDashboard(roleName, mySessionId) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
@@ -357,14 +381,17 @@
             }
 
             resetInactivityTimer();
+            startSessionChecker(mySessionId);
             fetchHomeworks();
         }
 
-        function logout() {
+        function logout(isForced = false) {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userRole');
             localStorage.removeItem('userName');
+            localStorage.removeItem('activeSessionId');
             clearTimeout(inactivityTimer);
+            clearInterval(sessionCheckInterval);
 
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
@@ -478,7 +505,6 @@
                 `;
             } else {
                 matchedTasks.forEach(task => {
-                    // แสดงเฉพาะรหัสวิชาโดยตรง (ถ้าไม่มีรหัสวิชา ให้แสดงชื่อวิชาแทน)
                     const displayLabel = (task.code && task.code.trim() !== "") ? task.code : task.subject;
                     container.innerHTML += `
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
@@ -557,7 +583,6 @@
                                 <i class="fa-solid fa-thumbtack"></i>
                             </button>`;
 
-            // แสดงเฉพาะรหัสวิชาโดยตรง (ถ้าไม่มีรหัสวิชา ให้แสดงชื่อวิชาแทน)
             const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
 
             return `
@@ -728,10 +753,11 @@
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             const savedRole = localStorage.getItem('userRole');
             const savedName = localStorage.getItem('userName');
+            const activeSessionId = localStorage.getItem('activeSessionId');
 
-            if (isLoggedIn === 'true' && savedRole && savedName) {
+            if (isLoggedIn === 'true' && savedRole && savedName && activeSessionId) {
                 currentRole = savedRole;
-                openDashboard(savedName);
+                openDashboard(savedName, activeSessionId);
             } else {
                 renderCalendar();
                 selectDate(selectedDateStr);
