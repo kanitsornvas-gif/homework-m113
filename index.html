@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.234</title>
+    <title>Homework M.113 - V1.236</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.234)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.236)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -76,7 +76,10 @@
                 <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
                 <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">ADMIN</span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
+                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-list-check"></i>
+                </button>
                 <button onclick="fetchHomeworks(true)" title="รีเฟรชข้อมูลล่าสุด" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
@@ -150,9 +153,13 @@
                     <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน <span class="text-[10px] text-rose-500 font-normal">(ต้องกรอกทุกช่อง)</span>
                 </h3>
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="task-code" placeholder="รหัสวิชา (เช่น ท21101)" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
-                    <input type="text" id="task-subject" placeholder="ชื่อวิชา" class="col-span-2 w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
+                    <input type="text" id="task-code" list="code-options" placeholder="รหัสวิชา (เช่น ท21101)" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
+                    <datalist id="code-options"></datalist>
+
+                    <input type="text" id="task-subject" list="subject-options" placeholder="ชื่อวิชา" class="col-span-2 w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
+                    <datalist id="subject-options"></datalist>
                 </div>
+                
                 <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
                 
                 <div class="grid grid-cols-2 gap-2">
@@ -195,7 +202,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.234
+            Version 1.236
         </span>
     </footer>
 
@@ -209,6 +216,35 @@
             <p class="text-xs text-slate-400 mb-5">บันทึกข้อมูลการบ้านลงระบบเรียบร้อยแล้ว</p>
             <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20">
                 ตกลง
+            </button>
+        </div>
+    </div>
+
+    <!-- MANAGE SUBJECT/CODE HISTORY MODAL -->
+    <div id="manage-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-purple-500"></i> จัดการประวัติรหัสและชื่อวิชา
+                </h3>
+                <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
+            </div>
+            
+            <p class="text-[11px] text-slate-400">คุณสามารถล้างหรือซ่อนรหัสวิชาหรือชื่อวิชาที่ไม่ต้องการออกจากระบบตัวเลือกได้ (ระบบจะแทนที่ค่าที่ลบด้วยค่าว่างในรายการที่เกี่ยวข้อง)</p>
+
+            <div class="space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                <div>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">รหัสวิชาทั้งหมดในระบบ:</span>
+                    <div id="manage-codes-list" class="space-y-1"></div>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">ชื่อวิชาทั้งหมดในระบบ:</span>
+                    <div id="manage-subjects-list" class="space-y-1"></div>
+                </div>
+            </div>
+
+            <button onclick="closeManageModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">
+                ปิดหน้าต่าง
             </button>
         </div>
     </div>
@@ -317,10 +353,13 @@
             document.getElementById('guest-badge').innerText = roleName;
 
             const adminForm = document.getElementById('admin-form');
+            const btnManageHistory = document.getElementById('btn-manage-history');
             if (currentRole === 'admin') {
                 adminForm.classList.remove('hidden');
+                btnManageHistory.classList.remove('hidden');
             } else {
                 adminForm.classList.add('hidden');
+                btnManageHistory.classList.add('hidden');
             }
             
             switchTab('daily');
@@ -436,6 +475,93 @@
             renderCalendar();
         }
 
+        function updateDatalists() {
+            const codeOptions = document.getElementById('code-options');
+            const subjectOptions = document.getElementById('subject-options');
+            if (!codeOptions || !subjectOptions) return;
+
+            const codes = [...new Set(tasks.map(t => t.code).filter(c => c && c.trim() !== ''))];
+            const subjects = [...new Set(tasks.map(t => t.subject).filter(s => s && s.trim() !== ''))];
+
+            codeOptions.innerHTML = codes.map(c => `<option value="${c}">`).join('');
+            subjectOptions.innerHTML = subjects.map(s => `<option value="${s}">`).join('');
+        }
+
+        function openManageModal() {
+            if (currentRole !== 'admin') return;
+            renderManageLists();
+            document.getElementById('manage-modal').classList.remove('hidden');
+        }
+
+        function closeManageModal() {
+            document.getElementById('manage-modal').classList.add('hidden');
+        }
+
+        function renderManageLists() {
+            const codesListEl = document.getElementById('manage-codes-list');
+            const subjectsListEl = document.getElementById('manage-subjects-list');
+            if (!codesListEl || !subjectsListEl) return;
+
+            const codes = [...new Set(tasks.map(t => t.code).filter(c => c && c.trim() !== ''))];
+            const subjects = [...new Set(tasks.map(t => t.subject).filter(s => s && s.trim() !== ''))];
+
+            if (codes.length === 0) {
+                codesListEl.innerHTML = `<span class="text-[10px] text-slate-400">ไม่มีรหัสวิชาในระบบ</span>`;
+            } else {
+                codesListEl.innerHTML = codes.map(c => `
+                    <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-xs">
+                        <span class="font-bold text-slate-700">${c}</span>
+                        <button onclick="removeHistoryItem('code', '${c}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบประวัติ</button>
+                    </div>
+                `).join('');
+            }
+
+            if (subjects.length === 0) {
+                subjectsListEl.innerHTML = `<span class="text-[10px] text-slate-400">ไม่มีชื่อวิชาในระบบ</span>`;
+            } else {
+                subjectsListEl.innerHTML = subjects.map(s => `
+                    <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-xs">
+                        <span class="font-bold text-slate-700">${s}</span>
+                        <button onclick="removeHistoryItem('subject', '${s}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบประวัติ</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function removeHistoryItem(type, value) {
+            if (currentRole !== 'admin') return;
+            if (confirm(`คุณต้องการลบ "${value}" ออกจากตัวเลือกทั้งหมดใช่หรือไม่? (งานที่มีรหัสหรือชื่อนี้จะถูกรีเซ็ตค่าเป็นว่าง)`)) {
+                let updated = false;
+                tasks.forEach(t => {
+                    if (type === 'code' && t.code === value) {
+                        t.code = '';
+                        updated = true;
+                    }
+                    if (type === 'subject' && t.subject === value) {
+                        t.subject = '';
+                        updated = true;
+                    }
+                });
+
+                if (updated) {
+                    sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+                    renderTasks();
+                    renderCalendar();
+                    selectDate(selectedDateStr);
+                    renderManageLists();
+                    alert('ลบประวัติเรียบร้อยแล้ว');
+                    
+                    // ซิงค์ข้อมูลอัปเดตกลับไปยัง backend ถ้าต้องการ (ส่งรายการที่แก้ไขทั้งหมดหรือปรับตามสคริปต์)
+                    // ตัวอย่างส่งรีเฟรชข้อมูลหรืออัปเดต
+                    await fetch(SCRIPT_URL, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                        body: JSON.stringify({ action: 'clearHistoryType', type: type, value: value }) 
+                    }).catch(console.error);
+                }
+            }
+        }
+
         function renderTasks() {
             const pinnedContainer = document.getElementById('pinned-list');
             const taskContainer = document.getElementById('task-list');
@@ -475,6 +601,8 @@
             } else {
                 normalTasks.forEach(item => { taskContainer.innerHTML += createTaskCardHTML(item, false); });
             }
+
+            updateDatalists();
         }
 
         function createTaskCardHTML(item, isPinned) {
@@ -586,7 +714,6 @@
             const assignDate = document.getElementById('assign-date-input').value;
             const dueDate = document.getElementById('due-date-input').value;
 
-            // บังคับเช็คว่ากรอกครบทุกช่องหรือไม่
             if (!code || !subject || !detail || !assignDate || !dueDate) {
                 alert('กรุณากรอกข้อมูลให้ครบทุกช่อง (รหัสวิชา, ชื่อวิชา, รายละเอียด, วันสั่ง และวันส่ง)');
                 return;
