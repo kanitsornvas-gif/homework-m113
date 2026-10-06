@@ -70,16 +70,6 @@
         <button onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs tracking-wide shadow-lg shadow-pink-500/30 active:scale-[0.98] transition duration-200">
             เข้าสู่ระบบ
         </button>
-
-        <div class="relative flex py-4 items-center">
-            <div class="flex-grow border-t border-slate-200/80"></div>
-            <span class="flex-shrink mx-4 text-[10px] font-bold text-slate-300 uppercase tracking-widest">หรือ</span>
-            <div class="flex-grow border-t border-slate-200/80"></div>
-        </div>
-
-        <button onclick="loginAsGuest()" class="w-full py-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition shadow-sm">
-            <i class="fa-regular fa-eye text-slate-400"></i> เข้าชมแบบผู้เยี่ยมชม (Guest)
-        </button>
     </div>
 
     <!-- ==================== หน้าที่ 2: Dashboard ==================== -->
@@ -90,7 +80,7 @@
             <div class="flex items-center gap-2">
                 <span class="font-extrabold text-pink-500 text-lg tracking-wider">HOMEWORK</span>
                 <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
-                <span id="guest-badge" class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-md">GUEST</span>
+                <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">ADMIN</span>
             </div>
             <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
                 LOGOUT
@@ -157,7 +147,7 @@
         <div id="view-tasks" class="hidden space-y-4">
             
             <!-- ฟอร์มเพิ่มการบ้าน -->
-            <div id="admin-form" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
+            <div id="admin-form" class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
                 <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน
                 </h3>
@@ -229,14 +219,14 @@
     </div>
 
     <script>
+        // อัปเดตรหัสผ่านใหม่เป็น Sk@2026_Student
         const USERS = {
-            'admin': { pass: '1234', role: 'admin', name: 'ADMIN' },
-            'guest': { pass: '1234', role: 'guest', name: 'GUEST' }
+            'admin': { pass: 'Sk@2026_Student', role: 'admin', name: 'ADMIN' }
         };
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
 
-        let currentRole = 'guest';
+        let currentRole = 'admin';
         let currentTab = 'calendar';
         let currentDate = new Date();
 
@@ -356,26 +346,10 @@
             }
         }
 
-        function loginAsGuest() {
-            currentRole = 'guest';
-            const mySessionId = 'sess_' + Date.now() + '_' + Math.random();
-            localStorage.setItem('activeSessionId', mySessionId);
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', 'guest');
-            localStorage.setItem('userName', 'GUEST');
-            openDashboard('GUEST', mySessionId);
-        }
-
         function openDashboard(roleName, mySessionId) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
-
-            if (currentRole === 'admin') {
-                document.getElementById('admin-form').classList.remove('hidden');
-            } else {
-                document.getElementById('admin-form').classList.add('hidden');
-            }
 
             resetInactivityTimer();
             startSessionChecker(mySessionId);
@@ -572,10 +546,7 @@
         function createTaskCardHTML(item, isPinned) {
             const pinIconColor = isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500';
 
-            const deleteBtn = currentRole === 'admin' 
-                ? `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>` 
-                : '';
-
+            const deleteBtn = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>`;
             const pinBtn = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${pinIconColor} transition">
                                 <i class="fa-solid fa-thumbtack"></i>
                             </button>`;
@@ -624,11 +595,6 @@
         }
 
         async function togglePin(id) {
-            if (currentRole !== 'admin') {
-                alert('คุณอยู่ในโหมดผู้เยี่ยมชม สามารถดูได้อย่างเดียว');
-                return;
-            }
-
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.isPinned = !task.isPinned;
@@ -651,11 +617,6 @@
         }
 
         async function deleteTask(id) {
-            if (currentRole !== 'admin') {
-                alert('คุณอยู่ในโหมดผู้เยี่ยมชม สามารถดูได้อย่างเดียว');
-                return;
-            }
-
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
                 tasks = tasks.filter(t => t.id !== id);
                 renderTasks();
@@ -686,11 +647,6 @@
         }
 
         async function addTask() {
-            if (currentRole !== 'admin') {
-                alert('คุณอยู่ในโหมดผู้เยี่ยมชม สามารถดูได้อย่างเดียว');
-                return;
-            }
-
             const code = document.getElementById('task-code').value.trim();
             const subject = document.getElementById('task-subject').value.trim();
             const detail = document.getElementById('task-detail').value.trim();
