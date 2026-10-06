@@ -206,4 +206,377 @@
                 <i class="fa-solid fa-circle-check"></i>
             </div>
             <h3 class="text-base font-extrabold text-slate-800 mb-1">เพิ่มงานสำเร็จ</h3>
-            <p class="text-xs text
+            <p class="text-xs text-slate-400 mb-5">บันทึกข้อมูลการบ้านลงระบบเรียบร้อยแล้ว</p>
+            <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const USERS = {
+            'admin': { pass: 'Sk@2026_Student', role: 'admin', name: 'ADMIN' },
+            '1234': { pass: '1234', role: 'student', name: 'STUDENT' }
+        };
+
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
+
+        let currentRole = 'student';
+        let currentTab = 'calendar';
+        let currentDate = new Date();
+
+        function getFormattedDate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        const todayStr = getFormattedDate(new Date());
+        let selectedDateStr = todayStr;
+        let tasks = [];
+
+        const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+        const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+
+        function normalizeDateStr(dateInput) {
+            if (!dateInput) return '';
+            let dateObj;
+            if (typeof dateInput === 'string') {
+                if (dateInput.includes('T')) dateInput = dateInput.split('T')[0];
+                const parts = dateInput.split('-');
+                if (parts.length === 3) return `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
+                dateObj = new Date(dateInput);
+            } else {
+                dateObj = new Date(dateInput);
+            }
+            return isNaN(dateObj.getTime()) ? '' : getFormattedDate(dateObj);
+        }
+
+        function formatThaiShortDate(dateStr) {
+            const cleanStr = normalizeDateStr(dateStr);
+            if (!cleanStr) return '-';
+            const parts = cleanStr.split('-');
+            if (parts.length < 3) return dateStr;
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const day = parseInt(parts[2]);
+            const d = new Date(year, month, day);
+            return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
+        }
+
+        function togglePassword() {
+            const passInput = document.getElementById('password');
+            const icon = document.getElementById('pass-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                passInput.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+
+        function login() {
+            try {
+                const userInput = document.getElementById('username');
+                const passInput = document.getElementById('password');
+
+                if (!userInput || !passInput) {
+                    alert('ไม่พบช่องกรอกข้อมูล Username หรือ Password ในหน้าเว็บ');
+                    return;
+                }
+
+                const user = userInput.value.trim().toLowerCase();
+                const pass = passInput.value.trim();
+
+                if (!user || !pass) {
+                    alert('กรุณากรอกชื่อผู้ใช้งานและรหัสผ่านให้ครบถ้วน');
+                    return;
+                }
+
+                if (USERS[user] && USERS[user].pass === pass) {
+                    currentRole = USERS[user].role;
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userRole', currentRole);
+                    sessionStorage.setItem('userName', USERS[user].name);
+                    openDashboard(USERS[user].name);
+                } else {
+                    alert('Username หรือ Password ไม่ถูกต้อง!');
+                }
+            } catch (err) {
+                console.error('Login Error:', err);
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ' + err.message);
+            }
+        }
+
+        function openDashboard(roleName) {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-page').classList.remove('hidden');
+            document.getElementById('guest-badge').innerText = roleName;
+
+            const adminForm = document.getElementById('admin-form');
+            if (currentRole === 'admin') {
+                adminForm.classList.remove('hidden');
+            } else {
+                adminForm.classList.add('hidden');
+            }
+            fetchHomeworks();
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            document.getElementById('main-page').classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnDaily = document.getElementById('tab-daily');
+            const btnPending = document.getElementById('tab-pending');
+            const btnCalendar = document.getElementById('tab-calendar');
+            const viewCalendar = document.getElementById('view-calendar');
+            const viewTasks = document.getElementById('view-tasks');
+            const noticeText = document.getElementById('notice-text');
+
+            [btnDaily, btnPending, btnCalendar].forEach(b => b.className = "py-2 rounded-xl transition text-slate-500");
+
+            if (tab === 'calendar') {
+                btnCalendar.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                viewCalendar.classList.remove('hidden');
+                viewTasks.classList.add('hidden');
+                noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน";
+                renderCalendar();
+                selectDate(selectedDateStr);
+            } else {
+                if (tab === 'daily') {
+                    btnDaily.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                    noticeText.innerText = "แสดงเฉพาะรายการการบ้านที่มีกำหนดส่งวันนี้";
+                } else if (tab === 'pending') {
+                    btnPending.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                    noticeText.innerText = "แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด";
+                }
+                viewCalendar.classList.add('hidden');
+                viewTasks.classList.remove('hidden');
+                renderTasks();
+            }
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('calendar-month-year').innerText = `ปฏิทิน: ${MONTH_NAMES_TH[month]} (${year + 543})`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const daysContainer = document.getElementById('calendar-days');
+            daysContainer.innerHTML = '';
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                daysContainer.innerHTML += `<div class="h-14 rounded-2xl bg-slate-50/50"></div>`;
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
+                const isSelected = (dateStr === selectedDateStr);
+                
+                let boxStyle = "bg-slate-50 border border-slate-100 hover:border-pink-300";
+                let textStyle = "text-slate-600";
+
+                if (isSelected) {
+                    boxStyle = "bg-pink-500 border-2 border-pink-500 text-white shadow-md shadow-pink-500/30 scale-105 z-10";
+                    textStyle = "text-white font-extrabold";
+                }
+
+                let dotHTML = hasDueTask ? `<span class="w-2 h-2 ${isSelected ? 'bg-white' : 'bg-rose-500'} rounded-full inline-block mt-0.5"></span>` : '';
+
+                daysContainer.innerHTML += `
+                    <button onclick="selectDate('${dateStr}')" class="h-14 ${boxStyle} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold transition duration-200">
+                        <span class="${textStyle}">${day}</span>
+                        ${dotHTML}
+                    </button>
+                `;
+            }
+        }
+
+        function selectDate(dateStr) {
+            selectedDateStr = normalizeDateStr(dateStr);
+            renderCalendar();
+
+            const parts = selectedDateStr.split('-');
+            document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
+
+            const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
+            const container = document.getElementById('selected-date-tasks');
+            document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
+            container.innerHTML = '';
+
+            if (matchedTasks.length === 0) {
+                container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-regular fa-folder-open text-base mb-1 block text-slate-300"></i>ไม่มีการบ้านสำหรับวันนี้</div>`;
+            } else {
+                matchedTasks.forEach(task => {
+                    const displayLabel = (task.code && task.code.trim() !== "") ? task.code : task.subject;
+                    container.innerHTML += `
+                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
+                                <div class="text-[10px] flex flex-col items-end space-y-0.5">
+                                    <span class="text-slate-400">สั่ง: ${formatThaiShortDate(task.assignDate)}</span>
+                                    <span class="text-rose-500 font-bold">ส่ง: ${formatThaiShortDate(task.dueDate)}</span>
+                                </div>
+                            </div>
+                            <h4 class="text-xs font-bold text-slate-800">${task.detail}</h4>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function changeMonth(offset) {
+            currentDate.setMonth(currentDate.getMonth() + offset);
+            renderCalendar();
+        }
+
+        function renderTasks() {
+            const pinnedContainer = document.getElementById('pinned-list');
+            const taskContainer = document.getElementById('task-list');
+            const pinnedSection = document.getElementById('pinned-section');
+            const taskSectionTitle = document.getElementById('task-section-title');
+
+            pinnedContainer.innerHTML = '';
+            taskContainer.innerHTML = '';
+
+            let filteredTasks = tasks;
+            if (currentTab === 'daily') {
+                filteredTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === todayStr);
+                pinnedSection.classList.add('hidden');
+                taskSectionTitle.innerText = "TASKS DUE TODAY";
+            } else {
+                pinnedSection.classList.remove('hidden');
+                taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
+            }
+
+            const pinnedTasks = filteredTasks.filter(t => t.isPinned);
+            const normalTasks = filteredTasks.filter(t => !t.isPinned);
+            document.getElementById('task-count').innerText = `${filteredTasks.length} ITEMS`;
+
+            if (currentTab !== 'daily') {
+                if (pinnedTasks.length === 0) {
+                    pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
+                } else {
+                    pinnedTasks.forEach(item => { pinnedContainer.innerHTML += createTaskCardHTML(item, true); });
+                }
+            }
+
+            if (normalTasks.length === 0 && (currentTab === 'daily' || pinnedTasks.length === 0)) {
+                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">${currentTab === 'daily' ? 'ไม่มีงานที่ต้องส่งวันนี้' : 'ไม่มีรายการงานทั่วไป'}</div>`;
+            } else {
+                normalTasks.forEach(item => { taskContainer.innerHTML += createTaskCardHTML(item, false); });
+            }
+        }
+
+        function createTaskCardHTML(item, isPinned) {
+            let actionButtons = '';
+            if (currentRole === 'admin') {
+                actionButtons = `<div class="flex items-center gap-1">
+                    <button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition"><i class="fa-solid fa-thumbtack"></i></button>
+                    <button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>
+                </div>`;
+            }
+            const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
+            return `
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
+                        ${actionButtons}
+                    </div>
+                    <h4 class="text-xs font-bold text-slate-800 pt-0.5">${item.detail}</h4>
+                    <div class="flex flex-col items-end text-[10px] pt-1 space-y-0.5">
+                        <span class="text-slate-400 font-medium"><i class="fa-regular fa-calendar-plus"></i> สั่ง: ${formatThaiShortDate(item.assignDate)}</span>
+                        <span class="text-rose-500 font-bold"><i class="fa-regular fa-hourglass-half"></i> ส่ง: ${formatThaiShortDate(item.dueDate)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function fetchHomeworks() {
+            const container = document.getElementById('selected-date-tasks');
+            container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-solid fa-spinner fa-spin text-pink-500 text-base mb-1 block"></i>กำลังโหลดข้อมูลจาก Google Sheets...</div>`;
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    tasks = data;
+                    renderTasks();
+                    renderCalendar();
+                    selectDate(selectedDateStr);
+                }
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<div class="text-center py-5 text-xs text-rose-500 font-bold bg-white rounded-2xl border border-slate-100">โหลดข้อมูลไม่สำเร็จ (ตรวจสอบสิทธิ์การ Deploy ใน Apps Script)</div>`;
+            }
+        }
+
+        async function togglePin(id) {
+            if (currentRole !== 'admin') return;
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.isPinned = !task.isPinned;
+                renderTasks();
+                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned }) }).catch(console.error);
+            }
+        }
+
+        async function deleteTask(id) {
+            if (currentRole !== 'admin') return;
+            if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
+                tasks = tasks.filter(t => t.id !== id);
+                renderTasks();
+                renderCalendar();
+                selectDate(selectedDateStr);
+                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', id: id }) }).catch(console.error);
+            }
+        }
+
+        function showSuccessPopup() { document.getElementById('success-popup').classList.remove('hidden'); }
+        function closeSuccessPopup() { document.getElementById('success-popup').classList.add('hidden'); }
+
+        async function addTask() {
+            if (currentRole !== 'admin') return;
+            const code = document.getElementById('task-code').value.trim();
+            const subject = document.getElementById('task-subject').value.trim();
+            const detail = document.getElementById('task-detail').value.trim();
+            let assignDate = document.getElementById('assign-date-input').value || todayStr;
+            let dueDate = document.getElementById('due-date-input').value || todayStr;
+
+            if (!subject || !detail) { alert('กรุณากรอกชื่อวิชาและรายละเอียด'); return; }
+
+            const newTask = { id: Date.now(), code, subject, detail, assignDate: normalizeDateStr(assignDate), dueDate: normalizeDateStr(dueDate), isPinned: false, action: 'add' };
+            tasks.unshift(newTask);
+
+            document.getElementById('task-code').value = '';
+            document.getElementById('task-subject').value = '';
+            document.getElementById('task-detail').value = '';
+            document.getElementById('assign-date-input').value = '';
+            document.getElementById('due-date-input').value = '';
+
+            selectedDateStr = newTask.dueDate;
+            renderTasks();
+            renderCalendar();
+            selectDate(selectedDateStr);
+            showSuccessPopup();
+
+            await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newTask) }).catch(console.error);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            sessionStorage.clear();
+        });
+    </script>
+</body>
+</html>
