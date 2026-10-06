@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.22</title>
+    <title>Homework M.113 - V1.23</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.22)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.23)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -76,9 +76,14 @@
                 <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
                 <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">ADMIN</span>
             </div>
-            <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
-                LOGOUT
-            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="fetchHomeworks()" title="รีเฟรชข้อมูล" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
+                <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
+                    LOGOUT
+                </button>
+            </div>
         </div>
 
         <!-- Navigation Tabs -->
@@ -190,7 +195,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.22
+            Version 1.23
         </span>
     </footer>
 
@@ -258,7 +263,7 @@
             const month = parseInt(parts[1]) - 1;
             const day = parseInt(parts[2]);
             const d = new Date(year, month, day);
-            return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
+            return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]}${(year + 543).toString().slice(-2)}`;
         }
 
         function togglePassword() {
@@ -373,8 +378,7 @@
 
                 daysContainer.innerHTML += `
                     <button onclick="selectDate('${dateStr}')" class="h-14 ${boxStyle} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold transition duration-200">
-                        <span class="${textStyle}">${day}</span>
-                        ${dotHTML}
+                        <span class="${textStyle}">${day}</span>${dotHTML}
                     </button>
                 `;
             }
@@ -385,7 +389,7 @@
             renderCalendar();
 
             const parts = selectedDateStr.split('-');
-            document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
+            document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]}${parseInt(parts[0]) + 543}`;
 
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             const container = document.getElementById('selected-date-tasks');
@@ -400,154 +404,4 @@
                     container.innerHTML += `
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
                             <div class="flex justify-between items-center">
-                                <span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
-                                <div class="text-[10px] flex flex-col items-end space-y-0.5">
-                                    <span class="text-slate-400">สั่ง: ${formatThaiShortDate(task.assignDate)}</span>
-                                    <span class="text-rose-500 font-bold">ส่ง: ${formatThaiShortDate(task.dueDate)}</span>
-                                </div>
-                            </div>
-                            <h4 class="text-xs font-bold text-slate-800">${task.detail}</h4>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        function changeMonth(offset) {
-            currentDate.setMonth(currentDate.getMonth() + offset);
-            renderCalendar();
-        }
-
-        function renderTasks() {
-            const pinnedContainer = document.getElementById('pinned-list');
-            const taskContainer = document.getElementById('task-list');
-            const pinnedSection = document.getElementById('pinned-section');
-            const taskSectionTitle = document.getElementById('task-section-title');
-
-            pinnedContainer.innerHTML = '';
-            taskContainer.innerHTML = '';
-
-            let filteredTasks = tasks;
-            if (currentTab === 'daily') {
-                filteredTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === todayStr);
-                pinnedSection.classList.add('hidden');
-                taskSectionTitle.innerText = "TASKS DUE TODAY";
-            } else {
-                pinnedSection.classList.remove('hidden');
-                taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
-            }
-
-            const pinnedTasks = filteredTasks.filter(t => t.isPinned);
-            const normalTasks = filteredTasks.filter(t => !t.isPinned);
-            document.getElementById('task-count').innerText = `${filteredTasks.length} ITEMS`;
-
-            if (currentTab !== 'daily') {
-                if (pinnedTasks.length === 0) {
-                    pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
-                } else {
-                    pinnedTasks.forEach(item => { pinnedContainer.innerHTML += createTaskCardHTML(item, true); });
-                }
-            }
-
-            if (normalTasks.length === 0 && (currentTab === 'daily' || pinnedTasks.length === 0)) {
-                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">${currentTab === 'daily' ? 'ไม่มีงานที่ต้องส่งวันนี้' : 'ไม่มีรายการงานทั่วไป'}</div>`;
-            } else {
-                normalTasks.forEach(item => { taskContainer.innerHTML += createTaskCardHTML(item, false); });
-            }
-        }
-
-        function createTaskCardHTML(item, isPinned) {
-            let actionButtons = '';
-            if (currentRole === 'admin') {
-                actionButtons = `<div class="flex items-center gap-1">
-                    <button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition"><i class="fa-solid fa-thumbtack"></i></button>
-                    <button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>
-                </div>`;
-            }
-            const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
-            return `
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
-                    <div class="flex justify-between items-start gap-2">
-                        <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
-                        ${actionButtons}
-                    </div>
-                    <h4 class="text-xs font-bold text-slate-800 pt-0.5">${item.detail}</h4>
-                    <div class="flex flex-col items-end text-[10px] pt-1 space-y-0.5">
-                        <span class="text-slate-400 font-medium"><i class="fa-regular fa-calendar-plus"></i> สั่ง: ${formatThaiShortDate(item.assignDate)}</span>
-                        <span class="text-rose-500 font-bold"><i class="fa-regular fa-hourglass-half"></i> ส่ง: ${formatThaiShortDate(item.dueDate)}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        async function fetchHomeworks() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    tasks = data;
-                    renderTasks();
-                    renderCalendar();
-                    selectDate(selectedDateStr);
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        async function togglePin(id) {
-            if (currentRole !== 'admin') return;
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.isPinned = !task.isPinned;
-                renderTasks();
-                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned }) }).catch(console.error);
-            }
-        }
-
-        async function deleteTask(id) {
-            if (currentRole !== 'admin') return;
-            if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
-                tasks = tasks.filter(t => t.id !== id);
-                renderTasks();
-                renderCalendar();
-                selectDate(selectedDateStr);
-                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', id: id }) }).catch(console.error);
-            }
-        }
-
-        function showSuccessPopup() { document.getElementById('success-popup').classList.remove('hidden'); }
-        function closeSuccessPopup() { document.getElementById('success-popup').classList.add('hidden'); }
-
-        async function addTask() {
-            if (currentRole !== 'admin') return;
-            const code = document.getElementById('task-code').value.trim();
-            const subject = document.getElementById('task-subject').value.trim();
-            const detail = document.getElementById('task-detail').value.trim();
-            let assignDate = document.getElementById('assign-date-input').value || todayStr;
-            let dueDate = document.getElementById('due-date-input').value || todayStr;
-
-            if (!subject || !detail) { alert('กรุณากรอกชื่อวิชาและรายละเอียด'); return; }
-
-            const newTask = { id: Date.now(), code, subject, detail, assignDate: normalizeDateStr(assignDate), dueDate: normalizeDateStr(dueDate), isPinned: false, action: 'add' };
-            tasks.unshift(newTask);
-
-            document.getElementById('task-code').value = '';
-            document.getElementById('task-subject').value = '';
-            document.getElementById('task-detail').value = '';
-            document.getElementById('assign-date-input').value = '';
-            document.getElementById('due-date-input').value = '';
-
-            selectedDateStr = newTask.dueDate;
-            renderTasks();
-            renderCalendar();
-            selectDate(selectedDateStr);
-            showSuccessPopup();
-
-            await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newTask) }).catch(console.error);
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            sessionStorage.clear(); // ล้าง Session ทุกครั้งที่เปิดหน้าเว็บใหม่เพื่อให้บังคับ Login เสมอ
-        });
-    </script>
-</body>
-</html>
+                                <span class="bg-rose-500 text-white text-[9px] font-
