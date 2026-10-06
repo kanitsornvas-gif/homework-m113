@@ -119,7 +119,7 @@
             <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
                 <div class="flex items-center gap-2 mb-3">
                     <i class="fa-regular fa-calendar-days text-pink-500"></i>
-                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน: กันยายน (2569)</h3>
+                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน</h3>
                 </div>
 
                 <!-- Days of week -->
@@ -219,10 +219,8 @@
         let currentRole = 'guest';
         let currentTab = 'calendar';
         
-        // ตั้งค่าปฏิทินเริ่มต้นให้อิงตามวันปัจจุบันของระบบจริงๆ
         let currentDate = new Date();
         
-        // ฟังก์ชันช่วยจัดรูปแบบวันที่เป็น YYYY-MM-DD
         function getFormattedDate(d) {
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -233,26 +231,7 @@
         const todayStr = getFormattedDate(new Date());
         let selectedDateStr = todayStr;
 
-        let tasks = [
-            {
-                id: 1,
-                subject: 'สอบปลายภาคเรียนที่ 1/2569',
-                detail: '14-18 = สอบปลายภาคเรียนที่ 1/2569',
-                assignDate: '2026-09-01',
-                dueDate: '2026-09-14',
-                isPinned: true,
-                count: '0/40'
-            },
-            {
-                id: 2,
-                subject: 'สอบปลายภาคเรียนที่ 1/2569 (นอกตาราง)',
-                detail: '7-11 = สอบปลายภาคเรียนที่ 1/2569 (นอกตาราง)',
-                assignDate: '2026-09-01',
-                dueDate: '2026-09-07',
-                isPinned: true,
-                count: '0/40'
-            }
-        ];
+        let tasks = [];
 
         const MONTH_NAMES_TH = [
             "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -268,7 +247,8 @@
 
         function formatThaiShortDate(dateStr) {
             if (!dateStr) return '-';
-            const parts = dateStr.split('T')[0].split('-');
+            const cleanStr = normalizeDateStr(dateStr);
+            const parts = cleanStr.split('-');
             if (parts.length < 3) return dateStr;
             
             const year = parseInt(parts[0]);
@@ -283,11 +263,10 @@
             return `${dayName}${day} ${monthName} ${thaiYearShort}`;
         }
 
-        // ฟังก์ชันปรับรูปแบบวันที่จาก Google Sheets หรือสตริงให้อยู่ในฟอร์แมต YYYY-MM-DD
         function normalizeDateStr(dateInput) {
             if (!dateInput) return '';
             if (typeof dateInput === 'string') {
-                return dateInput.split('T')[0];
+                return dateInput.split('T')[0].trim();
             }
             const d = new Date(dateInput);
             return getFormattedDate(d);
@@ -334,9 +313,6 @@
             }
 
             fetchHomeworks();
-            renderCalendar();
-            renderTasks();
-            selectDate(selectedDateStr);
         }
 
         function logout() {
@@ -400,7 +376,7 @@
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
-                // ตรวจสอบว่ามีงานชิ้นไหนตั้ง dueDate ตรงกับวันนี้หรือไม่
+                // ตรวจสอบเฉพาะ dueDate (วันส่ง) เท่านั้น เพื่อแสดงจุดสีแดง
                 const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
                 const isSelected = (dateStr === selectedDateStr);
                 
@@ -436,7 +412,7 @@
 
             document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${day} ${month} ${year}`;
 
-            // ดึงรายการงานที่มีกำหนดส่ง หรือ สั่งในวันที่เลือก
+            // แสดงรายการการบ้านเฉพาะวันส่ง หรือ วันสั่ง ในวันที่เลือก
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === dateStr || normalizeDateStr(t.assignDate) === dateStr);
             const container = document.getElementById('selected-date-tasks');
             
@@ -560,10 +536,21 @@
 
         async function fetchHomeworks() {
             try {
-                const res = await fetch(SCRIPT_URL);
+                // ใส่ timestamp เพื่อป้องกันการดึง Cache ข้อมูลเก่า
+                const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
                 const data = await res.json();
-                if(Array.isArray(data) && data.length > 0) {
+                if (Array.isArray(data)) {
                     tasks = data;
+                    
+                    // ปรับเปลี่ยนเดือนในปฏิทินให้ตรงกับเดือนของงานแรกที่มีอยู่จริงในระบบ (ถ้ามี)
+                    if (tasks.length > 0 && tasks[0].dueDate) {
+                        const firstTaskDate = new Date(normalizeDateStr(tasks[0].dueDate));
+                        if (!isNaN(firstTaskDate.getTime())) {
+                            currentDate = new Date(firstTaskDate.getFullYear(), firstTaskDate.getMonth(), 1);
+                            selectedDateStr = normalizeDateStr(tasks[0].dueDate);
+                        }
+                    }
+
                     renderTasks();
                     renderCalendar();
                     selectDate(selectedDateStr);
