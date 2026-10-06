@@ -26,6 +26,14 @@
             background: #cbd5e1;
             border-radius: 10px;
         }
+        /* Popup Animation */
+        @keyframes modalPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center p-3 sm:p-6 min-h-screen relative antialiased">
@@ -207,6 +215,20 @@
 
     </div>
 
+    <!-- ==================== POPUP SUCCESS MODAL ==================== -->
+    <div id="success-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-3xl p-6 w-80 text-center shadow-2xl border border-slate-100 animate-pop">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 mb-1">เพิ่มงานสำเร็จ</h3>
+            <p class="text-xs text-slate-400 mb-5">บันทึกข้อมูลการบ้านลงระบบเรียบร้อยแล้ว</p>
+            <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 active:scale-95 transition">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
     <!-- ==================== JavaScript ==================== -->
     <script>
         const USERS = {
@@ -376,7 +398,6 @@
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
-                // ตรวจสอบเฉพาะ dueDate (วันส่ง) เท่านั้น เพื่อแสดงจุดสีแดง
                 const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
                 const isSelected = (dateStr === selectedDateStr);
                 
@@ -412,7 +433,6 @@
 
             document.getElementById('selected-date-label').innerText = `การบ้านวันที่ ${day} ${month} ${year}`;
 
-            // แสดงรายการการบ้านเฉพาะวันส่ง หรือ วันสั่ง ในวันที่เลือก
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === dateStr || normalizeDateStr(t.assignDate) === dateStr);
             const container = document.getElementById('selected-date-tasks');
             
@@ -536,13 +556,11 @@
 
         async function fetchHomeworks() {
             try {
-                // ใส่ timestamp เพื่อป้องกันการดึง Cache ข้อมูลเก่า
                 const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     tasks = data;
                     
-                    // ปรับเปลี่ยนเดือนในปฏิทินให้ตรงกับเดือนของงานแรกที่มีอยู่จริงในระบบ (ถ้ามี)
                     if (tasks.length > 0 && tasks[0].dueDate) {
                         const firstTaskDate = new Date(normalizeDateStr(tasks[0].dueDate));
                         if (!isNaN(firstTaskDate.getTime())) {
@@ -616,6 +634,14 @@
             }
         }
 
+        function showSuccessPopup() {
+            document.getElementById('success-popup').classList.remove('hidden');
+        }
+
+        function closeSuccessPopup() {
+            document.getElementById('success-popup').classList.add('hidden');
+        }
+
         async function addTask() {
             if (currentRole !== 'admin') {
                 alert('คุณอยู่ในโหมดผู้เยี่ยมชม สามารถดูได้อย่างเดียว');
@@ -645,12 +671,18 @@
 
             tasks.push(newTask);
 
+            // ล้างค่าในช่องกรอก
             document.getElementById('task-subject').value = '';
             document.getElementById('task-detail').value = '';
+            document.getElementById('assign-date-input').value = '';
+            document.getElementById('due-date-input').value = '';
 
             renderTasks();
             renderCalendar();
             selectDate(selectedDateStr);
+
+            // แสดง Popup บันทึกสำเร็จพร้อมเครื่องหมายติ๊กถูกสีเขียว
+            showSuccessPopup();
 
             try {
                 await fetch(SCRIPT_URL, {
