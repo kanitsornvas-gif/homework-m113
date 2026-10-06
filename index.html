@@ -207,10 +207,10 @@
 
     <div class="flex-grow"></div>
 
-    <!-- Footer Version 1.13 -->
+    <!-- Footer Version 1.131 -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.13 (Cloud Sync Fixed)
+            Version 1.131
         </span>
     </footer>
 
@@ -636,6 +636,7 @@
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({
                             action: 'togglePin',
                             id: id,
@@ -663,6 +664,7 @@
                 try {
                     await fetch(SCRIPT_URL, {
                         method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify({
                             action: 'delete',
                             id: id
@@ -732,6 +734,7 @@
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(newTask)
                 });
             } catch (err) {
