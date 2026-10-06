@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.231</title>
+    <title>Homework M.113 - V1.232</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.231)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.232)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -77,7 +77,7 @@
                 <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">ADMIN</span>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="fetchHomeworks()" title="รีเฟรชข้อมูล" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
+                <button onclick="fetchHomeworks(true)" title="รีเฟรชข้อมูลล่าสุด" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
                 <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
@@ -195,7 +195,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.231
+            Version 1.232
         </span>
     </footer>
 
@@ -419,19 +419,7 @@
                 container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-regular fa-folder-open text-base mb-1 block text-slate-300"></i>ไม่มีการบ้านสำหรับวันนี้</div>`;
             } else {
                 matchedTasks.forEach(task => {
-                    const displayLabel = (task.code && task.code.trim() !== "") ? task.code : task.subject;
-                    container.innerHTML += `
-                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
-                            <div class="flex justify-between items-center">
-                                <span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
-                                <div class="text-[10px] flex flex-col items-end space-y-0.5">
-                                    <span class="text-slate-400">สั่ง: ${formatThaiShortDate(task.assignDate)}</span>
-                                    <span class="text-rose-500 font-bold">ส่ง: ${formatThaiShortDate(task.dueDate)}</span>
-                                </div>
-                            </div>
-                            <h4 class="text-xs font-bold text-slate-800">${task.detail}</h4>
-                        </div>
-                    `;
+                    container.innerHTML += createTaskCardHTML(task, task.isPinned);
                 });
             }
         }
@@ -503,8 +491,27 @@
             `;
         }
 
-        async function fetchHomeworks() {
+        async function fetchHomeworks(force = false) {
             const container = document.getElementById('selected-date-tasks');
+
+            // ใช้ระบบ Cache จาก sessionStorage ทันทีเพื่อความเร็ว (ถ้าไม่ได้บังคับกดรีเฟรช)
+            if (!force) {
+                const cachedData = sessionStorage.getItem('homework_tasks');
+                if (cachedData) {
+                    try {
+                        tasks = JSON.parse(cachedData);
+                        renderTasks();
+                        renderCalendar();
+                        selectDate(selectedDateStr);
+                        // ดึงข้อมูลเบื้องหลังเงียบๆ เพื่อซิงค์ให้เป็นปัจจุบัน
+                        backgroundFetch();
+                        return;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+
             container.innerHTML = `<div class="text-center py-5 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100"><i class="fa-solid fa-spinner fa-spin text-pink-500 text-base mb-1 block"></i>กำลังโหลดข้อมูลจากระบบ...</div>`;
 
             try {
@@ -512,6 +519,7 @@
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     tasks = data;
+                    sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
                     renderTasks();
                     renderCalendar();
                     selectDate(selectedDateStr);
@@ -522,12 +530,31 @@
             }
         }
 
+        async function backgroundFetch() {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    tasks = data;
+                    sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+                    renderTasks();
+                    renderCalendar();
+                    selectDate(selectedDateStr);
+                }
+            } catch (err) {
+                console.error('Background fetch error:', err);
+            }
+        }
+
         async function togglePin(id) {
             if (currentRole !== 'admin') return;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.isPinned = !task.isPinned;
+                sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
                 renderTasks();
+                renderCalendar();
+                selectDate(selectedDateStr);
                 await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned }) }).catch(console.error);
             }
         }
@@ -536,6 +563,7 @@
             if (currentRole !== 'admin') return;
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
                 tasks = tasks.filter(t => t.id !== id);
+                sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
@@ -558,6 +586,7 @@
 
             const newTask = { id: Date.now(), code, subject, detail, assignDate: normalizeDateStr(assignDate), dueDate: normalizeDateStr(dueDate), isPinned: false, action: 'add' };
             tasks.unshift(newTask);
+            sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
 
             document.getElementById('task-code').value = '';
             document.getElementById('task-subject').value = '';
