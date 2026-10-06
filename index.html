@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.233</title>
+    <title>Homework M.113 - V1.234</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.233)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.234)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -147,7 +147,7 @@
             
             <div id="admin-form" class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
                 <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน
+                    <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน <span class="text-[10px] text-rose-500 font-normal">(ต้องกรอกทุกช่อง)</span>
                 </h3>
                 <div class="grid grid-cols-3 gap-2">
                     <input type="text" id="task-code" placeholder="รหัสวิชา (เช่น ท21101)" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
@@ -195,7 +195,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.233
+            Version 1.234
         </span>
     </footer>
 
@@ -222,7 +222,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
 
         let currentRole = 'student';
-        let currentTab = 'daily'; // เริ่มต้นที่หน้า "ส่งวันนี้"
+        let currentTab = 'daily';
         let currentDate = new Date();
 
         function getFormattedDate(d) {
@@ -323,7 +323,6 @@
                 adminForm.classList.add('hidden');
             }
             
-            // ตั้งค่าเริ่มต้นให้เปิดแท็บ "ส่งวันนี้" ทันที
             switchTab('daily');
             fetchHomeworks();
         }
@@ -503,7 +502,6 @@
         }
 
         async function fetchHomeworks(force = false) {
-            // ใช้ Cache จาก sessionStorage ทันทีเพื่อความเร็ว
             if (!force) {
                 const cachedData = sessionStorage.getItem('homework_tasks');
                 if (cachedData) {
@@ -512,7 +510,7 @@
                         renderTasks();
                         renderCalendar();
                         selectDate(selectedDateStr);
-                        backgroundFetch(); // โหลดข้อมูลสดเบื้องหลังเงียบๆ
+                        backgroundFetch();
                         return;
                     } catch (e) {
                         console.error(e);
@@ -581,15 +579,30 @@
 
         async function addTask() {
             if (currentRole !== 'admin') return;
+            
             const code = document.getElementById('task-code').value.trim();
             const subject = document.getElementById('task-subject').value.trim();
             const detail = document.getElementById('task-detail').value.trim();
-            let assignDate = document.getElementById('assign-date-input').value || todayStr;
-            let dueDate = document.getElementById('due-date-input').value || todayStr;
+            const assignDate = document.getElementById('assign-date-input').value;
+            const dueDate = document.getElementById('due-date-input').value;
 
-            if (!subject || !detail) { alert('กรุณากรอกชื่อวิชาและรายละเอียด'); return; }
+            // บังคับเช็คว่ากรอกครบทุกช่องหรือไม่
+            if (!code || !subject || !detail || !assignDate || !dueDate) {
+                alert('กรุณากรอกข้อมูลให้ครบทุกช่อง (รหัสวิชา, ชื่อวิชา, รายละเอียด, วันสั่ง และวันส่ง)');
+                return;
+            }
 
-            const newTask = { id: Date.now(), code, subject, detail, assignDate: normalizeDateStr(assignDate), dueDate: normalizeDateStr(dueDate), isPinned: false, action: 'add' };
+            const newTask = { 
+                id: Date.now(), 
+                code, 
+                subject, 
+                detail, 
+                assignDate: normalizeDateStr(assignDate), 
+                dueDate: normalizeDateStr(dueDate), 
+                isPinned: false, 
+                action: 'add' 
+            };
+
             tasks.unshift(newTask);
             sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
 
