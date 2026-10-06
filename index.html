@@ -51,7 +51,6 @@
         <div class="space-y-1.5 mb-6">
             <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">รหัสผ่าน</label>
             <div class="relative">
-                <!-- เปลี่ยนไอคอนตรงนี้เป็นรูปกุญแจ (fa-key) -->
                 <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input type="password" id="password" placeholder="••••••••" class="w-full pl-10 pr-10 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
                 <button type="button" onclick="togglePassword()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -90,11 +89,11 @@
             </button>
         </div>
 
-        <!-- Navigation Tabs (DAILY / PENDING / CALENDAR) -->
+        <!-- Navigation Tabs -->
         <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/80 rounded-2xl mb-4 text-center text-xs font-bold">
-            <button id="tab-daily" onclick="switchTab('daily')" class="py-2 rounded-xl transition text-slate-500">DAILY</button>
-            <button id="tab-pending" onclick="switchTab('pending')" class="py-2 rounded-xl transition text-slate-500">PENDING</button>
-            <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2 rounded-xl transition bg-pink-500 text-white shadow-sm">CALENDAR</button>
+            <button id="tab-daily" onclick="switchTab('daily')" class="py-2 rounded-xl transition text-slate-500">ส่งวันนี้</button>
+            <button id="tab-pending" onclick="switchTab('pending')" class="py-2 rounded-xl transition text-slate-500">งานค้าง</button>
+            <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2 rounded-xl transition bg-pink-500 text-white shadow-sm">ปฏิทินงาน</button>
         </div>
 
         <!-- NOTICE Banner -->
@@ -109,7 +108,7 @@
         <div id="view-calendar" class="space-y-4">
             <!-- Calendar Controls -->
             <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">CALENDAR DASHBOARD</span>
+                <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">ปฏิทินงาน</span>
                 <div class="flex gap-1">
                     <button onclick="changeMonth(-1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">PREV</button>
                     <button onclick="changeMonth(1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">NEXT</button>
@@ -120,7 +119,7 @@
             <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
                 <div class="flex items-center gap-2 mb-3">
                     <i class="fa-regular fa-calendar-days text-pink-500"></i>
-                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">CALENDAR: ตุลาคม (2569)</h3>
+                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน: ตุลาคม (2569)</h3>
                 </div>
 
                 <!-- Days of week -->
@@ -158,24 +157,27 @@
         <!-- ================= VIEW 2: TASKS VIEW (Daily / Pending) ================= -->
         <div id="view-tasks" class="hidden space-y-4">
             
-            <!-- ฟอร์มเพิ่มการบ้าน (เฉพาะ Admin) -->
-            <div id="admin-form" class="hidden bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-2.5 mb-3">
-                <h3 class="text-xs font-bold text-slate-700">+ เพิ่มรายการการบ้าน</h3>
-                <input type="text" id="task-subject" placeholder="ชื่อวิชา" class="w-full p-2 text-xs bg-white rounded-xl border border-slate-200">
-                <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2 text-xs bg-white rounded-xl border border-slate-200">
+            <!-- ฟอร์มเพิ่มการบ้าน -->
+            <div id="admin-form" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
+                <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                    <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน
+                </h3>
+                <input type="text" id="task-subject" placeholder="ชื่อวิชา" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
+                <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
                 
-                <div class="grid grid-cols-2 gap-2 text-[11px]">
-                    <div>
-                        <label class="text-slate-400 font-bold block mb-1">วันสั่ง</label>
-                        <input type="date" id="assign-date-input" class="w-full p-1.5 bg-white rounded-xl border border-slate-200">
+                <!-- ช่องใส่วันสั่ง และ วันส่ง -->
+                <div class="grid grid-cols-1 gap-2 text-[11px]">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-slate-500 font-bold">วันสั่ง</label>
+                        <input type="date" id="assign-date-input" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 focus:outline-none focus:border-pink-500">
                     </div>
-                    <div>
-                        <label class="text-rose-400 font-bold block mb-1">วันส่ง</label>
-                        <input type="date" id="due-date-input" class="w-full p-1.5 bg-white rounded-xl border border-slate-200">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-rose-500 font-bold">วันส่ง</label>
+                        <input type="date" id="due-date-input" class="w-full p-2.5 bg-white rounded-xl border border-slate-200 text-slate-700 focus:outline-none focus:border-pink-500">
                     </div>
                 </div>
 
-                <button onclick="addTask()" class="w-full py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl text-xs transition">
+                <button onclick="addTask()" class="w-full py-2.5 bg-pink-500 hover:bg-pink-600 active:scale-[0.99] text-white font-bold rounded-xl text-xs transition shadow-md shadow-pink-500/20">
                     บันทึกข้อมูล
                 </button>
             </div>
@@ -217,11 +219,9 @@
         let currentRole = 'guest';
         let currentTab = 'calendar';
         
-        // วันที่ปัจจุบันสำหรับปฏิทิน (เริ่มต้น 6 ตุลาคม 2569 / 2026)
         let currentDate = new Date(2026, 9, 6);
         let selectedDateStr = '2026-10-06';
 
-        // รายการการบ้าน
         let tasks = [
             {
                 id: 1,
@@ -256,6 +256,30 @@
             "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
             "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
         ];
+
+        const MONTH_SHORT_TH = [
+            "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+            "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+        ];
+
+        const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+
+        function formatThaiShortDate(dateStr) {
+            if (!dateStr) return '-';
+            const parts = dateStr.split('-');
+            if (parts.length < 3) return dateStr;
+            
+            const year = parseInt(parts[0]);
+            const month = parseInt(parts[1]) - 1;
+            const day = parseInt(parts[2]);
+            
+            const d = new Date(year, month, day);
+            const dayName = DAY_SHORT_TH[d.getDay()];
+            const monthName = MONTH_SHORT_TH[month];
+            const thaiYearShort = (year + 543).toString().slice(-2);
+
+            return `${dayName}${day} ${monthName} ${thaiYearShort}`;
+        }
 
         function togglePassword() {
             const passInput = document.getElementById('password');
@@ -336,13 +360,12 @@
             }
         }
 
-        // ================= ระบบปฏิทินและการกดเลือกวัน =================
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const thaiYear = year + 543;
 
-            document.getElementById('calendar-month-year').innerText = `CALENDAR: ${MONTH_NAMES_TH[month]} (${thaiYear})`;
+            document.getElementById('calendar-month-year').innerText = `ปฏิทิน: ${MONTH_NAMES_TH[month]} (${thaiYear})`;
 
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
@@ -410,7 +433,10 @@
                         <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm space-y-1">
                             <div class="flex justify-between items-center">
                                 <span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">${task.subject}</span>
-                                <span class="text-[10px] text-rose-500 font-bold">กำหนดส่ง: ${task.dueDate}</span>
+                                <div class="text-[10px] flex flex-col items-end">
+                                    <span class="text-slate-400">สั่ง: ${formatThaiShortDate(task.assignDate)}</span>
+                                    <span class="text-rose-500 font-bold">ส่ง: ${formatThaiShortDate(task.dueDate)}</span>
+                                </div>
                             </div>
                             <h4 class="text-xs font-bold text-slate-800">${task.detail}</h4>
                         </div>
@@ -424,7 +450,6 @@
             renderCalendar();
         }
 
-        // ================= ระบบรายการงานทั่วไป =================
         function renderTasks() {
             const pinnedContainer = document.getElementById('pinned-list');
             const taskContainer = document.getElementById('task-list');
@@ -456,12 +481,6 @@
 
         function createTaskCardHTML(item, isPinned) {
             const pinIconColor = isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500';
-            const formatDate = (dStr) => {
-                if(!dStr) return '-';
-                const parts = dStr.split('-');
-                if(parts.length < 3) return dStr;
-                return `${parseInt(parts[2])}/${parseInt(parts[1])}/${parseInt(parts[0])+543}`;
-            };
 
             const deleteBtn = currentRole === 'admin' 
                 ? `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>` 
@@ -486,17 +505,20 @@
 
                     <h4 class="text-xs font-bold text-slate-800 pt-0.5">${item.detail}</h4>
 
-                    <div class="flex items-center justify-between text-[10px] text-slate-400 pt-1">
-                        <span>ครู: - | โดย: Admin</span>
-                        <span class="text-rose-500 font-bold flex items-center gap-1">
-                            <i class="fa-regular fa-hourglass-half"></i> กำหนดส่ง: ${formatDate(item.dueDate)}
-                        </span>
+                    <div class="flex items-center justify-end text-[10px] pt-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-400 font-medium">
+                                <i class="fa-regular fa-calendar-plus"></i> สั่ง: ${formatThaiShortDate(item.assignDate)}
+                            </span>
+                            <span class="text-rose-500 font-bold">
+                                <i class="fa-regular fa-hourglass-half"></i> ส่ง: ${formatThaiShortDate(item.dueDate)}
+                            </span>
+                        </div>
                     </div>
                 </div>
             `;
         }
 
-        // ================= สื่อสารกับ Google Sheets API =================
         async function fetchHomeworks() {
             try {
                 const res = await fetch(SCRIPT_URL);
@@ -616,7 +638,6 @@
             }
         }
 
-        // เริ่มต้น Render หน้าจอ
         renderCalendar();
         selectDate(selectedDateStr);
     </script>
