@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - Instant Login</title>
+    <title>Homework M.113 - Strict Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -43,7 +43,7 @@
         </div>
 
         <div class="space-y-1.5 mb-6">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (Username)</label>
+            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (USERNAME)</label>
             <div class="relative">
                 <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                 <input type="text" id="username" placeholder="พิมพ์ชื่อผู้ใช้งานของคุณ" onkeydown="if(event.key === 'Enter') login()" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-[#FF75BC] focus:ring-4 focus:ring-[#FF75BC]/10 transition">
@@ -219,9 +219,23 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Instant Login
+            Version Strict Login
         </span>
     </footer>
+
+    <!-- POPUP ERROR MODAL -->
+    <div id="error-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-3xl p-6 w-80 text-center shadow-2xl border border-slate-100 animate-pop">
+            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-rose-500/20">
+                <i class="fa-solid fa-circle-xmark"></i>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 mb-1">ไม่พบชื่อผู้ใช้งาน</h3>
+            <p class="text-xs text-slate-400 mb-5">ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง</p>
+            <button onclick="closeErrorPopup()" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20">
+                ตกลง
+            </button>
+        </div>
+    </div>
 
     <!-- POPUP SUCCESS MODAL -->
     <div id="success-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
@@ -351,7 +365,7 @@
             } catch (e) {}
         }
 
-        // ล็อกอินแบบ Instant พร้อมระบบสำรอง (Fallback)
+        // ระบบล็อกอินแบบเข้มงวด ตรวจสอบกับฐานข้อมูล/แคชจริงเท่านั้น
         function login() {
             const userInput = document.getElementById('username');
             if (!userInput) return;
@@ -368,20 +382,18 @@
                 try { users = JSON.parse(cachedUsers); } catch(e) {}
             }
 
+            // ค้นหาชื่อในระบบ
             let foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
 
-            currentUsername = rawUser;
-            if (foundUser) {
-                currentRole = String(foundUser.role || 'member').toLowerCase();
-            } else {
-                if (rawUser === 'headadmin' || rawUser.includes('admin')) {
-                    currentRole = 'admin';
-                } else {
-                    currentRole = 'member';
-                }
+            if (!foundUser) {
+                // ถ้าไม่เจอ แสดง Popup แจ้งเตือนข้อผิดพลาด
+                document.getElementById('error-popup').classList.remove('hidden');
+                return;
             }
 
-            const displayName = foundUser ? (foundUser.name || rawUser.toUpperCase()) : rawUser.toUpperCase();
+            currentRole = String(foundUser.role || 'member').toLowerCase();
+            currentUsername = rawUser;
+            const displayName = foundUser.name || rawUser.toUpperCase();
 
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', currentRole);
@@ -389,6 +401,10 @@
             localStorage.setItem('usernameKey', currentUsername);
 
             openDashboard(displayName, true);
+        }
+
+        function closeErrorPopup() {
+            document.getElementById('error-popup').classList.add('hidden');
         }
 
         function openDashboard(roleName, animate = true) {
@@ -723,6 +739,7 @@
 
         async function fetchHomeworks(force = false) {
             backgroundFetch();
+            backgroundFetchUsers();
             if (force) alert('รีเฟรชข้อมูลล่าสุดเรียบร้อยแล้ว');
         }
 
