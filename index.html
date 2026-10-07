@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.23457</title>
+    <title>Homework M.113 - V1.23458</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,25 +39,14 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.23457)</p>
-        </div>
-
-        <div class="space-y-1.5 mb-4">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน</label>
-            <div class="relative">
-                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" id="username" placeholder="Username" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
-            </div>
+            <p class="text-xs text-slate-400 mt-1 font-medium">พิมพ์ชื่อผู้ใช้งานเพื่อเข้าสู่ระบบ (V1.23458)</p>
         </div>
 
         <div class="space-y-1.5 mb-6">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">รหัสผ่าน</label>
+            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (เช่น admin หรือ 1234)</label>
             <div class="relative">
-                <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="password" id="password" placeholder="••••••••" class="w-full pl-10 pr-10 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
-                <button type="button" onclick="togglePassword()" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                    <i id="pass-icon" class="fa-regular fa-eye-slash text-xs"></i>
-                </button>
+                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="username" placeholder="Username" onkeydown="if(event.key === 'Enter') login()" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
             </div>
         </div>
 
@@ -236,7 +225,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.23457
+            Version 1.23458
         </span>
     </footer>
 
@@ -285,8 +274,8 @@
 
     <script>
         const USERS = {
-            'admin': { pass: 'Sk@2026_Student', role: 'admin', name: 'ADMIN' },
-            '1234': { pass: '1234', role: 'student', name: 'STUDENT' }
+            'admin': { role: 'admin', name: 'ADMIN' },
+            '1234': { role: 'student', name: 'STUDENT' }
         };
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
@@ -337,41 +326,26 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        function togglePassword() {
-            const passInput = document.getElementById('password');
-            const icon = document.getElementById('pass-icon');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            } else {
-                passInput.type = 'password';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            }
-        }
-
         function login() {
             try {
                 const userInput = document.getElementById('username');
-                const passInput = document.getElementById('password');
-
-                if (!userInput || !passInput) return;
+                if (!userInput) return;
 
                 const user = userInput.value.trim().toLowerCase();
-                const pass = passInput.value.trim();
 
-                if (!user || !pass) {
-                    alert('กรุณากรอกชื่อผู้ใช้งานและรหัสผ่านให้ครบถ้วน');
+                if (!user) {
+                    alert('กรุณากรอกชื่อผู้ใช้งาน');
                     return;
                 }
 
-                if (USERS[user] && USERS[user].pass === pass) {
+                if (USERS[user]) {
                     currentRole = USERS[user].role;
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('userRole', currentRole);
                     sessionStorage.setItem('userName', USERS[user].name);
                     openDashboard(USERS[user].name);
                 } else {
-                    alert('Username หรือ Password ไม่ถูกต้อง!');
+                    alert('ไม่พบชื่อผู้ใช้งานนี้ในระบบ!');
                 }
             } catch (err) {
                 console.error('Login Error:', err);
@@ -414,7 +388,6 @@
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
             document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
         }
 
         function toggleAddForm() {
