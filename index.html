@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - Ultra Fast Secured</title>
+    <title>Homework M.113 - Maximum Speed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Ultra Fast Secured
+            Version Maximum Speed
         </span>
     </footer>
 
@@ -318,16 +318,28 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        // ตรวจสอบสถานะการล็อกอินเดิมตอนเปิดเว็บ (ความเร็วสูงสุด)
+        // โหลดข้อมูลจาก LocalStorage ทันทีตั้งแต่เปิดหน้าเว็บเพื่อให้ทุกอย่างไวที่สุด
         window.addEventListener('DOMContentLoaded', () => {
-            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
-            if (isLoggedIn === 'true') {
-                currentRole = sessionStorage.getItem('userRole') || 'member';
-                currentUsername = sessionStorage.getItem('usernameKey') || '';
-                const savedName = sessionStorage.getItem('userName') || currentUsername.toUpperCase();
-                openDashboard(savedName);
+            const savedTasks = localStorage.getItem('homework_cached_tasks');
+            if (savedTasks) {
+                try { tasks = JSON.parse(savedTasks); } catch(e) {}
             }
-            // อัปเดตรายชื่อผู้ใช้จาก Google Sheets เบื้องหลังเงียบๆ
+
+            const savedEvents = localStorage.getItem('homework_daily_events');
+            if (savedEvents) {
+                try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
+            }
+
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                currentRole = localStorage.getItem('userRole') || 'member';
+                currentUsername = localStorage.getItem('usernameKey') || '';
+                const savedName = localStorage.getItem('userName') || currentUsername.toUpperCase();
+                openDashboard(savedName, false);
+            }
+
+            // ซิงค์ข้อมูลเบื้องหลังเงียบๆ
+            backgroundFetch();
             backgroundFetchUsers();
         });
 
@@ -356,7 +368,6 @@
             loginBtn.disabled = true;
 
             let users = [];
-            // ดึงรายชื่อจากแคชในเครื่องก่อนเพื่อให้กดเข้าได้ทันที
             const cachedUsers = localStorage.getItem('homework_cached_users');
             if (cachedUsers) {
                 try { users = JSON.parse(cachedUsers); } catch(e) {}
@@ -364,7 +375,6 @@
 
             let foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
 
-            // ถ้าไม่มีในแคช ให้ลองดึงสดจากชีตดูอีกรอบเผื่อเป็นรายชื่อใหม่
             if (!foundUser) {
                 try {
                     const response = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
@@ -379,12 +389,12 @@
                 currentRole = String(foundUser.role || 'member').toLowerCase();
                 const displayName = foundUser.name || rawUser.toUpperCase();
 
-                sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('userRole', currentRole);
-                sessionStorage.setItem('userName', displayName);
-                sessionStorage.setItem('usernameKey', currentUsername);
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userRole', currentRole);
+                localStorage.setItem('userName', displayName);
+                localStorage.setItem('usernameKey', currentUsername);
 
-                openDashboard(displayName);
+                openDashboard(displayName, true);
             } else {
                 alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
                 loginBtn.innerText = 'เข้าสู่ระบบ';
@@ -392,7 +402,7 @@
             }
         }
 
-        function openDashboard(roleName) {
+        function openDashboard(roleName, animate = true) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
             
@@ -406,17 +416,22 @@
                 btnManageHistory.classList.add('hidden');
             }
             
-            const savedEvents = localStorage.getItem('homework_daily_events');
-            if (savedEvents) {
-                try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
-            }
-
             switchTab('pending');
-            fetchHomeworks();
+            renderTasks();
+            renderCalendar();
+            selectDate(selectedDateStr);
+
+            if (animate) {
+                backgroundFetch();
+            }
         }
 
         function logout() {
-            sessionStorage.clear();
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('usernameKey');
+
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
             document.getElementById('username').value = '';
@@ -634,7 +649,7 @@
                 });
 
                 if (updated) {
-                    sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+                    localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                     renderTasks();
                     renderCalendar();
                     selectDate(selectedDateStr);
@@ -720,16 +735,8 @@
         }
 
         async function fetchHomeworks(force = false) {
-            const cachedData = sessionStorage.getItem('homework_tasks');
-            if (cachedData) {
-                try {
-                    tasks = JSON.parse(cachedData);
-                    renderTasks();
-                    renderCalendar();
-                    selectDate(selectedDateStr);
-                } catch (e) {}
-            }
             backgroundFetch();
+            if (force) alert('รีเฟรชข้อมูลล่าสุดเรียบร้อยแล้ว');
         }
 
         async function backgroundFetch() {
@@ -738,7 +745,7 @@
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     tasks = data;
-                    sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+                    localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                     renderTasks();
                     renderCalendar();
                     selectDate(selectedDateStr);
@@ -754,10 +761,11 @@
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.isPinned = !task.isPinned;
-                sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+                localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
+
                 await fetch(SCRIPT_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -769,10 +777,11 @@
         async function deleteTask(id) {
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
                 tasks = tasks.filter(t => t.id !== id);
-                sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+                localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
+
                 await fetch(SCRIPT_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -811,12 +820,12 @@
                 isPinned: false, 
                 username: currentUsername,
                 role: currentRole,
-                createdByName: sessionStorage.getItem('userName') || currentUsername.toUpperCase(),
+                createdByName: localStorage.getItem('userName') || currentUsername.toUpperCase(),
                 action: 'add' 
             };
 
             tasks.unshift(newTask);
-            sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+            localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
 
             document.getElementById('task-code').value = '';
             document.getElementById('task-subject').value = '';
