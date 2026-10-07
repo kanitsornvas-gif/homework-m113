@@ -57,7 +57,7 @@
     <!-- หน้าจอหลักหลังเข้าสู่ระบบ (Dashboard Section) -->
     <div id="dashboard-container" class="hidden flex-grow flex flex-col">
         <!-- Navbar -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
             <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-rose-500 text-white font-bold rounded-xl flex items-center justify-center shadow-sm">
@@ -76,14 +76,38 @@
 
         <!-- Main Content -->
         <main class="max-w-4xl w-full mx-auto p-4 flex-grow space-y-6">
+            <!-- ส่วนเพิ่มการบ้าน (สำหรับผู้ใช้งานทุกคนช่วยกันเพิ่มได้) -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold text-slate-800 mb-2">📌 รายการการบ้านทั้งหมด</h3>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">✍️ เพิ่มรายการการบ้านใหม่</h3>
+                <p class="text-sm text-slate-500 mb-4">ช่วยกันกรอกข้อมูลการบ้านเพื่อให้เพื่อนๆ ในห้องรับทราบ</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">วิชา / หัวข้อ</label>
+                        <input type="text" id="hw-subject" placeholder="เช่น คณิตศาสตร์, การบ้านวิทย์" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">กำหนดส่ง</label>
+                        <input type="date" id="hw-duedate" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">รายละเอียดงาน</label>
+                        <textarea id="hw-detail" rows="2" placeholder="ระบุรายละเอียดงานที่ต้องทำ..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+                    </div>
+                </div>
+                <button onclick="addHomework()" class="mt-4 px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-medium text-sm rounded-xl shadow transition-all">
+                    บันทึกและเผยแพร่การบ้าน
+                </button>
+            </div>
+
+            <!-- รายการการบ้านทั้งหมด -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="text-lg font-bold text-slate-800 mb-2">📌 รายการการบ้านทั้งหมดในระบบ</h3>
                 <p class="text-sm text-slate-500 mb-4">ตรวจสอบงานและการบ้านของห้อง M.113 ได้ที่นี่</p>
                 
-                <!-- พื้นแสดงรายการบ้าน -->
                 <div id="homework-list" class="space-y-3">
                     <div class="p-4 bg-slate-50 rounded-xl text-center text-slate-400 text-sm">
-                        กำลังโหลดรายการการบ้าน...
+                        ยังไม่มีรายการการบ้านในขณะนี้
                     </div>
                 </div>
             </div>
@@ -103,10 +127,11 @@
 
             if (isLoggedIn === 'true' && savedName) {
                 openDashboard(savedName, false, savedRole);
+                loadHomeworks();
             }
         });
 
-        // ฟังก์ชันเข้าสู่ระบบ
+        // ฟังก์ชันเข้าสู่ระบบ (รองรับพิมพ์เล็ก-ใหญ่)
         async function login() {
             const userInput = document.getElementById('username');
             const loginBtn = document.getElementById('login-btn');
@@ -115,7 +140,6 @@
             if (!userInput) return;
             if (errorPopup) errorPopup.classList.add('hidden');
 
-            // ตัดช่องว่าง และแปลงเป็นตัวพิมพ์เล็กทั้งหมดเพื่อรองรับพิมพ์ใหญ่-เล็ก
             const rawUser = userInput.value.trim().toLowerCase();
             if (!rawUser) {
                 alert('กรุณากรอกชื่อผู้ใช้งาน');
@@ -126,7 +150,6 @@
             loginBtn.textContent = 'กำลังตรวจสอบ...';
 
             try {
-                // ดึงข้อมูลสดจาก Google Sheets
                 const response = await fetch(SCRIPT_URL);
                 const users = await response.json();
 
@@ -137,7 +160,6 @@
                     return;
                 }
 
-                // ค้นหาชื่อผู้ใช้ (เทียบแบบตัวพิมพ์เล็กเท่ากัน)
                 let foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
 
                 if (!foundUser) {
@@ -147,7 +169,6 @@
                     return;
                 }
 
-                // กำหนดสิทธิ์ผู้ใช้
                 let currentRole = String(foundUser.role || 'member').toLowerCase();
                 if (rawUser.includes('admin')) {
                     currentRole = 'admin';
@@ -155,13 +176,13 @@
 
                 const displayName = foundUser.name || rawUser.toUpperCase();
 
-                // บันทึกสถานะลงใน LocalStorage
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userRole', currentRole);
                 localStorage.setItem('userName', displayName);
                 localStorage.setItem('usernameKey', rawUser);
 
                 openDashboard(displayName, true, currentRole);
+                loadHomeworks();
 
             } catch (error) {
                 console.error('เกิดข้อผิดพลาดในการเชื่อมต่อ:', error);
@@ -178,18 +199,92 @@
             
             document.getElementById('welcome-user').textContent = 'ยินดีต้อนรับ, ' + displayName;
             document.getElementById('user-role-badge').textContent = 'สถานะ: ' + (role === 'admin' ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิก (Member)');
+        }
 
-            if (isNewLogin) {
-                // เอฟเฟกต์หรือโค้ดเพิ่มเติมตอน login สำเร็จใหม่ๆ
+        // ฟังก์ชันเพิ่มการบ้าน (บันทึกเก็บไว้ใน LocalStorage เพื่อจำลองการแชร์ข้อมูล)
+        function addHomework() {
+            const subject = document.getElementById('hw-subject').value.trim();
+            const dueDate = document.getElementById('hw-duedate').value;
+            const detail = document.getElementById('hw-detail').value.trim();
+            const author = localStorage.getItem('userName') || 'สมาชิก';
+
+            if (!subject || !dueDate) {
+                alert('กรุณากรอกชื่อวิชาและกำหนดส่งให้ครบถ้วน');
+                return;
             }
+
+            const newHw = {
+                id: Date.now(),
+                subject,
+                dueDate,
+                detail,
+                author
+            };
+
+            let homeworks = JSON.parse(localStorage.getItem('homework_list_m113') || '[]');
+            homeworks.unshift(newHw);
+            localStorage.setItem('homework_list_m113', JSON.stringify(homeworks));
+
+            // เคลียร์ฟอร์ม
+            document.getElementById('hw-subject').value = '';
+            document.getElementById('hw-duedate').value = '';
+            document.getElementById('hw-detail').value = '';
+
+            loadHomeworks();
+            alert('เพิ่มการบ้านสำเร็จ!');
+        }
+
+        // โหลดและแสดงรายการการบ้าน
+        function loadHomeworks() {
+            const container = document.getElementById('homework-list');
+            const homeworks = JSON.parse(localStorage.getItem('homework_list_m113') || '[]');
+
+            if (homeworks.length === 0) {
+                container.innerHTML = `<div class="p-4 bg-slate-50 rounded-xl text-center text-slate-400 text-sm">ยังไม่มีรายการการบ้านในขณะนี้</div>`;
+                return;
+            }
+
+            container.innerHTML = homeworks.map(hw => `
+                <div class="p-4 bg-slate-50 border border-slate-100 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 bg-rose-100 text-rose-600 text-xs font-bold rounded-lg">${escapeHtml(hw.subject)}</span>
+                            <span class="text-xs text-slate-400">กำหนดส่ง: ${escapeHtml(hw.dueDate)}</span>
+                        </div>
+                        <p class="text-sm text-slate-700 mt-2">${escapeHtml(hw.detail || 'ไม่มีรายละเอียดเพิ่มเติม')}</p>
+                        <p class="text-xs text-slate-400 mt-1">เพิ่มโดย: ${escapeHtml(hw.author)}</p>
+                    </div>
+                    <button onclick="deleteHomework(${hw.id})" class="text-xs px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-all">ลบ</button>
+                </div>
+            `).join('');
+        }
+
+        // ลบการบ้าน
+        function deleteHomework(id) {
+            if (!confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) return;
+            let homeworks = JSON.parse(localStorage.getItem('homework_list_m113') || '[]');
+            homeworks = homeworks.filter(hw => hw.id !== id);
+            localStorage.setItem('homework_list_m113', JSON.stringify(homeworks));
+            loadHomeworks();
+        }
+
+        // ป้องกัน XSS เบื้องต้น
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         // ออกจากระบบ
         function logout() {
-            localStorage.clear();
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('usernameKey');
+            
             document.getElementById('dashboard-container').classList.add('hidden');
             document.getElementById('login-container').classList.remove('hidden');
             document.getElementById('username').value = '';
+            
             const loginBtn = document.getElementById('login-btn');
             if(loginBtn) {
                 loginBtn.disabled = false;
