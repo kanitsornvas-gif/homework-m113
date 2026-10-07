@@ -322,26 +322,14 @@
             loginBtn.innerText = 'กำลังเข้าสู่ระบบ...';
             loginBtn.disabled = true;
 
-            const cachedUserKey = 'user_cache_' + user.toLowerCase();
-            const cachedData = localStorage.getItem(cachedUserKey);
-            if (cachedData) {
-                try {
-                    const parsed = JSON.parse(cachedData);
-                    currentRole = parsed.role;
-                    currentUsername = parsed.username;
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userRole', currentRole);
-                    sessionStorage.setItem('userName', parsed.name);
-                    sessionStorage.setItem('usernameKey', currentUsername);
-                    openDashboard(parsed.name);
-                    return;
-                } catch(e) {}
-            }
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const cleanUser = user.toLowerCase();
+            let assignedRole = (cleanUser === 'admin') ? 'admin' : 'member';
+            let displayName = user.toUpperCase();
 
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -352,51 +340,31 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    let fetchedRole = result.role ? result.role.toLowerCase() : 'member';
-                    currentRole = (fetchedRole === 'admin') ? 'admin' : 'member';
-                    currentUsername = result.username || user.toLowerCase();
-                    let displayName = result.name || user.toUpperCase();
-                    
-                    localStorage.setItem(cachedUserKey, JSON.stringify({
-                        role: currentRole,
-                        username: currentUsername,
-                        name: displayName
-                    }));
-
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userRole', currentRole);
-                    sessionStorage.setItem('userName', displayName);
-                    sessionStorage.setItem('usernameKey', currentUsername);
-                    openDashboard(displayName);
-                } else {
-                    let fallbackName = user.toUpperCase();
-                    currentRole = (user.toLowerCase() === 'admin') ? 'admin' : 'member';
-                    currentUsername = user.toLowerCase();
-                    
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userRole', currentRole);
-                    sessionStorage.setItem('userName', fallbackName);
-                    sessionStorage.setItem('usernameKey', currentUsername);
-                    openDashboard(fallbackName);
+                    if (result.role) assignedRole = result.role.toLowerCase() === 'admin' ? 'admin' : 'member';
+                    if (result.name) displayName = result.name;
                 }
             } catch (err) {
-                console.error('Login Error:', err);
-                let fallbackName = user.toUpperCase();
-                currentRole = (user.toLowerCase() === 'admin') ? 'admin' : 'member';
-                currentUsername = user.toLowerCase();
-                
-                sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('userRole', currentRole);
-                sessionStorage.setItem('userName', fallbackName);
-                sessionStorage.setItem('usernameKey', currentUsername);
-                openDashboard(fallbackName);
+                console.error('Login Network Error (Using fallback):', err);
             }
+
+            currentRole = assignedRole;
+            currentUsername = cleanUser;
+
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userRole', currentRole);
+            sessionStorage.setItem('userName', displayName);
+            sessionStorage.setItem('usernameKey', currentUsername);
+
+            openDashboard(displayName);
         }
 
         function openDashboard(roleName) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
-            document.getElementById('guest-badge').innerText = roleName || 'MEMBER';
+            
+            // บังคับแสดงชื่อผู้ใช้ที่ถูกต้อง ป้องกันปัญหา undefined
+            const finalName = roleName && roleName !== 'undefined' ? roleName : (currentUsername ? currentUsername.toUpperCase() : 'MEMBER');
+            document.getElementById('guest-badge').innerText = finalName;
 
             const btnManageHistory = document.getElementById('btn-manage-history');
             const btnEventCreate = document.getElementById('btn-event-create');
@@ -465,7 +433,6 @@
 
             [btnPending, btnCalendar].forEach(b => b.className = "flex-1 py-2.5 rounded-xl transition text-slate-500");
 
-            // ซ่อนฟอร์มเพิ่มรายการเสมอเมื่อสลับแท็บ เพื่อให้โชว์เฉพาะงานค้างตามที่ต้องการ
             if (adminForm) adminForm.classList.add('hidden');
 
             if (tab === 'calendar') {
@@ -856,7 +823,7 @@
                 dueDate: normalizeDateStr(dueDate), 
                 isPinned: false, 
                 createdBy: currentUsername,
-                createdByName: sessionStorage.getItem('userName') || currentUsername,
+                createdByName: sessionStorage.getItem('userName') || currentUsername.toUpperCase(),
                 action: 'add' 
             };
 
