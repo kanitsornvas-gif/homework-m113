@@ -334,28 +334,32 @@
             const loginBtn = document.getElementById('login-btn');
             if (!userInput) return;
 
-            const rawUser = userInput.value.trim();
+            const rawUser = userInput.value.trim().toLowerCase();
             if (!rawUser) {
                 alert('กรุณากรอกชื่อผู้ใช้งาน');
                 return;
             }
 
-            loginBtn.innerText = 'กำลังตรวจสอบข้อมูล...';
+            loginBtn.innerText = 'กำลังตรวจสอบ...';
             loginBtn.disabled = true;
 
             try {
-                // ส่งชื่อไปเช็กกับ Google Sheets (Backend) ก่อนเปิดใช้งานจริง
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'checkUser', username: rawUser })
-                });
-                const result = await response.json();
+                // ดึงข้อมูลรายชื่อจาก Google Sheets แบบรวดเร็วเพื่อตรวจสอบ
+                const response = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
+                let users = [];
+                try {
+                    users = await response.json();
+                } catch (e) {
+                    users = [];
+                }
 
-                if (result.status === 'success') {
-                    currentUsername = rawUser.toLowerCase();
-                    currentRole = (result.role || 'member').toLowerCase();
-                    const displayName = result.name || rawUser.toUpperCase();
+                // ค้นหาชื่อในระบบ (Case-insensitive)
+                const foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
+
+                if (foundUser) {
+                    currentUsername = rawUser;
+                    currentRole = String(foundUser.role || 'member').toLowerCase();
+                    const displayName = foundUser.name || rawUser.toUpperCase();
 
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('userRole', currentRole);
@@ -368,7 +372,7 @@
                 }
             } catch (err) {
                 console.error("Auth error:", err);
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ กรุณาลองใหม่อีกครั้ง');
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
             } finally {
                 loginBtn.innerText = 'เข้าสู่ระบบ';
                 loginBtn.disabled = false;
