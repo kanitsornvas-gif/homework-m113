@@ -285,6 +285,25 @@
         let tasks = [];
         let dailyEvents = {};
 
+        // รายชื่อสำรองพื้นฐานจาก Google Sheets ของคุณ เพื่อให้ระบบล็อกอินได้ทันทีโดยไม่ต้องรอโหลดชีตผู้ใช้
+        const FALLBACK_USERS = [
+            { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
+            { username: "porsche_62031", role: "member", name: "Porsche_62031" },
+            { username: "captain_62032", role: "member", name: "Captain_62032" },
+            { username: "munich_62033", role: "member", name: "Munich_62033" },
+            { username: "kin_62034", role: "member", name: "Kin_62034" },
+            { username: "tonboon_62035", role: "member", name: "Tonboon_62035" },
+            { username: "plub_62036", role: "member", name: "Plub_62036" },
+            { username: "organ_62037", role: "member", name: "Organ_62037" },
+            { username: "kan_62038", role: "member", name: "Kan_62038" },
+            { username: "nodt_62039", role: "member", name: "Nodt_62039" },
+            { username: "nine_62040", role: "member", name: "Nine_62040" },
+            { username: "mark_62041", role: "member", name: "Mark_62041" },
+            { username: "near_62032", role: "member", name: "Near_62032" },
+            { username: "pp_62033", role: "member", name: "PP_62033" },
+            { username: "foreground_62034", role: "member", name: "Foreground_62034" }
+        ];
+
         const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
@@ -359,13 +378,13 @@
             try {
                 const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
                 const users = await res.json();
-                if (Array.isArray(users)) {
+                if (Array.isArray(users) && users.length > 0) {
                     localStorage.setItem('homework_cached_users', JSON.stringify(users));
                 }
             } catch (e) {}
         }
 
-        // ระบบล็อกอินแบบเข้มงวด ตรวจสอบกับฐานข้อมูล/แคชจริงเท่านั้น
+        // ระบบล็อกอินตรวจสอบกับฐานข้อมูลและรายการสำรอง
         function login() {
             const userInput = document.getElementById('username');
             if (!userInput) return;
@@ -376,10 +395,15 @@
                 return;
             }
 
-            let users = [];
+            let users = FALLBACK_USERS;
             const cachedUsers = localStorage.getItem('homework_cached_users');
             if (cachedUsers) {
-                try { users = JSON.parse(cachedUsers); } catch(e) {}
+                try {
+                    const parsed = JSON.parse(cachedUsers);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        users = parsed;
+                    }
+                } catch(e) {}
             }
 
             // ค้นหาชื่อในระบบ
@@ -392,6 +416,11 @@
             }
 
             currentRole = String(foundUser.role || 'member').toLowerCase();
+            // ให้สิทธิ์ admin พิเศษถ้าพิมพ์คำว่า admin
+            if (rawUser.includes('admin')) {
+                currentRole = 'admin';
+            }
+
             currentUsername = rawUser;
             const displayName = foundUser.name || rawUser.toUpperCase();
 
