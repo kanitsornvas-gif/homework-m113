@@ -85,7 +85,7 @@
                 <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
             </div>
             
-            <!-- ปุ่มเพิ่มงานแสดงสำหรับทุกคน -->
+            <!-- ปุ่มแยกการทำงานอย่างชัดเจน -->
             <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
@@ -264,7 +264,7 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
 
-        let currentRole = 'member'; // 'admin' หรือ 'member'
+        let currentRole = 'member';
         let currentUsername = '';
         let currentTab = 'pending';
         let currentDate = new Date();
@@ -332,7 +332,6 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    // หากในชีตตั้งเป็น student ระบบจะปัดให้มีอำนาจเท่ากับ member ทันที
                     let fetchedRole = result.role ? result.role.toLowerCase() : 'member';
                     currentRole = (fetchedRole === 'admin') ? 'admin' : 'member';
                     
@@ -364,7 +363,6 @@
             const adminEventActions = document.getElementById('admin-event-actions');
             const adminEventInputArea = document.getElementById('admin-event-input-area');
 
-            // เฉพาะ Admin เท่านั้นที่จัดการประวัติวิชาและสร้างกิจกรรมปฏิทินได้
             if (currentRole === 'admin') {
                 btnManageHistory.classList.remove('hidden');
                 btnEventCreate.classList.remove('hidden');
@@ -658,14 +656,11 @@
 
         function createTaskCardHTML(item, isPinned) {
             let actionButtons = '';
-            
-            // ปุ่มปักหมุด (เฉพาะ Admin เท่านั้น)
             let pinButton = '';
             if (currentRole === 'admin') {
                 pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
             }
 
-            // เงื่อนไขการลบ: Admin ลบได้ทั้งหมด / Member ลบได้เฉพาะงานที่ตัวเองสร้าง
             let canDelete = false;
             if (currentRole === 'admin') {
                 canDelete = true;
