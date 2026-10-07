@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - Secured Version ฺ/</title>
+    <title>Homework M.113 - Ultra Fast Secured</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Secured & XSS Protected
+            Version Ultra Fast Secured
         </span>
     </footer>
 
@@ -318,7 +318,7 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        // ตรวจสอบสถานะการล็อกอินเดิมตอนเปิดเว็บ
+        // ตรวจสอบสถานะการล็อกอินเดิมตอนเปิดเว็บ (ความเร็วสูงสุด)
         window.addEventListener('DOMContentLoaded', () => {
             const isLoggedIn = sessionStorage.getItem('isLoggedIn');
             if (isLoggedIn === 'true') {
@@ -327,7 +327,19 @@
                 const savedName = sessionStorage.getItem('userName') || currentUsername.toUpperCase();
                 openDashboard(savedName);
             }
+            // อัปเดตรายชื่อผู้ใช้จาก Google Sheets เบื้องหลังเงียบๆ
+            backgroundFetchUsers();
         });
+
+        async function backgroundFetchUsers() {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
+                const users = await res.json();
+                if (Array.isArray(users)) {
+                    localStorage.setItem('homework_cached_users', JSON.stringify(users));
+                }
+            } catch (e) {}
+        }
 
         async function login() {
             const userInput = document.getElementById('username');
@@ -343,37 +355,38 @@
             loginBtn.innerText = 'กำลังตรวจสอบ...';
             loginBtn.disabled = true;
 
-            try {
-                // ดึงข้อมูลรายชื่อจาก Google Sheets แบบรวดเร็วเพื่อตรวจสอบ
-                const response = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
-                let users = [];
+            let users = [];
+            // ดึงรายชื่อจากแคชในเครื่องก่อนเพื่อให้กดเข้าได้ทันที
+            const cachedUsers = localStorage.getItem('homework_cached_users');
+            if (cachedUsers) {
+                try { users = JSON.parse(cachedUsers); } catch(e) {}
+            }
+
+            let foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
+
+            // ถ้าไม่มีในแคช ให้ลองดึงสดจากชีตดูอีกรอบเผื่อเป็นรายชื่อใหม่
+            if (!foundUser) {
                 try {
+                    const response = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
                     users = await response.json();
-                } catch (e) {
-                    users = [];
-                }
+                    localStorage.setItem('homework_cached_users', JSON.stringify(users));
+                    foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
+                } catch (err) {}
+            }
 
-                // ค้นหาชื่อในระบบ (Case-insensitive)
-                const foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
+            if (foundUser) {
+                currentUsername = rawUser;
+                currentRole = String(foundUser.role || 'member').toLowerCase();
+                const displayName = foundUser.name || rawUser.toUpperCase();
 
-                if (foundUser) {
-                    currentUsername = rawUser;
-                    currentRole = String(foundUser.role || 'member').toLowerCase();
-                    const displayName = foundUser.name || rawUser.toUpperCase();
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userRole', currentRole);
+                sessionStorage.setItem('userName', displayName);
+                sessionStorage.setItem('usernameKey', currentUsername);
 
-                    sessionStorage.setItem('isLoggedIn', 'true');
-                    sessionStorage.setItem('userRole', currentRole);
-                    sessionStorage.setItem('userName', displayName);
-                    sessionStorage.setItem('usernameKey', currentUsername);
-
-                    openDashboard(displayName);
-                } else {
-                    alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
-                }
-            } catch (err) {
-                console.error("Auth error:", err);
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
-            } finally {
+                openDashboard(displayName);
+            } else {
+                alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
                 loginBtn.innerText = 'เข้าสู่ระบบ';
                 loginBtn.disabled = false;
             }
