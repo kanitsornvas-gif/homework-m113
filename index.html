@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1.4 beta</title>
+    <title>Homework M.113 - Secured Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Case-Insensitive Login Fix
+            Version Secured & XSS Protected
         </span>
     </footer>
 
@@ -275,6 +275,17 @@
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
+        // ฟังก์ชันป้องกัน XSS โดยการแปลงอักขระพิเศษ
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         function getFormattedDate(d) {
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -322,7 +333,6 @@
             loginBtn.innerText = 'กำลังเข้าสู่ระบบ...';
             loginBtn.disabled = true;
 
-            // บังคับแปลงเป็นตัวพิมพ์เล็กทั้งหมดเพื่อเช็กสิทธิ์แบบ Case-insensitive
             const userLower = rawUser.toLowerCase();
             let assignedRole = (userLower === 'admin' || userLower === 'adminpromax') ? 'admin' : 'member';
             let displayName = rawUser.toUpperCase();
@@ -330,43 +340,29 @@
             currentRole = assignedRole;
             currentUsername = userLower;
 
+            // ตรวจสอบสิทธิ์กับ Backend เพื่อความปลอดภัยที่แท้จริง
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'checkUser', username: rawUser })
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    if (result.role) currentRole = result.role.toLowerCase();
+                    if (result.name) displayName = result.name;
+                }
+            } catch (err) {
+                console.error("Auth verification fallback to local rules");
+            }
+
             sessionStorage.setItem('isLoggedIn', 'true');
             sessionStorage.setItem('userRole', currentRole);
             sessionStorage.setItem('userName', displayName);
             sessionStorage.setItem('usernameKey', currentUsername);
 
             openDashboard(displayName);
-
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 1200);
-
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'checkUser', username: rawUser }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    let updated = false;
-                    if (result.role && result.role.toLowerCase() === 'admin' && currentRole !== 'admin') {
-                        currentRole = 'admin';
-                        updated = true;
-                    }
-                    if (result.name && result.name !== displayName) {
-                        displayName = result.name;
-                        updated = true;
-                    }
-                    if (updated) {
-                        sessionStorage.setItem('userRole', currentRole);
-                        sessionStorage.setItem('userName', displayName);
-                        openDashboard(displayName);
-                    }
-                }
-            } catch (err) {}
         }
 
         function openDashboard(roleName) {
@@ -564,8 +560,8 @@
             const codes = [...new Set(tasks.map(t => t.code).filter(c => c && c.trim() !== ''))];
             const subjects = [...new Set(tasks.map(t => t.subject).filter(s => s && s.trim() !== ''))];
 
-            codeOptions.innerHTML = codes.map(c => `<option value="${c}">`).join('');
-            subjectOptions.innerHTML = subjects.map(s => `<option value="${s}">`).join('');
+            codeOptions.innerHTML = codes.map(c => `<option value="${escapeHtml(c)}">`).join('');
+            subjectOptions.innerHTML = subjects.map(s => `<option value="${escapeHtml(s)}">`).join('');
         }
 
         function openManageModal() {
@@ -588,15 +584,15 @@
 
             codesListEl.innerHTML = codes.length === 0 ? `<span class="text-[10px] text-slate-400">ไม่มีรหัสวิชา</span>` : codes.map(c => `
                 <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-xs">
-                    <span class="font-bold text-slate-700">${c}</span>
-                    <button onclick="removeHistoryItem('code', '${c}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบ</button>
+                    <span class="font-bold text-slate-700">${escapeHtml(c)}</span>
+                    <button onclick="removeHistoryItem('code', '${escapeHtml(c)}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบ</button>
                 </div>
             `).join('');
 
             subjectsListEl.innerHTML = subjects.length === 0 ? `<span class="text-[10px] text-slate-400">ไม่มีชื่อวิชา</span>` : subjects.map(s => `
                 <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-xs">
-                    <span class="font-bold text-slate-700">${s}</span>
-                    <button onclick="removeHistoryItem('subject', '${s}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบ</button>
+                    <span class="font-bold text-slate-700">${escapeHtml(s)}</span>
+                    <button onclick="removeHistoryItem('subject', '${escapeHtml(s)}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบ</button>
                 </div>
             `).join('');
         }
@@ -621,7 +617,7 @@
                     await fetch(SCRIPT_URL, { 
                         method: 'POST', 
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                        body: JSON.stringify({ action: 'clearHistoryType', type: type, value: value }) 
+                        body: JSON.stringify({ action: 'clearHistoryType', type: type, value: value, username: currentUsername, role: currentRole }) 
                     }).catch(console.error);
                 }
             }
@@ -670,13 +666,14 @@
 
             deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
 
+            // ซ่อนปุ่มปักหมุดที่หน้าบ้าน หากไม่ใช่ admin (กันแอบแก้ script ตัวแปร แต่ backend ต้องเช็กด้วย)
             if (currentRole === 'admin') {
                 pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
             }
 
             const actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
-            const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
-            const creatorInfo = item.createdByName ? `<span class="text-[9px] text-slate-400 font-normal">โดย: ${item.createdByName}</span>` : '';
+            const displayLabel = escapeHtml((item.code && item.code.trim() !== "") ? item.code : item.subject);
+            const creatorInfo = item.createdByName ? `<span class="text-[9px] text-slate-400 font-normal">โดย: ${escapeHtml(item.createdByName)}</span>` : '';
 
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
@@ -687,7 +684,7 @@
                         </div>
                         ${actionButtons}
                     </div>
-                    <h4 class="text-xs font-bold text-slate-800 pt-0.5">${item.detail}</h4>
+                    <h4 class="text-xs font-bold text-slate-800 pt-0.5">${escapeHtml(item.detail)}</h4>
                     <div class="flex flex-col items-end text-[10px] pt-1 space-y-0.5">
                         <span class="text-slate-400 font-medium"><i class="fa-regular fa-calendar-plus"></i> สั่ง: ${formatThaiShortDate(item.assignDate)}</span>
                         <span class="text-rose-500 font-bold"><i class="fa-regular fa-hourglass-half"></i> ส่ง: ${formatThaiShortDate(item.dueDate)}</span>
@@ -724,7 +721,10 @@
         }
 
         async function togglePin(id) {
-            if (currentRole !== 'admin') return;
+            if (currentRole !== 'admin') {
+                alert('คุณไม่มีสิทธิ์ใช้งานฟังก์ชันนี้');
+                return;
+            }
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.isPinned = !task.isPinned;
@@ -732,7 +732,11 @@
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
-                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned }) }).catch(console.error);
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned, username: currentUsername, role: currentRole }) 
+                }).catch(console.error);
             }
         }
 
@@ -743,7 +747,11 @@
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
-                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', id: id, username: currentUsername }) }).catch(console.error);
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify({ action: 'delete', id: id, username: currentUsername, role: currentRole }) 
+                }).catch(console.error);
             }
         }
 
@@ -775,7 +783,8 @@
                 assignDate: normalizeDateStr(assignDate), 
                 dueDate: normalizeDateStr(dueDate), 
                 isPinned: false, 
-                createdBy: currentUsername,
+                username: currentUsername,
+                role: currentRole,
                 createdByName: sessionStorage.getItem('userName') || currentUsername.toUpperCase(),
                 action: 'add' 
             };
@@ -798,8 +807,6 @@
 
             await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newTask) }).catch(console.error);
         }
-
-        window.addEventListener('DOMContentLoaded', () => {});
     </script>
 </body>
 </html>
