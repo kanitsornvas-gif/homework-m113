@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.2345</title>
+    <title>Homework M.113 - V1.23456</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.2345)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.23456)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -89,15 +89,22 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs & Add Button ตามแบบ V1.2345 -->
-        <div class="grid grid-cols-2 gap-2 mb-4">
-            <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100/80 rounded-2xl text-center text-xs font-bold">
-                <button id="tab-pending" onclick="switchTab('pending')" class="py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm">งานค้าง</button>
-                <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
+        <!-- Navigation Tabs & Separated Action Buttons (Admin) -->
+        <div class="space-y-2 mb-4">
+            <div class="flex bg-slate-100/80 p-1 rounded-2xl text-center text-xs font-bold gap-1">
+                <button id="tab-pending" onclick="switchTab('pending')" class="flex-1 py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm">งานค้าง</button>
+                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
             </div>
-            <button id="btn-toggle-add" onclick="toggleAddForm()" class="hidden py-2.5 px-4 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-plus"></i> เพิ่ม งานค้าง
-            </button>
+            
+            <!-- ปุ่มจัดการแยกสำหรับ Admin -->
+            <div id="admin-action-buttons" class="hidden grid grid-cols-2 gap-2">
+                <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
+                </button>
+                <button onclick="jumpToEventCreation()" class="py-2.5 px-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-star"></i> สร้างกิจกรรม
+                </button>
+            </div>
         </div>
 
         <!-- NOTICE Banner -->
@@ -138,7 +145,7 @@
             </div>
 
             <!-- ส่วนแสดงรายละเอียดของวันที่เลือก + ระบบเพิ่มกิจกรรมสำหรับ ADMIN -->
-            <div class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
+            <div id="calendar-detail-section" class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
                         <i class="fa-solid fa-list-check text-pink-500"></i>
@@ -228,7 +235,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.2345
+            Version 1.23456
         </span>
     </footer>
 
@@ -375,18 +382,18 @@
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
 
-            const btnToggleAdd = document.getElementById('btn-toggle-add');
+            const adminActionButtons = document.getElementById('admin-action-buttons');
             const btnManageHistory = document.getElementById('btn-manage-history');
             const adminEventActions = document.getElementById('admin-event-actions');
             const adminEventInputArea = document.getElementById('admin-event-input-area');
 
             if (currentRole === 'admin') {
-                btnToggleAdd.classList.remove('hidden');
+                adminActionButtons.classList.remove('hidden');
                 btnManageHistory.classList.remove('hidden');
                 adminEventActions.classList.remove('hidden');
                 adminEventInputArea.classList.remove('hidden');
             } else {
-                btnToggleAdd.classList.add('hidden');
+                adminActionButtons.classList.add('hidden');
                 btnManageHistory.classList.add('hidden');
                 adminEventActions.classList.add('hidden');
                 adminEventInputArea.classList.add('hidden');
@@ -411,11 +418,23 @@
 
         function toggleAddForm() {
             if (currentRole !== 'admin') return;
+            switchTab('pending');
             const adminForm = document.getElementById('admin-form');
             if (adminForm.classList.contains('hidden')) {
                 adminForm.classList.remove('hidden');
+                adminForm.scrollIntoView({ behavior: 'smooth' });
             } else {
                 adminForm.classList.add('hidden');
+            }
+        }
+
+        function jumpToEventCreation() {
+            if (currentRole !== 'admin') return;
+            switchTab('calendar');
+            const eventInput = document.getElementById('daily-event-input');
+            if (eventInput) {
+                eventInput.focus();
+                document.getElementById('calendar-detail-section').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
@@ -427,17 +446,17 @@
             const viewTasks = document.getElementById('view-tasks');
             const noticeText = document.getElementById('notice-text');
 
-            [btnPending, btnCalendar].forEach(b => b.className = "py-2.5 rounded-xl transition text-slate-500");
+            [btnPending, btnCalendar].forEach(b => b.className = "flex-1 py-2.5 rounded-xl transition text-slate-500");
 
             if (tab === 'calendar') {
-                btnCalendar.className = "py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                btnCalendar.className = "flex-1 py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
                 viewCalendar.classList.remove('hidden');
                 viewTasks.classList.add('hidden');
                 noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้านและกิจกรรม";
                 renderCalendar();
                 selectDate(selectedDateStr);
             } else {
-                btnPending.className = "py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                btnPending.className = "flex-1 py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
                 noticeText.innerText = "แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด";
                 viewCalendar.classList.add('hidden');
                 viewTasks.classList.remove('hidden');
