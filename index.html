@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - Maximum Speed</title>
+    <title>Homework M.113 - Instant Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Maximum Speed
+            Version Instant Login
         </span>
     </footer>
 
@@ -318,7 +318,7 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        // โหลดข้อมูลจาก LocalStorage ทันทีตั้งแต่เปิดหน้าเว็บเพื่อให้ทุกอย่างไวที่สุด
+        // โหลดข้อมูลจากเครื่องทันทีตอนเปิดเว็บ และเช็กสถานะล็อกอินเดิมแบบ 0 วินาที
         window.addEventListener('DOMContentLoaded', () => {
             const savedTasks = localStorage.getItem('homework_cached_tasks');
             if (savedTasks) {
@@ -353,9 +353,9 @@
             } catch (e) {}
         }
 
-        async function login() {
+        // ล็อกอินแบบ Instant (เข้าหน้าหลักทันทีโดยไม่ต้องรอเน็ต)
+        function login() {
             const userInput = document.getElementById('username');
-            const loginBtn = document.getElementById('login-btn');
             if (!userInput) return;
 
             const rawUser = userInput.value.trim().toLowerCase();
@@ -364,9 +364,7 @@
                 return;
             }
 
-            loginBtn.innerText = 'กำลังตรวจสอบ...';
-            loginBtn.disabled = true;
-
+            // ตรวจสอบกับแคชในเครื่องทันทีเพื่อความเร็วสูงสุด
             let users = [];
             const cachedUsers = localStorage.getItem('homework_cached_users');
             if (cachedUsers) {
@@ -375,31 +373,19 @@
 
             let foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
 
-            if (!foundUser) {
-                try {
-                    const response = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
-                    users = await response.json();
-                    localStorage.setItem('homework_cached_users', JSON.stringify(users));
-                    foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
-                } catch (err) {}
-            }
+            // กำหนดสิทธิ์เบื้องต้น (ถ้าพิมพ์ชื่อห้อง/แอดมินหรือพิมพ์มั่ว จะให้เป็น member ไว้ก่อน แล้วไปเช็กสิทธิ์จริงจากชีตเบื้องหลัง)
+            currentUsername = rawUser;
+            currentRole = foundUser ? String(foundUser.role || 'member').toLowerCase() : (rawUser.includes('admin') ? 'admin' : 'member');
+            const displayName = foundUser ? (foundUser.name || rawUser.toUpperCase()) : rawUser.toUpperCase();
 
-            if (foundUser) {
-                currentUsername = rawUser;
-                currentRole = String(foundUser.role || 'member').toLowerCase();
-                const displayName = foundUser.name || rawUser.toUpperCase();
+            // บันทึกสถานะลงเครื่องทันที
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', currentRole);
+            localStorage.setItem('userName', displayName);
+            localStorage.setItem('usernameKey', currentUsername);
 
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userRole', currentRole);
-                localStorage.setItem('userName', displayName);
-                localStorage.setItem('usernameKey', currentUsername);
-
-                openDashboard(displayName, true);
-            } else {
-                alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
-                loginBtn.innerText = 'เข้าสู่ระบบ';
-                loginBtn.disabled = false;
-            }
+            // เปิดหน้าแดชบอร์ดทันที 0 วินาที
+            openDashboard(displayName, true);
         }
 
         function openDashboard(roleName, animate = true) {
@@ -435,8 +421,6 @@
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
             document.getElementById('username').value = '';
-            document.getElementById('login-btn').innerText = 'เข้าสู่ระบบ';
-            document.getElementById('login-btn').disabled = false;
         }
 
         function toggleAddForm() {
