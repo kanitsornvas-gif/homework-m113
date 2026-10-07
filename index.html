@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1.27 Beta </title>
+    <title>Homework M.113 - V.6876776768767487655679876u5u6977769876</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ระบบการบ้านที่เพื่อนๆ ทุกคนช่วยกันเพิ่มได้</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ระบบการบ้านที่เพื่อนๆ ทุกคนช่วยกันเพิ่มกิจกรรมได้</p>
         </div>
 
         <div class="space-y-1.5 mb-6">
@@ -89,7 +89,7 @@
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold text-xs shadow-md shadow-[#FF75BC]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
                 </button>
-                <button onclick="jumpToEventCreation()" id="btn-event-create" class="hidden py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
+                <button onclick="jumpToEventCreation()" id="btn-event-create" class="py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-star"></i> สร้างกิจกรรม
                 </button>
             </div>
@@ -146,7 +146,7 @@
                         <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
                             <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรม / วันสำคัญวันนี้:
                         </span>
-                        <div id="admin-event-actions" class="hidden">
+                        <div>
                             <button onclick="saveDailyEvent()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2 py-1 rounded-lg transition">บันทึก</button>
                             <button onclick="deleteDailyEvent()" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-2 py-1 rounded-lg transition ml-1">ลบ</button>
                         </div>
@@ -154,7 +154,7 @@
                     <div id="event-display-area">
                         <p id="event-text-view" class="text-xs text-sky-950 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
                     </div>
-                    <div id="admin-event-input-area" class="hidden pt-1">
+                    <div class="pt-1">
                         <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรม/วันสำคัญของวันนี้" class="w-full p-2 text-xs bg-white rounded-xl border border-[#50D8FF]/50 focus:outline-none focus:border-[#50D8FF]">
                     </div>
                 </div>
@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Everyone Member
+            Version Admin Pin/Delete Only
         </span>
     </footer>
 
@@ -326,7 +326,6 @@
             let assignedRole = (cleanUser === 'admin') ? 'admin' : 'member';
             let displayName = user.toUpperCase();
 
-            // เปิดแดชบอร์ดทันที ไม่รอเช็คเน็ต เพื่อความไวระดับ 0.5 วิ
             currentRole = assignedRole;
             currentUsername = cleanUser;
 
@@ -337,7 +336,6 @@
 
             openDashboard(displayName);
 
-            // เช็คสิทธิ์กับ Google Script แบบเบื้องหลัง (ถ้าเป็น admin ตัวจริง ระบบจะอัปเดตสิทธิ์ให้อัตโนมัติทันทีที่ได้ผลลัพธ์)
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 1200);
@@ -378,20 +376,10 @@
             document.getElementById('guest-badge').innerText = finalName;
 
             const btnManageHistory = document.getElementById('btn-manage-history');
-            const btnEventCreate = document.getElementById('btn-event-create');
-            const adminEventActions = document.getElementById('admin-event-actions');
-            const adminEventInputArea = document.getElementById('admin-event-input-area');
-
             if (currentRole === 'admin') {
                 btnManageHistory.classList.remove('hidden');
-                btnEventCreate.classList.remove('hidden');
-                adminEventActions.classList.remove('hidden');
-                adminEventInputArea.classList.remove('hidden');
             } else {
                 btnManageHistory.classList.add('hidden');
-                btnEventCreate.classList.add('hidden');
-                adminEventActions.classList.add('hidden');
-                adminEventInputArea.classList.add('hidden');
             }
             
             const savedEvents = localStorage.getItem('homework_daily_events');
@@ -424,7 +412,6 @@
         }
 
         function jumpToEventCreation() {
-            if (currentRole !== 'admin') return;
             switchTab('calendar');
             const eventInput = document.getElementById('daily-event-input');
             if (eventInput) {
@@ -543,7 +530,6 @@
         }
 
         function saveDailyEvent() {
-            if (currentRole !== 'admin') return;
             const inputVal = document.getElementById('daily-event-input').value.trim();
             if (inputVal) {
                 dailyEvents[selectedDateStr] = inputVal;
@@ -556,7 +542,6 @@
         }
 
         function deleteDailyEvent() {
-            if (currentRole !== 'admin') return;
             if (dailyEvents[selectedDateStr]) {
                 delete dailyEvents[selectedDateStr];
                 localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
@@ -681,23 +666,12 @@
         function createTaskCardHTML(item, isPinned) {
             let actionButtons = '';
             let pinButton = '';
+            let deleteButton = '';
+
+            // เฉพาะ Admin เท่านั้นที่จะเห็นปุ่มปักหมุดและปุ่มลบงาน
             if (currentRole === 'admin') {
                 pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
-            }
-
-            let canDelete = false;
-            if (currentRole === 'admin') {
-                canDelete = true;
-            } else if (item.createdBy && item.createdBy.toLowerCase() === currentUsername.toLowerCase()) {
-                canDelete = true;
-            }
-
-            let deleteButton = '';
-            if (canDelete) {
                 deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
-            }
-
-            if (pinButton || deleteButton) {
                 actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
             }
 
@@ -723,7 +697,6 @@
         }
 
         async function fetchHomeworks(force = false) {
-            // โหลดข้อมูลจากแคชแสดงผลทันที (ความเร็วระดับ 0.1 วิ)
             const cachedData = sessionStorage.getItem('homework_tasks');
             if (cachedData) {
                 try {
@@ -733,12 +706,7 @@
                     selectDate(selectedDateStr);
                 } catch (e) {}
             }
-
-            if (force || !cachedData) {
-                backgroundFetch();
-            } else {
-                backgroundFetch();
-            }
+            backgroundFetch();
         }
 
         async function backgroundFetch() {
@@ -769,18 +737,8 @@
         }
 
         async function deleteTask(id) {
-            const task = tasks.find(t => t.id === id);
-            if (!task) return;
-
-            let canDelete = false;
-            if (currentRole === 'admin') {
-                canDelete = true;
-            } else if (task.createdBy && task.createdBy.toLowerCase() === currentUsername.toLowerCase()) {
-                canDelete = true;
-            }
-
-            if (!canDelete) {
-                alert('❌ คุณไม่มีสิทธิ์ลบงานนี้ (ลบได้เฉพาะงานที่ตนเองเป็นคนสร้าง)');
+            if (currentRole !== 'admin') {
+                alert('❌ เฉพาะ Admin เท่านั้นที่สามารถลบงานได้');
                 return;
             }
 
@@ -830,6 +788,7 @@
             tasks.unshift(newTask);
             sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
 
+            document.getElementById('task-code').value = '...'; // reset
             document.getElementById('task-code').value = '';
             document.getElementById('task-subject').value = '';
             document.getElementById('task-detail').value = '';
@@ -846,9 +805,7 @@
             await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(newTask) }).catch(console.error);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            // ไม่เคลียร์ sessionStorage เพื่อให้เปิดหน้าเว็บมาแล้วข้อมูลเก่าเด้งขึ้นมาแสดงผลทันทีแบบความเร็วสูง
-        });
+        window.addEventListener('DOMContentLoaded', () => {});
     </script>
 </body>
 </html>
