@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Fast & Live Sync
+            Version Fast, Sync & Auto Logout (7 Min)
         </span>
     </footer>
 
@@ -278,6 +278,10 @@
         // Web App URL เชื่อมต่อ Google Sheets
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvlcyMwTWNwdZYGu8Tcnhb5krceutmqxtOMIhFXjTZ73FGKf_Uij4VV5MaYklalJzf/exec';
 
+        // กำหนดเวลาไม่มีการใช้งานแล้วให้ล็อกเอาต์ (7 นาที = 420,000 มิลลิวินาที)
+        const IDLE_TIMEOUT_MS = 7 * 60 * 1000;
+        let idleTimer = null;
+
         let currentRole = 'member';
         let currentUsername = '';
         let currentTab = 'pending';
@@ -308,6 +312,34 @@
         const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+
+        // -----------------------------------------------------------------
+        // AUTO LOGOUT SYSTEM (จับเวลาไม่มีการใช้งาน 7 นาที)
+        // -----------------------------------------------------------------
+        function resetIdleTimer() {
+            if (localStorage.getItem('isLoggedIn') !== 'true') {
+                if (idleTimer) clearTimeout(idleTimer);
+                return;
+            }
+
+            if (idleTimer) clearTimeout(idleTimer);
+
+            idleTimer = setTimeout(() => {
+                autoLogout();
+            }, IDLE_TIMEOUT_MS);
+        }
+
+        function autoLogout() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                logout();
+                alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
+            }
+        }
+
+        // ดักจับการเคลื่อนไหวของผู้ใช้งาน (ขยับเมาส์, พิมพ์งาน, กดแตะหน้าจอ, เลื่อนหน้าจอ)
+        ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+            window.addEventListener(evt, resetIdleTimer, { passive: true });
+        });
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -369,6 +401,7 @@
                 currentUsername = localStorage.getItem('usernameKey') || '';
                 const savedName = localStorage.getItem('userName') || currentUsername.toUpperCase();
                 openDashboard(savedName, false);
+                resetIdleTimer();
             }
 
             backgroundFetch();
@@ -385,7 +418,7 @@
             } catch (e) {}
         }
 
-        // ฟังก์ชันเข้าสู่ระบบฉบับเร่งสปีด (เช็ค Cache ทันที + ดึงสดแบบสลับหลังบ้าน)
+        // ฟังก์ชันเข้าสู่ระบบฉบับเร่งสปีด
         async function login() {
             const userInput = document.getElementById('username');
             const loginBtn = document.getElementById('login-btn');
@@ -482,12 +515,16 @@
             renderCalendar();
             selectDate(selectedDateStr);
 
+            resetIdleTimer(); // เริ่มจับเวลา 7 นาทีเมื่อเข้าหน้า Dashboard
+
             if (animate) {
                 backgroundFetch();
             }
         }
 
         function logout() {
+            if (idleTimer) clearTimeout(idleTimer);
+
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userRole');
             localStorage.removeItem('userName');
