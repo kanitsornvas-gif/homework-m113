@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Strict Login & Real-time Sheets
+            Version Fast & Live Sync
         </span>
     </footer>
 
@@ -275,7 +275,7 @@
     </div>
 
     <script>
-        // Web App URL ของคุณที่รับรองการเชื่อมต่อสดกับ Google Sheets
+        // Web App URL เชื่อมต่อ Google Sheets
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvlcyMwTWNwdZYGu8Tcnhb5krceutmqxtOMIhFXjTZ73FGKf_Uij4VV5MaYklalJzf/exec';
 
         let currentRole = 'member';
@@ -385,7 +385,7 @@
             } catch (e) {}
         }
 
-        // ฟังก์ชันเข้าสู่ระบบฉบับแก้ไข: ดึงข้อมูลสดจาก Google Sheets ทันทีเมื่อกดล็อกอิน
+        // ฟังก์ชันเข้าสู่ระบบฉบับเร่งสปีด (เช็ค Cache ทันที + ดึงสดแบบสลับหลังบ้าน)
         async function login() {
             const userInput = document.getElementById('username');
             const loginBtn = document.getElementById('login-btn');
@@ -397,42 +397,47 @@
                 return;
             }
 
-            if (loginBtn) {
-                loginBtn.disabled = true;
-                loginBtn.innerText = 'กำลังตรวจสอบ...';
-            }
-
+            // 1. อ่านข้อมูลรายชื่อจาก Cache ในเครื่องก่อน
             let users = FALLBACK_USERS;
-
-            // ดึงข้อมูลสดล่าสุดตรงจาก Google Sheets ทันที
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
-                if (res.ok) {
-                    const liveUsers = await res.json();
-                    if (Array.isArray(liveUsers) && liveUsers.length > 0) {
-                        users = liveUsers;
-                        localStorage.setItem('homework_cached_users', JSON.stringify(liveUsers));
-                    }
-                }
-            } catch (e) {
-                // หากเชื่อมต่อไม่ได้ ให้ดึงจาก LocalStorage
-                const cachedUsers = localStorage.getItem('homework_cached_users');
-                if (cachedUsers) {
-                    try {
-                        const parsed = JSON.parse(cachedUsers);
-                        if (Array.isArray(parsed) && parsed.length > 0) users = parsed;
-                    } catch(err) {}
-                }
-            } finally {
-                if (loginBtn) {
-                    loginBtn.disabled = false;
-                    loginBtn.innerText = 'เข้าสู่ระบบ';
-                }
+            const cachedUsers = localStorage.getItem('homework_cached_users');
+            if (cachedUsers) {
+                try {
+                    const parsed = JSON.parse(cachedUsers);
+                    if (Array.isArray(parsed) && parsed.length > 0) users = parsed;
+                } catch(err) {}
             }
 
-            // ค้นหาชื่อในระบบ (เทียบแบบตัวพิมพ์เล็กทั้งหมด)
+            // 2. เช็คชื่อใน Cache ก่อน (ถ้ามี ล็อกอินทันที 0 วินาที!)
             let foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
 
+            // 3. ถ้าไม่พบใน Cache ค่อยไปดึงข้อมูลสดจาก Google Sheets
+            if (!foundUser) {
+                if (loginBtn) {
+                    loginBtn.disabled = true;
+                    loginBtn.innerText = 'กำลังตรวจสอบ...';
+                }
+
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
+                    if (res.ok) {
+                        const liveUsers = await res.json();
+                        if (Array.isArray(liveUsers) && liveUsers.length > 0) {
+                            users = liveUsers;
+                            localStorage.setItem('homework_cached_users', JSON.stringify(liveUsers));
+                            foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
+                        }
+                    }
+                } catch (e) {
+                    console.error('ไม่สามารถดึงข้อมูลสดได้:', e);
+                } finally {
+                    if (loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.innerText = 'เข้าสู่ระบบ';
+                    }
+                }
+            }
+
+            // 4. สรุปผล
             if (!foundUser) {
                 document.getElementById('error-popup').classList.remove('hidden');
                 return;
