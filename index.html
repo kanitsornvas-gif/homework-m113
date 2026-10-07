@@ -35,7 +35,7 @@
     <!-- ==================== หน้าที่ 1: Sign In ==================== -->
     <div id="login-page" class="w-full max-w-sm bg-white/85 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 transition-all duration-300">
         <div class="text-center mb-8">
-            <div class="w-14 h-14 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-pink-500/30 transform -rotate-3 hover:rotate-0 transition duration-300">
+            <div class="w-14 h-14 bg-gradient-to-br from-pink-500 via-purple-500 to-[#50D8FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-pink-500/30 transform -rotate-3 hover:rotate-0 transition duration-300">
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
@@ -66,7 +66,7 @@
                 <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
             </div>
             <div class="flex items-center gap-1.5">
-                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-2.5 py-1.5 rounded-xl font-bold transition">
+                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-list-check"></i>
                 </button>
                 <button onclick="fetchHomeworks(true)" title="รีเฟรชข้อมูลล่าสุด" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
@@ -90,8 +90,8 @@
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
                 </button>
-                <!-- ปุ่มสร้างกิจกรรม: สีฟ้า/ม่วง -->
-                <button onclick="jumpToEventCreation()" id="btn-event-create" class="hidden py-2.5 px-3 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-xs shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-1.5">
+                <!-- ปุ่มสร้างกิจกรรม: สี #50D8FF -->
+                <button onclick="jumpToEventCreation()" id="btn-event-create" class="hidden py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-star"></i> สร้างกิจกรรม
                 </button>
             </div>
@@ -117,7 +117,7 @@
 
             <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
                 <div class="flex items-center gap-2 mb-3">
-                    <i class="fa-regular fa-calendar-days text-indigo-500"></i>
+                    <i class="fa-regular fa-calendar-days text-[#50D8FF]"></i>
                     <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน</h3>
                 </div>
 
@@ -137,27 +137,27 @@
             <div id="calendar-detail-section" class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-list-check text-indigo-500"></i>
+                        <i class="fa-solid fa-list-check text-[#50D8FF]"></i>
                         <span id="selected-date-label">รายการของวันที่เลือก</span>
                     </span>
-                    <span id="selected-task-count" class="bg-indigo-100 text-indigo-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
+                    <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
                 </div>
 
-                <div id="event-box" class="bg-indigo-50/70 border border-indigo-200/60 p-3 rounded-2xl space-y-2">
+                <div id="event-box" class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2">
                     <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-extrabold text-indigo-700 flex items-center gap-1">
-                            <i class="fa-solid fa-star text-indigo-500"></i> กิจกรรม / วันสำคัญวันนี้:
+                        <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
+                            <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรม / วันสำคัญวันนี้:
                         </span>
                         <div id="admin-event-actions" class="hidden">
-                            <button onclick="saveDailyEvent()" class="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2 py-1 rounded-lg transition">บันทึก</button>
+                            <button onclick="saveDailyEvent()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2 py-1 rounded-lg transition">บันทึก</button>
                             <button onclick="deleteDailyEvent()" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-2 py-1 rounded-lg transition ml-1">ลบ</button>
                         </div>
                     </div>
                     <div id="event-display-area">
-                        <p id="event-text-view" class="text-xs text-indigo-900 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
+                        <p id="event-text-view" class="text-xs text-sky-950 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
                     </div>
                     <div id="admin-event-input-area" class="hidden pt-1">
-                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรม/วันสำคัญของวันนี้" class="w-full p-2 text-xs bg-white rounded-xl border border-indigo-200 focus:outline-none focus:border-indigo-500">
+                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรม/วันสำคัญของวันนี้" class="w-full p-2 text-xs bg-white rounded-xl border border-[#50D8FF]/50 focus:outline-none focus:border-[#50D8FF]">
                     </div>
                 </div>
 
@@ -244,7 +244,7 @@
         <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-list-check text-indigo-500"></i> จัดการประวัติรหัสและชื่อวิชา
+                    <i class="fa-solid fa-list-check text-[#50D8FF]"></i> จัดการประวัติรหัสและชื่อวิชา
                 </h3>
                 <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
             </div>
@@ -437,7 +437,7 @@
             if (adminForm) adminForm.classList.add('hidden');
 
             if (tab === 'calendar') {
-                btnCalendar.className = "flex-1 py-2.5 rounded-xl transition bg-indigo-500 text-white shadow-sm";
+                btnCalendar.className = "flex-1 py-2.5 rounded-xl transition bg-[#50D8FF] text-slate-900 font-extrabold shadow-sm";
                 viewCalendar.classList.remove('hidden');
                 viewTasks.classList.add('hidden');
                 noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้านและกิจกรรม";
@@ -472,17 +472,17 @@
                 const hasEvent = dailyEvents[dateStr] && dailyEvents[dateStr].trim() !== '';
                 const isSelected = (dateStr === selectedDateStr);
                 
-                let boxStyle = "bg-slate-50 border border-slate-100 hover:border-indigo-300";
+                let boxStyle = "bg-slate-50 border border-slate-100 hover:border-[#50D8FF]";
                 let textStyle = "text-slate-600";
 
                 if (isSelected) {
-                    boxStyle = "bg-indigo-500 border-2 border-indigo-500 text-white shadow-md shadow-indigo-500/30 scale-105 z-10";
-                    textStyle = "text-white font-extrabold";
+                    boxStyle = "bg-[#50D8FF] border-2 border-[#50D8FF] text-slate-900 shadow-md shadow-[#50D8FF]/30 scale-105 z-10";
+                    textStyle = "text-slate-900 font-extrabold";
                 }
 
                 let indicatorsHTML = '<div class="flex gap-1 items-center justify-center mt-0.5">';
-                if (hasDueTask) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-white' : 'bg-rose-500'} rounded-full"></span>`;
-                if (hasEvent) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-amber-300' : 'bg-indigo-600'} rounded-full"></span>`;
+                if (hasDueTask) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-slate-900' : 'bg-rose-500'} rounded-full"></span>`;
+                if (hasEvent) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-amber-700' : 'bg-sky-600'} rounded-full"></span>`;
                 indicatorsHTML += '</div>';
 
                 daysContainer.innerHTML += `
@@ -510,7 +510,7 @@
             
             if (eventTextView) {
                 eventTextView.innerText = currentEvent ? currentEvent : '- ไม่มีกิจกรรมพิเศษในวันนี้ -';
-                eventTextView.className = currentEvent ? "text-xs text-indigo-900 font-bold" : "text-xs text-slate-400 font-medium";
+                eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold" : "text-xs text-slate-400 font-medium";
             }
             if (dailyEventInput) {
                 dailyEventInput.value = currentEvent;
