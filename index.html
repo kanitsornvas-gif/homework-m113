@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.234567890 </title>
+    <title>Homework M.113 - V.EveryoneMember</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -322,7 +322,6 @@
             loginBtn.innerText = 'กำลังเข้าสู่ระบบ...';
             loginBtn.disabled = true;
 
-            // ตรวจสอบจาก Cache ในเครื่องก่อนเพื่อความเร็วสูง (ถ้าเคยล็อกอินชื่อนี้ไว้แล้ว)
             const cachedUserKey = 'user_cache_' + user.toLowerCase();
             const cachedData = localStorage.getItem(cachedUserKey);
             if (cachedData) {
@@ -339,7 +338,6 @@
                 } catch(e) {}
             }
 
-            // ตั้งเวลา Timeout 3 วินาที ป้องกันค้างนานเกินไป
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 3000);
 
@@ -358,7 +356,6 @@
                     currentRole = (fetchedRole === 'admin') ? 'admin' : 'member';
                     currentUsername = result.username || user.toLowerCase();
                     
-                    // บันทึก Cache ลงในเครื่องเพื่อรอบหน้าเข้าได้ทันที
                     localStorage.setItem(cachedUserKey, JSON.stringify({
                         role: currentRole,
                         username: currentUsername,
@@ -377,7 +374,6 @@
                 }
             } catch (err) {
                 console.error('Login Error:', err);
-                // กรณีเน็ตช้าหรือ Timeout ให้เข้าสู่ระบบแบบ Guest/Member สำรองทันทีเพื่อไม่ให้ติดขัด
                 currentRole = (user.toLowerCase() === 'admin') ? 'admin' : 'member';
                 currentUsername = user.toLowerCase();
                 
@@ -457,8 +453,12 @@
             const viewCalendar = document.getElementById('view-calendar');
             const viewTasks = document.getElementById('view-tasks');
             const noticeText = document.getElementById('notice-text');
+            const adminForm = document.getElementById('admin-form');
 
             [btnPending, btnCalendar].forEach(b => b.className = "flex-1 py-2.5 rounded-xl transition text-slate-500");
+
+            // ซ่อนฟอร์มเพิ่มรายการเสมอเมื่อสลับแท็บ เพื่อให้โชว์เฉพาะงานค้างตามที่ต้องการ
+            if (adminForm) adminForm.classList.add('hidden');
 
             if (tab === 'calendar') {
                 btnCalendar.className = "flex-1 py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
