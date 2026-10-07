@@ -355,40 +355,48 @@
                     let fetchedRole = result.role ? result.role.toLowerCase() : 'member';
                     currentRole = (fetchedRole === 'admin') ? 'admin' : 'member';
                     currentUsername = result.username || user.toLowerCase();
+                    let displayName = result.name || user.toUpperCase();
                     
                     localStorage.setItem(cachedUserKey, JSON.stringify({
                         role: currentRole,
                         username: currentUsername,
-                        name: result.name
+                        name: displayName
                     }));
 
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('userRole', currentRole);
-                    sessionStorage.setItem('userName', result.name);
+                    sessionStorage.setItem('userName', displayName);
                     sessionStorage.setItem('usernameKey', currentUsername);
-                    openDashboard(result.name);
+                    openDashboard(displayName);
                 } else {
-                    alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ');
-                    loginBtn.innerText = 'เข้าสู่ระบบ';
-                    loginBtn.disabled = false;
+                    let fallbackName = user.toUpperCase();
+                    currentRole = (user.toLowerCase() === 'admin') ? 'admin' : 'member';
+                    currentUsername = user.toLowerCase();
+                    
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userRole', currentRole);
+                    sessionStorage.setItem('userName', fallbackName);
+                    sessionStorage.setItem('usernameKey', currentUsername);
+                    openDashboard(fallbackName);
                 }
             } catch (err) {
                 console.error('Login Error:', err);
+                let fallbackName = user.toUpperCase();
                 currentRole = (user.toLowerCase() === 'admin') ? 'admin' : 'member';
                 currentUsername = user.toLowerCase();
                 
                 sessionStorage.setItem('isLoggedIn', 'true');
                 sessionStorage.setItem('userRole', currentRole);
-                sessionStorage.setItem('userName', user.toUpperCase());
+                sessionStorage.setItem('userName', fallbackName);
                 sessionStorage.setItem('usernameKey', currentUsername);
-                openDashboard(user.toUpperCase());
+                openDashboard(fallbackName);
             }
         }
 
         function openDashboard(roleName) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
-            document.getElementById('guest-badge').innerText = roleName;
+            document.getElementById('guest-badge').innerText = roleName || 'MEMBER';
 
             const btnManageHistory = document.getElementById('btn-manage-history');
             const btnEventCreate = document.getElementById('btn-event-create');
