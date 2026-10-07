@@ -275,7 +275,6 @@
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
-        // ฟังก์ชันป้องกัน XSS โดยการแปลงอักขระพิเศษ
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
@@ -319,6 +318,17 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
+        // ตรวจสอบสถานะการล็อกอินเดิมตอนเปิดเว็บ
+        window.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                currentRole = sessionStorage.getItem('userRole') || 'member';
+                currentUsername = sessionStorage.getItem('usernameKey') || '';
+                const savedName = sessionStorage.getItem('userName') || currentUsername.toUpperCase();
+                openDashboard(savedName);
+            }
+        });
+
         async function login() {
             const userInput = document.getElementById('username');
             const loginBtn = document.getElementById('login-btn');
@@ -333,14 +343,18 @@
             loginBtn.innerText = 'กำลังเข้าสู่ระบบ...';
             loginBtn.disabled = true;
 
-            const userLower = rawUser.toLowerCase();
-            let assignedRole = (userLower === 'admin' || userLower === 'adminpromax') ? 'admin' : 'member';
+            currentUsername = rawUser.toLowerCase();
             let displayName = rawUser.toUpperCase();
 
-            currentRole = assignedRole;
-            currentUsername = userLower;
+            // เปิดหน้าแดชบอร์ดทันทีเพื่อความลื่นไหล แล้วให้ระบบไปเช็กสิทธิ์จริงจาก Google Sheets เบื้องหลัง
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userRole', 'member');
+            sessionStorage.setItem('userName', displayName);
+            sessionStorage.setItem('usernameKey', currentUsername);
 
-            // ตรวจสอบสิทธิ์กับ Backend เพื่อความปลอดภัยที่แท้จริง
+            openDashboard(displayName);
+
+            // เช็กสิทธิ์จริงจาก Backend (Google Sheets) แบบ Background
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -350,19 +364,30 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    if (result.role) currentRole = result.role.toLowerCase();
-                    if (result.name) displayName = result.name;
+                    if (result.role) {
+                        currentRole = result.role.toLowerCase();
+                        sessionStorage.setItem('userRole', currentRole);
+                    }
+                    if (result.name) {
+                        displayName = result.name;
+                        sessionStorage.setItem('userName', displayName);
+                        document.getElementById('guest-badge').innerText = displayName;
+                    }
+                    // อัปเดตการแสดงผลปุ่มแอดมินตามสิทธิ์ที่ดึงมาจากชีทจริง
+                    const btnManageHistory = document.getElementById('btn-manage-history');
+                    if (currentRole === 'admin') {
+                        btnManageHistory.classList.remove('hidden');
+                    } else {
+                        btnManageHistory.classList.add('hidden');
+                    }
+                    renderTasks();
                 }
             } catch (err) {
-                console.error("Auth verification fallback to local rules");
+                console.error("Auth verification error:", err);
+            } finally {
+                loginBtn.innerText = 'เข้าสู่ระบบ';
+                loginBtn.disabled = false;
             }
-
-            sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('userRole', currentRole);
-            sessionStorage.setItem('userName', displayName);
-            sessionStorage.setItem('usernameKey', currentUsername);
-
-            openDashboard(displayName);
         }
 
         function openDashboard(roleName) {
@@ -666,7 +691,7 @@
 
             deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
 
-            // ซ่อนปุ่มปักหมุดที่หน้าบ้าน หากไม่ใช่ admin (กันแอบแก้ script ตัวแปร แต่ backend ต้องเช็กด้วย)
+            // แสดงปุ่มปักหมุดเฉพาะเมื่อ role เป็น admin จริงๆ
             if (currentRole === 'admin') {
                 pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
             }
