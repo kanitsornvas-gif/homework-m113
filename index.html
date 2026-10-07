@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1234567</title>
+    <title>Homework M.113 - V.EveryoneMember</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,18 +39,18 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">พิมพ์ชื่อผู้ใช้งานเพื่อเข้าสู่ระบบ (V.1234567)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ระบบการบ้านที่เพื่อนๆ ทุกคนช่วยกันเพิ่มได้</p>
         </div>
 
         <div class="space-y-1.5 mb-6">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (เช่น admin หรือ 1234)</label>
+            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (Username)</label>
             <div class="relative">
                 <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" id="username" placeholder="Username" onkeydown="if(event.key === 'Enter') login()" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
+                <input type="text" id="username" placeholder="พิมพ์ชื่อผู้ใช้งานของคุณ" onkeydown="if(event.key === 'Enter') login()" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition">
             </div>
         </div>
 
-        <button onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs tracking-wide shadow-lg shadow-pink-500/30 active:scale-[0.98] transition duration-200">
+        <button id="login-btn" onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold text-xs tracking-wide shadow-lg shadow-pink-500/30 active:scale-[0.98] transition duration-200">
             เข้าสู่ระบบ
         </button>
     </div>
@@ -63,7 +63,7 @@
             <div class="flex items-center gap-2">
                 <span class="font-extrabold text-pink-500 text-lg tracking-wider">HOMEWORK</span>
                 <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
-                <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">ADMIN</span>
+                <span id="guest-badge" class="bg-pink-100 text-pink-700 text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
             </div>
             <div class="flex items-center gap-1.5">
                 <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-2.5 py-1.5 rounded-xl font-bold transition">
@@ -78,19 +78,19 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs & Separated Action Buttons (Admin) -->
+        <!-- Navigation Tabs & Actions -->
         <div class="space-y-2 mb-4">
             <div class="flex bg-slate-100/80 p-1 rounded-2xl text-center text-xs font-bold gap-1">
                 <button id="tab-pending" onclick="switchTab('pending')" class="flex-1 py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm">งานค้าง</button>
                 <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
             </div>
             
-            <!-- ปุ่มจัดการแยกสำหรับ Admin -->
-            <div id="admin-action-buttons" class="hidden grid grid-cols-2 gap-2">
+            <!-- ปุ่มเพิ่มงานแสดงสำหรับทุกคน -->
+            <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
                 </button>
-                <button onclick="jumpToEventCreation()" class="py-2.5 px-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition flex items-center justify-center gap-1.5">
+                <button onclick="jumpToEventCreation()" id="btn-event-create" class="hidden py-2.5 px-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-star"></i> สร้างกิจกรรม
                 </button>
             </div>
@@ -133,7 +133,6 @@
                 <div id="calendar-days" class="grid grid-cols-7 gap-1"></div>
             </div>
 
-            <!-- ส่วนแสดงรายละเอียดของวันที่เลือก + ระบบเพิ่มกิจกรรมสำหรับ ADMIN -->
             <div id="calendar-detail-section" class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
@@ -143,7 +142,6 @@
                     <span id="selected-task-count" class="bg-pink-100 text-pink-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
                 </div>
 
-                <!-- กล่องกิจกรรม/โน้ตประจำวัน -->
                 <div id="event-box" class="bg-purple-50/70 border border-purple-200/60 p-3 rounded-2xl space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-extrabold text-purple-700 flex items-center gap-1">
@@ -158,24 +156,22 @@
                         <p id="event-text-view" class="text-xs text-purple-900 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
                     </div>
                     <div id="admin-event-input-area" class="hidden pt-1">
-                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรม/วันสำคัญของวันนี้ (เช่น สอบกลางภาค, กีฬาสี)" class="w-full p-2 text-xs bg-white rounded-xl border border-purple-200 focus:outline-none focus:border-purple-500">
+                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรม/วันสำคัญของวันนี้" class="w-full p-2 text-xs bg-white rounded-xl border border-purple-200 focus:outline-none focus:border-purple-500">
                     </div>
                 </div>
 
-                <!-- รายการการบ้านในวันนั้น -->
                 <div id="selected-date-tasks" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
             </div>
         </div>
 
         <!-- ================= VIEW 2: TASKS VIEW ================= -->
         <div id="view-tasks" class="space-y-4">
-            
             <div id="admin-form" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
                 <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน <span class="text-[10px] text-rose-500 font-normal">(ต้องกรอกทุกช่อง)</span>
                 </h3>
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="task-code" list="code-options" placeholder="รหัสวิชา (เช่น ท21101)" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
+                    <input type="text" id="task-code" list="code-options" placeholder="รหัสวิชา" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
                     <datalist id="code-options"></datalist>
 
                     <input type="text" id="task-subject" list="subject-options" placeholder="ชื่อวิชา" class="col-span-2 w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-pink-500">
@@ -224,7 +220,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.234567
+            Version Everyone Member
         </span>
     </footer>
 
@@ -251,37 +247,34 @@
                 </h3>
                 <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
             </div>
-            
-            <p class="text-[11px] text-slate-400">คุณสามารถล้างหรือซ่อนรหัสวิชาหรือชื่อวิชาที่ไม่ต้องการออกจากระบบตัวเลือกได้</p>
-
             <div class="space-y-3 max-h-[260px] overflow-y-auto pr-1">
                 <div>
-                    <span class="text-[11px] font-bold text-slate-600 block mb-1">รหัสวิชาทั้งหมดในระบบ:</span>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">รหัสวิชาทั้งหมด:</span>
                     <div id="manage-codes-list" class="space-y-1"></div>
                 </div>
                 <div>
-                    <span class="text-[11px] font-bold text-slate-600 block mb-1">ชื่อวิชาทั้งหมดในระบบ:</span>
+                    <span class="text-[11px] font-bold text-slate-600 block mb-1">ชื่อวิชาทั้งหมด:</span>
                     <div id="manage-subjects-list" class="space-y-1"></div>
                 </div>
             </div>
-
-            <button onclick="closeManageModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">
-                ปิดหน้าต่าง
-            </button>
+            <button onclick="closeManageModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">ปิดหน้าต่าง</button>
         </div>
     </div>
 
     <script>
-        const USERS = {
-            'admin': { role: 'admin', name: 'ADMIN' },
-            '1234': { role: 'student', name: 'STUDENT' }
-        };
-
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
 
-        let currentRole = 'student';
+        let currentRole = 'member'; // 'admin' หรือ 'member'
+        let currentUsername = '';
         let currentTab = 'pending';
         let currentDate = new Date();
+        let selectedDateStr = getFormattedDate(new Date());
+        let tasks = [];
+        let dailyEvents = {};
+
+        const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+        const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
         function getFormattedDate(d) {
             const year = d.getFullYear();
@@ -289,15 +282,6 @@
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-
-        const todayStr = getFormattedDate(new Date());
-        let selectedDateStr = todayStr;
-        let tasks = [];
-        let dailyEvents = {};
-
-        const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-        const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-        const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
         function normalizeDateStr(dateInput) {
             if (!dateInput) return '';
@@ -325,29 +309,48 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        function login() {
+        async function login() {
+            const userInput = document.getElementById('username');
+            const loginBtn = document.getElementById('login-btn');
+            if (!userInput) return;
+
+            const user = userInput.value.trim();
+            if (!user) {
+                alert('กรุณากรอกชื่อผู้ใช้งาน');
+                return;
+            }
+
+            loginBtn.innerText = 'กำลังตรวจสอบ...';
+            loginBtn.disabled = true;
+
             try {
-                const userInput = document.getElementById('username');
-                if (!userInput) return;
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'checkUser', username: user })
+                });
+                const result = await response.json();
 
-                const user = userInput.value.trim().toLowerCase();
-
-                if (!user) {
-                    alert('กรุณากรอกชื่อผู้ใช้งาน');
-                    return;
-                }
-
-                if (USERS[user]) {
-                    currentRole = USERS[user].role;
+                if (result.status === 'success') {
+                    // หากในชีตตั้งเป็น student ระบบจะปัดให้มีอำนาจเท่ากับ member ทันที
+                    let fetchedRole = result.role ? result.role.toLowerCase() : 'member';
+                    currentRole = (fetchedRole === 'admin') ? 'admin' : 'member';
+                    
+                    currentUsername = result.username || user.toLowerCase();
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('userRole', currentRole);
-                    sessionStorage.setItem('userName', USERS[user].name);
-                    openDashboard(USERS[user].name);
+                    sessionStorage.setItem('userName', result.name);
+                    sessionStorage.setItem('usernameKey', currentUsername);
+                    openDashboard(result.name);
                 } else {
-                    alert('ไม่พบชื่อผู้ใช้งานนี้ในระบบ!');
+                    alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ');
                 }
             } catch (err) {
                 console.error('Login Error:', err);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
+            } finally {
+                loginBtn.innerText = 'เข้าสู่ระบบ';
+                loginBtn.disabled = false;
             }
         }
 
@@ -356,19 +359,20 @@
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
 
-            const adminActionButtons = document.getElementById('admin-action-buttons');
             const btnManageHistory = document.getElementById('btn-manage-history');
+            const btnEventCreate = document.getElementById('btn-event-create');
             const adminEventActions = document.getElementById('admin-event-actions');
             const adminEventInputArea = document.getElementById('admin-event-input-area');
 
+            // เฉพาะ Admin เท่านั้นที่จัดการประวัติวิชาและสร้างกิจกรรมปฏิทินได้
             if (currentRole === 'admin') {
-                adminActionButtons.classList.remove('hidden');
                 btnManageHistory.classList.remove('hidden');
+                btnEventCreate.classList.remove('hidden');
                 adminEventActions.classList.remove('hidden');
                 adminEventInputArea.classList.remove('hidden');
             } else {
-                adminActionButtons.classList.add('hidden');
                 btnManageHistory.classList.add('hidden');
+                btnEventCreate.classList.add('hidden');
                 adminEventActions.classList.add('hidden');
                 adminEventInputArea.classList.add('hidden');
             }
@@ -390,7 +394,6 @@
         }
 
         function toggleAddForm() {
-            if (currentRole !== 'admin') return;
             switchTab('pending');
             const adminForm = document.getElementById('admin-form');
             if (adminForm.classList.contains('hidden')) {
@@ -655,17 +658,40 @@
 
         function createTaskCardHTML(item, isPinned) {
             let actionButtons = '';
+            
+            // ปุ่มปักหมุด (เฉพาะ Admin เท่านั้น)
+            let pinButton = '';
             if (currentRole === 'admin') {
-                actionButtons = `<div class="flex items-center gap-1">
-                    <button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition"><i class="fa-solid fa-thumbtack"></i></button>
-                    <button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>
-                </div>`;
+                pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
             }
+
+            // เงื่อนไขการลบ: Admin ลบได้ทั้งหมด / Member ลบได้เฉพาะงานที่ตัวเองสร้าง
+            let canDelete = false;
+            if (currentRole === 'admin') {
+                canDelete = true;
+            } else if (item.createdBy && item.createdBy.toLowerCase() === currentUsername.toLowerCase()) {
+                canDelete = true;
+            }
+
+            let deleteButton = '';
+            if (canDelete) {
+                deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
+            }
+
+            if (pinButton || deleteButton) {
+                actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
+            }
+
             const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
+            const creatorInfo = item.createdByName ? `<span class="text-[9px] text-slate-400 font-normal">โดย: ${item.createdByName}</span>` : '';
+
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
                     <div class="flex justify-between items-start gap-2">
-                        <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
+                            ${creatorInfo}
+                        </div>
                         ${actionButtons}
                     </div>
                     <h4 class="text-xs font-bold text-slate-800 pt-0.5">${item.detail}</h4>
@@ -735,14 +761,28 @@
         }
 
         async function deleteTask(id) {
-            if (currentRole !== 'admin') return;
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            let canDelete = false;
+            if (currentRole === 'admin') {
+                canDelete = true;
+            } else if (task.createdBy && task.createdBy.toLowerCase() === currentUsername.toLowerCase()) {
+                canDelete = true;
+            }
+
+            if (!canDelete) {
+                alert('❌ คุณไม่มีสิทธิ์ลบงานนี้ (ลบได้เฉพาะงานที่ตนเองเป็นคนสร้าง)');
+                return;
+            }
+
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
                 tasks = tasks.filter(t => t.id !== id);
                 sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
-                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', id: id }) }).catch(console.error);
+                await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'delete', id: id, username: currentUsername }) }).catch(console.error);
             }
         }
 
@@ -750,8 +790,6 @@
         function closeSuccessPopup() { document.getElementById('success-popup').classList.add('hidden'); }
 
         async function addTask() {
-            if (currentRole !== 'admin') return;
-            
             const code = document.getElementById('task-code').value.trim();
             const subject = document.getElementById('task-subject').value.trim();
             const detail = document.getElementById('task-detail').value.trim();
@@ -776,6 +814,8 @@
                 assignDate: normalizeDateStr(assignDate), 
                 dueDate: normalizeDateStr(dueDate), 
                 isPinned: false, 
+                createdBy: currentUsername,
+                createdByName: sessionStorage.getItem('userName') || currentUsername,
                 action: 'add' 
             };
 
