@@ -318,7 +318,6 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        // โหลดข้อมูลจากเครื่องทันทีตอนเปิดเว็บ และเช็กสถานะล็อกอินเดิมแบบ 0 วินาที
         window.addEventListener('DOMContentLoaded', () => {
             const savedTasks = localStorage.getItem('homework_cached_tasks');
             if (savedTasks) {
@@ -338,7 +337,6 @@
                 openDashboard(savedName, false);
             }
 
-            // ซิงค์ข้อมูลเบื้องหลังเงียบๆ
             backgroundFetch();
             backgroundFetchUsers();
         });
@@ -353,7 +351,7 @@
             } catch (e) {}
         }
 
-        // ล็อกอินแบบ Instant (เข้าหน้าหลักทันทีโดยไม่ต้องรอเน็ต)
+        // ล็อกอินแบบ Instant พร้อมระบบสำรอง (Fallback)
         function login() {
             const userInput = document.getElementById('username');
             if (!userInput) return;
@@ -364,27 +362,32 @@
                 return;
             }
 
-            // ตรวจสอบกับแคชในเครื่องทันทีเพื่อความเร็วสูงสุด
             let users = [];
             const cachedUsers = localStorage.getItem('homework_cached_users');
             if (cachedUsers) {
                 try { users = JSON.parse(cachedUsers); } catch(e) {}
             }
 
-            let foundUser = users.find(u => String(u.username).trim().toLowerCase() === rawUser);
+            let foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
 
-            // กำหนดสิทธิ์เบื้องต้น (ถ้าพิมพ์ชื่อห้อง/แอดมินหรือพิมพ์มั่ว จะให้เป็น member ไว้ก่อน แล้วไปเช็กสิทธิ์จริงจากชีตเบื้องหลัง)
             currentUsername = rawUser;
-            currentRole = foundUser ? String(foundUser.role || 'member').toLowerCase() : (rawUser.includes('admin') ? 'admin' : 'member');
+            if (foundUser) {
+                currentRole = String(foundUser.role || 'member').toLowerCase();
+            } else {
+                if (rawUser === 'headadmin' || rawUser.includes('admin')) {
+                    currentRole = 'admin';
+                } else {
+                    currentRole = 'member';
+                }
+            }
+
             const displayName = foundUser ? (foundUser.name || rawUser.toUpperCase()) : rawUser.toUpperCase();
 
-            // บันทึกสถานะลงเครื่องทันที
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('userRole', currentRole);
             localStorage.setItem('userName', displayName);
             localStorage.setItem('usernameKey', currentUsername);
 
-            // เปิดหน้าแดชบอร์ดทันที 0 วินาที
             openDashboard(displayName, true);
         }
 
