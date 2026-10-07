@@ -340,22 +340,11 @@
                 return;
             }
 
-            loginBtn.innerText = 'กำลังเข้าสู่ระบบ...';
+            loginBtn.innerText = 'กำลังตรวจสอบข้อมูล...';
             loginBtn.disabled = true;
 
-            currentUsername = rawUser.toLowerCase();
-            let displayName = rawUser.toUpperCase();
-
-            // เปิดหน้าแดชบอร์ดทันทีเพื่อความลื่นไหล แล้วให้ระบบไปเช็กสิทธิ์จริงจาก Google Sheets เบื้องหลัง
-            sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('userRole', 'member');
-            sessionStorage.setItem('userName', displayName);
-            sessionStorage.setItem('usernameKey', currentUsername);
-
-            openDashboard(displayName);
-
-            // เช็กสิทธิ์จริงจาก Backend (Google Sheets) แบบ Background
             try {
+                // ส่งชื่อไปเช็กกับ Google Sheets (Backend) ก่อนเปิดใช้งานจริง
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -364,26 +353,22 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    if (result.role) {
-                        currentRole = result.role.toLowerCase();
-                        sessionStorage.setItem('userRole', currentRole);
-                    }
-                    if (result.name) {
-                        displayName = result.name;
-                        sessionStorage.setItem('userName', displayName);
-                        document.getElementById('guest-badge').innerText = displayName;
-                    }
-                    // อัปเดตการแสดงผลปุ่มแอดมินตามสิทธิ์ที่ดึงมาจากชีทจริง
-                    const btnManageHistory = document.getElementById('btn-manage-history');
-                    if (currentRole === 'admin') {
-                        btnManageHistory.classList.remove('hidden');
-                    } else {
-                        btnManageHistory.classList.add('hidden');
-                    }
-                    renderTasks();
+                    currentUsername = rawUser.toLowerCase();
+                    currentRole = (result.role || 'member').toLowerCase();
+                    const displayName = result.name || rawUser.toUpperCase();
+
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userRole', currentRole);
+                    sessionStorage.setItem('userName', displayName);
+                    sessionStorage.setItem('usernameKey', currentUsername);
+
+                    openDashboard(displayName);
+                } else {
+                    alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง');
                 }
             } catch (err) {
-                console.error("Auth verification error:", err);
+                console.error("Auth error:", err);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ กรุณาลองใหม่อีกครั้ง');
             } finally {
                 loginBtn.innerText = 'เข้าสู่ระบบ';
                 loginBtn.disabled = false;
@@ -691,7 +676,6 @@
 
             deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
 
-            // แสดงปุ่มปักหมุดเฉพาะเมื่อ role เป็น admin จริงๆ
             if (currentRole === 'admin') {
                 pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
             }
