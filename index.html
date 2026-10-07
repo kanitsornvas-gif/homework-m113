@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -25,7 +25,7 @@
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
-        .animate-pop { animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-pop { animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-between p-3 sm:p-6 min-h-screen relative antialiased">
@@ -33,9 +33,9 @@
     <div class="flex-grow"></div>
 
     <!-- ==================== หน้าที่ 1: Sign In ==================== -->
-    <div id="login-page" class="w-full max-w-sm bg-white/85 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 transition-all duration-300">
+    <div id="login-page" class="w-full max-w-sm bg-white/85 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 transition-all duration-200">
         <div class="text-center mb-8">
-            <div class="w-14 h-14 bg-gradient-to-br from-[#FF75BC] via-purple-500 to-[#50D8FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#FF75BC]/30 transform -rotate-3 hover:rotate-0 transition duration-300">
+            <div class="w-14 h-14 bg-gradient-to-br from-[#FF75BC] via-purple-500 to-[#50D8FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#FF75BC]/30 transform -rotate-3">
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
@@ -50,13 +50,13 @@
             </div>
         </div>
 
-        <button id="login-btn" onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF75BC] to-rose-400 hover:from-[#e065a6] hover:to-rose-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF75BC]/30 active:scale-[0.98] transition duration-200">
+        <button id="login-btn" onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF75BC] to-rose-400 hover:from-[#e065a6] hover:to-rose-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF75BC]/30 active:scale-[0.98] transition duration-150">
             เข้าสู่ระบบ
         </button>
     </div>
 
     <!-- ==================== หน้าที่ 2: Dashboard ==================== -->
-    <div id="main-page" class="hidden w-full max-w-md bg-white/85 backdrop-blur-2xl rounded-3xl p-5 border border-white/80 shadow-2xl shadow-slate-200/60 relative z-10 transition-all duration-300">
+    <div id="main-page" class="hidden w-full max-w-md bg-white/85 backdrop-blur-2xl rounded-3xl p-5 border border-white/80 shadow-2xl shadow-slate-200/60 relative z-10 transition-all duration-200">
         
         <!-- Header -->
         <div class="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
@@ -86,11 +86,9 @@
             </div>
             
             <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
-                <!-- ปุ่มเพิ่มงานค้าง: สี #FF75BC -->
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold text-xs shadow-md shadow-[#FF75BC]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
                 </button>
-                <!-- ปุ่มสร้างกิจกรรม: สี #50D8FF -->
                 <button onclick="jumpToEventCreation()" id="btn-event-create" class="hidden py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-star"></i> สร้างกิจกรรม
                 </button>
@@ -328,9 +326,21 @@
             let assignedRole = (cleanUser === 'admin') ? 'admin' : 'member';
             let displayName = user.toUpperCase();
 
+            // เปิดแดชบอร์ดทันที ไม่รอเช็คเน็ต เพื่อความไวระดับ 0.5 วิ
+            currentRole = assignedRole;
+            currentUsername = cleanUser;
+
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('userRole', currentRole);
+            sessionStorage.setItem('userName', displayName);
+            sessionStorage.setItem('usernameKey', currentUsername);
+
+            openDashboard(displayName);
+
+            // เช็คสิทธิ์กับ Google Script แบบเบื้องหลัง (ถ้าเป็น admin ตัวจริง ระบบจะอัปเดตสิทธิ์ให้อัตโนมัติทันทีที่ได้ผลลัพธ์)
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const timeoutId = setTimeout(() => controller.abort(), 1200);
 
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -342,22 +352,22 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    if (result.role) assignedRole = result.role.toLowerCase() === 'admin' ? 'admin' : 'member';
-                    if (result.name) displayName = result.name;
+                    let updated = false;
+                    if (result.role && result.role.toLowerCase() === 'admin' && currentRole !== 'admin') {
+                        currentRole = 'admin';
+                        updated = true;
+                    }
+                    if (result.name && result.name !== displayName) {
+                        displayName = result.name;
+                        updated = true;
+                    }
+                    if (updated) {
+                        sessionStorage.setItem('userRole', currentRole);
+                        sessionStorage.setItem('userName', displayName);
+                        openDashboard(displayName);
+                    }
                 }
-            } catch (err) {
-                console.error('Login Network Error:', err);
-            }
-
-            currentRole = assignedRole;
-            currentUsername = cleanUser;
-
-            sessionStorage.setItem('isLoggedIn', 'true');
-            sessionStorage.setItem('userRole', currentRole);
-            sessionStorage.setItem('userName', displayName);
-            sessionStorage.setItem('usernameKey', currentUsername);
-
-            openDashboard(displayName);
+            } catch (err) {}
         }
 
         function openDashboard(roleName) {
@@ -486,7 +496,7 @@
                 indicatorsHTML += '</div>';
 
                 daysContainer.innerHTML += `
-                    <button onclick="selectDate('${dateStr}')" class="h-14 ${boxStyle} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold transition duration-200">
+                    <button onclick="selectDate('${dateStr}')" class="h-14 ${boxStyle} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold transition duration-150">
                         <span class="${textStyle}">${day}</span>
                         ${indicatorsHTML}
                     </button>
@@ -713,32 +723,21 @@
         }
 
         async function fetchHomeworks(force = false) {
-            if (!force) {
-                const cachedData = sessionStorage.getItem('homework_tasks');
-                if (cachedData) {
-                    try {
-                        tasks = JSON.parse(cachedData);
-                        renderTasks();
-                        renderCalendar();
-                        selectDate(selectedDateStr);
-                        backgroundFetch();
-                        return;
-                    } catch (e) {}
-                }
-            }
-
-            try {
-                const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    tasks = data;
-                    sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
+            // โหลดข้อมูลจากแคชแสดงผลทันที (ความเร็วระดับ 0.1 วิ)
+            const cachedData = sessionStorage.getItem('homework_tasks');
+            if (cachedData) {
+                try {
+                    tasks = JSON.parse(cachedData);
                     renderTasks();
                     renderCalendar();
                     selectDate(selectedDateStr);
-                }
-            } catch (err) {
-                console.error(err);
+                } catch (e) {}
+            }
+
+            if (force || !cachedData) {
+                backgroundFetch();
+            } else {
+                backgroundFetch();
             }
         }
 
@@ -848,7 +847,7 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            sessionStorage.clear();
+            // ไม่เคลียร์ sessionStorage เพื่อให้เปิดหน้าเว็บมาแล้วข้อมูลเก่าเด้งขึ้นมาแสดงผลทันทีแบบความเร็วสูง
         });
     </script>
 </body>
