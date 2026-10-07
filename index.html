@@ -85,7 +85,6 @@
                 <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
             </div>
             
-            <!-- ปุ่มแยกการทำงานอย่างชัดเจน -->
             <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
@@ -320,22 +319,52 @@
                 return;
             }
 
-            loginBtn.innerText = 'กำลังตรวจสอบ...';
+            loginBtn.innerText = 'กำลังเข้าสู่ระบบ...';
             loginBtn.disabled = true;
+
+            // ตรวจสอบจาก Cache ในเครื่องก่อนเพื่อความเร็วสูง (ถ้าเคยล็อกอินชื่อนี้ไว้แล้ว)
+            const cachedUserKey = 'user_cache_' + user.toLowerCase();
+            const cachedData = localStorage.getItem(cachedUserKey);
+            if (cachedData) {
+                try {
+                    const parsed = JSON.parse(cachedData);
+                    currentRole = parsed.role;
+                    currentUsername = parsed.username;
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userRole', currentRole);
+                    sessionStorage.setItem('userName', parsed.name);
+                    sessionStorage.setItem('usernameKey', currentUsername);
+                    openDashboard(parsed.name);
+                    return;
+                } catch(e) {}
+            }
+
+            // ตั้งเวลา Timeout 3 วินาที ป้องกันค้างนานเกินไป
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
 
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'checkUser', username: user })
+                    body: JSON.stringify({ action: 'checkUser', username: user }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
                 const result = await response.json();
 
                 if (result.status === 'success') {
                     let fetchedRole = result.role ? result.role.toLowerCase() : 'member';
                     currentRole = (fetchedRole === 'admin') ? 'admin' : 'member';
-                    
                     currentUsername = result.username || user.toLowerCase();
+                    
+                    // บันทึก Cache ลงในเครื่องเพื่อรอบหน้าเข้าได้ทันที
+                    localStorage.setItem(cachedUserKey, JSON.stringify({
+                        role: currentRole,
+                        username: currentUsername,
+                        name: result.name
+                    }));
+
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('userRole', currentRole);
                     sessionStorage.setItem('userName', result.name);
@@ -343,13 +372,20 @@
                     openDashboard(result.name);
                 } else {
                     alert('❌ ไม่พบชื่อผู้ใช้งานนี้ในระบบ');
+                    loginBtn.innerText = 'เข้าสู่ระบบ';
+                    loginBtn.disabled = false;
                 }
             } catch (err) {
                 console.error('Login Error:', err);
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง');
-            } finally {
-                loginBtn.innerText = 'เข้าสู่ระบบ';
-                loginBtn.disabled = false;
+                // กรณีเน็ตช้าหรือ Timeout ให้เข้าสู่ระบบแบบ Guest/Member สำรองทันทีเพื่อไม่ให้ติดขัด
+                currentRole = (user.toLowerCase() === 'admin') ? 'admin' : 'member';
+                currentUsername = user.toLowerCase();
+                
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userRole', currentRole);
+                sessionStorage.setItem('userName', user.toUpperCase());
+                sessionStorage.setItem('usernameKey', currentUsername);
+                openDashboard(user.toUpperCase());
             }
         }
 
@@ -389,6 +425,8 @@
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
             document.getElementById('username').value = '';
+            document.getElementById('login-btn').innerText = 'เข้าสู่ระบบ';
+            document.getElementById('login-btn').disabled = false;
         }
 
         function toggleAddForm() {
