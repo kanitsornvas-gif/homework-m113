@@ -219,7 +219,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Admin Pin/Delete Only
+            Version Admin Delete Fix
         </span>
     </footer>
 
@@ -323,7 +323,7 @@
             loginBtn.disabled = true;
 
             const cleanUser = user.toLowerCase();
-            let assignedRole = (cleanUser === 'admin') ? 'admin' : 'member';
+            let assignedRole = (cleanUser === 'admin' || cleanUser === 'adminpromax') ? 'admin' : 'member';
             let displayName = user.toUpperCase();
 
             currentRole = assignedRole;
@@ -664,17 +664,18 @@
         }
 
         function createTaskCardHTML(item, isPinned) {
-            let actionButtons = '';
             let pinButton = '';
             let deleteButton = '';
 
-            // เฉพาะ Admin เท่านั้นที่จะเห็นปุ่มปักหมุดและปุ่มลบงาน
+            // ปุ่มลบงาน: ทั้ง Member, เจ้าของโพสต์ และ Admin สามารถลบงานได้ทั้งหมด
+            deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
+
+            // ปุ่มปักหมุด: เฉพาะ Admin เท่านั้นที่กดปักหมุดได้
             if (currentRole === 'admin') {
                 pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
-                deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
-                actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
             }
 
+            const actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
             const displayLabel = (item.code && item.code.trim() !== "") ? item.code : item.subject;
             const creatorInfo = item.createdByName ? `<span class="text-[9px] text-slate-400 font-normal">โดย: ${item.createdByName}</span>` : '';
 
@@ -737,11 +738,6 @@
         }
 
         async function deleteTask(id) {
-            if (currentRole !== 'admin') {
-                alert('❌ เฉพาะ Admin เท่านั้นที่สามารถลบงานได้');
-                return;
-            }
-
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
                 tasks = tasks.filter(t => t.id !== id);
                 sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
@@ -788,7 +784,6 @@
             tasks.unshift(newTask);
             sessionStorage.setItem('homework_tasks', JSON.stringify(tasks));
 
-            document.getElementById('task-code').value = '...'; // reset
             document.getElementById('task-code').value = '';
             document.getElementById('task-subject').value = '';
             document.getElementById('task-detail').value = '';
