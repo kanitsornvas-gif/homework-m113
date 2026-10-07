@@ -60,12 +60,20 @@
         
         <!-- Header -->
         <div class="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="font-extrabold text-[#FF75BC] text-lg tracking-wider">HOMEWORK</span>
                 <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
                 <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
+                <!-- ยศ ADMINISTRATOR สำหรับแอดมิน -->
+                <span id="admin-tag" class="hidden bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-md shadow-sm border border-purple-300 flex items-center gap-1">
+                    <i class="fa-solid fa-user-shield text-[9px]"></i> Administrator
+                </span>
             </div>
             <div class="flex items-center gap-1.5">
+                <!-- ปุ่มดูประวัติการใช้งานเฉพาะ Admin -->
+                <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งานของผู้ใช้" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
                 <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-list-check"></i>
                 </button>
@@ -219,7 +227,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Fast, Sync & Auto Logout (7 Min)
+            Version Administrator & Activity Logging Sync
         </span>
     </footer>
 
@@ -274,11 +282,31 @@
         </div>
     </div>
 
+    <!-- ACTIVITY LOGS MODAL FOR ADMINISTRATOR -->
+    <div id="logs-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-md shadow-2xl border border-slate-100 animate-pop space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-xs font-extrabold text-purple-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved text-purple-600"></i> ประวัติการใช้งานระบบ (Administrator Logs)
+                </h3>
+                <button onclick="closeLogsModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
+            </div>
+            <div class="flex justify-between items-center text-[11px]">
+                <span class="font-bold text-slate-500">บันทึกกิจกรรมย้อนหลังของสมาชิก</span>
+                <button onclick="fetchActivityLogs(true)" class="text-[10px] bg-purple-100 text-purple-700 hover:bg-purple-200 px-2 py-1 rounded-lg font-bold transition">
+                    <i class="fa-solid fa-rotate mr-1"></i>อัปเดตข้อมูล
+                </button>
+            </div>
+            <div id="logs-list-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                <!-- ข้อมูล Logs แสดงที่นี่ -->
+            </div>
+            <button onclick="closeLogsModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
     <script>
-        // Web App URL เชื่อมต่อ Google Sheets
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvlcyMwTWNwdZYGu8Tcnhb5krceutmqxtOMIhFXjTZ73FGKf_Uij4VV5MaYklalJzf/exec';
 
-        // กำหนดเวลาไม่มีการใช้งานแล้วให้ล็อกเอาต์ (7 นาที = 420,000 มิลลิวินาที)
         const IDLE_TIMEOUT_MS = 7 * 60 * 1000;
         let idleTimer = null;
 
@@ -289,8 +317,8 @@
         let selectedDateStr = getFormattedDate(new Date());
         let tasks = [];
         let dailyEvents = {};
+        let userLogs = [];
 
-        // รายชื่อสำรองพื้นฐาน
         const FALLBACK_USERS = [
             { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
             { username: "porsche_62031", role: "member", name: "Porsche_62031" },
@@ -314,7 +342,112 @@
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
         // -----------------------------------------------------------------
-        // AUTO LOGOUT SYSTEM (จับเวลาไม่มีการใช้งาน 7 นาที)
+        // ACTIVITY LOGGING SYSTEM (ระบบบันทึกประวัติกิจกรรมผู้ใช้งาน)
+        // -----------------------------------------------------------------
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            if (/android/i.test(ua)) return "Android Phone";
+            if (/iPhone|iPad|iPod/i.test(ua)) return "iOS Device";
+            if (/Windows/i.test(ua)) return "Windows PC";
+            if (/Macintosh/i.test(ua)) return "Mac Computer";
+            return "Web Browser";
+        }
+
+        async function logActivity(action, details = '') {
+            const device = getDeviceInfo();
+            const now = new Date();
+            const timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+            const logEntry = {
+                id: Date.now(),
+                timestamp: timeString,
+                username: currentUsername || 'Guest',
+                displayName: localStorage.getItem('userName') || currentUsername.toUpperCase() || 'Guest',
+                role: currentRole,
+                action: action,
+                details: details,
+                device: device
+            };
+
+            // บันทึกใน LocalStorage
+            let logs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
+            logs.unshift(logEntry);
+            if (logs.length > 50) logs = logs.slice(0, 50); // เก็บสำรองสูงสุด 50 รายการ
+            localStorage.setItem('homework_cached_logs', JSON.stringify(logs));
+
+            // บันทึกซิงค์ไปยัง Google Sheets
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: 'logActivity', ...logEntry })
+            }).catch(console.error);
+        }
+
+        function openLogsModal() {
+            if (currentRole !== 'admin') return;
+            renderLogsList();
+            document.getElementById('logs-modal').classList.remove('hidden');
+            fetchActivityLogs();
+        }
+
+        function closeLogsModal() {
+            document.getElementById('logs-modal').classList.add('hidden');
+        }
+
+        async function fetchActivityLogs(forceAlert = false) {
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getLogs&t=${new Date().getTime()}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        userLogs = data;
+                        localStorage.setItem('homework_cached_logs', JSON.stringify(data));
+                        renderLogsList();
+                        if (forceAlert) alert('อัปเดตประวัติการใช้งานล่าสุดเรียบร้อยแล้ว');
+                        return;
+                    }
+                }
+            } catch (e) {}
+            
+            userLogs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
+            renderLogsList();
+            if (forceAlert) alert('อัปเดตประวัติล่าสุดจากข้อมูลในระบบเรียบร้อยแล้ว');
+        }
+
+        function renderLogsList() {
+            const container = document.getElementById('logs-list-container');
+            if (!container) return;
+
+            let logs = userLogs;
+            if (!logs || logs.length === 0) {
+                logs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
+            }
+
+            if (logs.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-100">ยังไม่มีบันทึกการใช้งาน</div>`;
+                return;
+            }
+
+            container.innerHTML = logs.map(log => `
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-1 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-purple-900 flex items-center gap-1">
+                            <i class="fa-solid fa-user text-[10px] text-purple-500"></i> ${escapeHtml(log.displayName || log.username)}
+                            <span class="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.2 rounded font-bold uppercase">${log.role || 'member'}</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-medium"><i class="fa-regular fa-clock"></i> ${log.timestamp}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-slate-700 pt-0.5">
+                        <span class="font-bold text-slate-800"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>${escapeHtml(log.action)}</span>
+                        <span class="text-[10px] bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-md font-semibold"><i class="fa-solid fa-mobile-screen mr-1"></i>${escapeHtml(log.device || 'Web')}</span>
+                    </div>
+                    ${log.details ? `<p class="text-[11px] text-slate-500 bg-white p-2 rounded-xl border border-slate-100 mt-1">${escapeHtml(log.details)}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // -----------------------------------------------------------------
+        // AUTO LOGOUT SYSTEM (7 นาที)
         // -----------------------------------------------------------------
         function resetIdleTimer() {
             if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -331,12 +464,12 @@
 
         function autoLogout() {
             if (localStorage.getItem('isLoggedIn') === 'true') {
+                logActivity('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที');
                 logout();
                 alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
             }
         }
 
-        // ดักจับการเคลื่อนไหวของผู้ใช้งาน (ขยับเมาส์, พิมพ์งาน, กดแตะหน้าจอ, เลื่อนหน้าจอ)
         ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
             window.addEventListener(evt, resetIdleTimer, { passive: true });
         });
@@ -418,7 +551,6 @@
             } catch (e) {}
         }
 
-        // ฟังก์ชันเข้าสู่ระบบฉบับเร่งสปีด
         async function login() {
             const userInput = document.getElementById('username');
             const loginBtn = document.getElementById('login-btn');
@@ -430,7 +562,6 @@
                 return;
             }
 
-            // 1. อ่านข้อมูลรายชื่อจาก Cache ในเครื่องก่อน
             let users = FALLBACK_USERS;
             const cachedUsers = localStorage.getItem('homework_cached_users');
             if (cachedUsers) {
@@ -440,10 +571,8 @@
                 } catch(err) {}
             }
 
-            // 2. เช็คชื่อใน Cache ก่อน (ถ้ามี ล็อกอินทันที 0 วินาที!)
             let foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
 
-            // 3. ถ้าไม่พบใน Cache ค่อยไปดึงข้อมูลสดจาก Google Sheets
             if (!foundUser) {
                 if (loginBtn) {
                     loginBtn.disabled = true;
@@ -470,7 +599,6 @@
                 }
             }
 
-            // 4. สรุปผล
             if (!foundUser) {
                 document.getElementById('error-popup').classList.remove('hidden');
                 return;
@@ -490,6 +618,7 @@
             localStorage.setItem('usernameKey', currentUsername);
 
             openDashboard(displayName, true);
+            logActivity('เข้าสู่ระบบ', `เข้าใช้งานสำเร็จด้วยชื่อ ${displayName}`);
         }
 
         function closeErrorPopup() {
@@ -504,10 +633,17 @@
             document.getElementById('guest-badge').innerText = finalName;
 
             const btnManageHistory = document.getElementById('btn-manage-history');
+            const btnViewLogs = document.getElementById('btn-view-logs');
+            const adminTag = document.getElementById('admin-tag');
+
             if (currentRole === 'admin') {
                 btnManageHistory.classList.remove('hidden');
+                btnViewLogs.classList.remove('hidden');
+                adminTag.classList.remove('hidden');
             } else {
                 btnManageHistory.classList.add('hidden');
+                btnViewLogs.classList.add('hidden');
+                adminTag.classList.add('hidden');
             }
             
             switchTab('pending');
@@ -515,7 +651,7 @@
             renderCalendar();
             selectDate(selectedDateStr);
 
-            resetIdleTimer(); // เริ่มจับเวลา 7 นาทีเมื่อเข้าหน้า Dashboard
+            resetIdleTimer();
 
             if (animate) {
                 backgroundFetch();
@@ -523,6 +659,7 @@
         }
 
         function logout() {
+            logActivity('ออกจากระบบ', 'ผู้ใช้ออกจากระบบเรียบร้อย');
             if (idleTimer) clearTimeout(idleTimer);
 
             localStorage.removeItem('isLoggedIn');
@@ -668,8 +805,10 @@
             const inputVal = document.getElementById('daily-event-input').value.trim();
             if (inputVal) {
                 dailyEvents[selectedDateStr] = inputVal;
+                logActivity('บันทึกกิจกรรมประจำวัน', `วันที่ ${selectedDateStr}: ${inputVal}`);
             } else {
                 delete dailyEvents[selectedDateStr];
+                logActivity('ลบกิจกรรมประจำวัน', `วันที่ ${selectedDateStr}`);
             }
             localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
             selectDate(selectedDateStr);
@@ -678,6 +817,7 @@
 
         function deleteDailyEvent() {
             if (dailyEvents[selectedDateStr]) {
+                logActivity('ลบกิจกรรมประจำวัน', `วันที่ ${selectedDateStr}`);
                 delete dailyEvents[selectedDateStr];
                 localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
                 selectDate(selectedDateStr);
@@ -745,6 +885,7 @@
                 });
 
                 if (updated) {
+                    logActivity('ลบประวัติวิชา/รหัส', `ประเภท: ${type}, ค่า: ${value}`);
                     localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                     renderTasks();
                     renderCalendar();
@@ -858,6 +999,7 @@
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.isPinned = !task.isPinned;
+                logActivity('ปักหมุดการบ้าน', `วิชา: ${task.subject || task.code}, สถานะปักหมุด: ${task.isPinned}`);
                 localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                 renderTasks();
                 renderCalendar();
@@ -872,7 +1014,11 @@
         }
 
         async function deleteTask(id) {
+            const taskToDelete = tasks.find(t => t.id === id);
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
+                if (taskToDelete) {
+                    logActivity('ลบการบ้าน', `วิชา: ${taskToDelete.subject || taskToDelete.code}, รายละเอียด: ${taskToDelete.detail}`);
+                }
                 tasks = tasks.filter(t => t.id !== id);
                 localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                 renderTasks();
@@ -923,6 +1069,8 @@
 
             tasks.unshift(newTask);
             localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
+
+            logActivity('เพิ่มการบ้าน', `วิชา: ${subject} (${code}), รายละเอียด: ${detail}`);
 
             document.getElementById('task-code').value = '';
             document.getElementById('task-subject').value = '';
