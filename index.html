@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V1.238</title>
+    <title>Homework M.113 - V1.2345</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.238)</p>
+            <p class="text-xs text-slate-400 mt-1 font-medium">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อดูการบ้าน (V1.2345)</p>
         </div>
 
         <div class="space-y-1.5 mb-4">
@@ -89,11 +89,15 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-100/80 rounded-2xl mb-4 text-center text-xs font-bold">
-            <button id="tab-daily" onclick="switchTab('daily')" class="py-2 rounded-xl transition bg-pink-500 text-white shadow-sm">ส่งวันนี้</button>
-            <button id="tab-pending" onclick="switchTab('pending')" class="py-2 rounded-xl transition text-slate-500">งานค้าง</button>
-            <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
+        <!-- Navigation Tabs & Add Button ตามแบบ V1.2345 -->
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100/80 rounded-2xl text-center text-xs font-bold">
+                <button id="tab-pending" onclick="switchTab('pending')" class="py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm">งานค้าง</button>
+                <button id="tab-calendar" onclick="switchTab('calendar')" class="py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
+            </div>
+            <button id="btn-toggle-add" onclick="toggleAddForm()" class="hidden py-2.5 px-4 rounded-2xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow-md shadow-pink-500/20 transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-plus"></i> เพิ่ม งานค้าง
+            </button>
         </div>
 
         <!-- NOTICE Banner -->
@@ -101,7 +105,7 @@
             <span class="bg-pink-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
                 <i class="fa-solid fa-bullhorn"></i> NOTICE
             </span>
-            <span id="notice-text" class="text-slate-500 text-[11px]">แสดงเฉพาะรายการการบ้านที่มีกำหนดส่งวันนี้</span>
+            <span id="notice-text" class="text-slate-500 text-[11px]">แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด</span>
         </div>
 
         <!-- ================= VIEW 1: CALENDAR VIEW ================= -->
@@ -170,7 +174,7 @@
         <!-- ================= VIEW 2: TASKS VIEW ================= -->
         <div id="view-tasks" class="space-y-4">
             
-            <div id="admin-form" class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
+            <div id="admin-form" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
                 <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <i class="fa-solid fa-plus text-pink-500"></i> เพิ่มรายการการบ้าน <span class="text-[10px] text-rose-500 font-normal">(ต้องกรอกทุกช่อง)</span>
                 </h3>
@@ -211,7 +215,7 @@
 
             <div class="space-y-2.5">
                 <div class="flex justify-between items-center">
-                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">TASKS DUE TODAY</span>
+                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
                     <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ITEMS</span>
                 </div>
                 <div id="task-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1"></div>
@@ -224,7 +228,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version 1.238
+            Version 1.2345
         </span>
     </footer>
 
@@ -280,7 +284,7 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCRhkQiMI19wY08RoCk3Zd09bd5Y-Hb3tbWx1X4Fj845G5bD10BBFprmti2iqKle1X/exec';
 
         let currentRole = 'student';
-        let currentTab = 'daily';
+        let currentTab = 'pending';
         let currentDate = new Date();
 
         function getFormattedDate(d) {
@@ -293,7 +297,7 @@
         const todayStr = getFormattedDate(new Date());
         let selectedDateStr = todayStr;
         let tasks = [];
-        let dailyEvents = {}; // เก็บกิจกรรมรายวัน เช่น { '2026-10-12': 'สอบกลางภาค' }
+        let dailyEvents = {};
 
         const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -371,30 +375,29 @@
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
 
-            const adminForm = document.getElementById('admin-form');
+            const btnToggleAdd = document.getElementById('btn-toggle-add');
             const btnManageHistory = document.getElementById('btn-manage-history');
             const adminEventActions = document.getElementById('admin-event-actions');
             const adminEventInputArea = document.getElementById('admin-event-input-area');
 
             if (currentRole === 'admin') {
-                adminForm.classList.remove('hidden');
+                btnToggleAdd.classList.remove('hidden');
                 btnManageHistory.classList.remove('hidden');
                 adminEventActions.classList.remove('hidden');
                 adminEventInputArea.classList.remove('hidden');
             } else {
-                adminForm.classList.add('hidden');
+                btnToggleAdd.classList.add('hidden');
                 btnManageHistory.classList.add('hidden');
                 adminEventActions.classList.add('hidden');
                 adminEventInputArea.classList.add('hidden');
             }
             
-            // โหลดกิจกรรมที่เคยบันทึกไว้ใน LocalStorage
             const savedEvents = localStorage.getItem('homework_daily_events');
             if (savedEvents) {
                 try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
             }
 
-            switchTab('daily');
+            switchTab('pending');
             fetchHomeworks();
         }
 
@@ -406,32 +409,36 @@
             document.getElementById('password').value = '';
         }
 
+        function toggleAddForm() {
+            if (currentRole !== 'admin') return;
+            const adminForm = document.getElementById('admin-form');
+            if (adminForm.classList.contains('hidden')) {
+                adminForm.classList.remove('hidden');
+            } else {
+                adminForm.classList.add('hidden');
+            }
+        }
+
         function switchTab(tab) {
             currentTab = tab;
-            const btnDaily = document.getElementById('tab-daily');
             const btnPending = document.getElementById('tab-pending');
             const btnCalendar = document.getElementById('tab-calendar');
             const viewCalendar = document.getElementById('view-calendar');
             const viewTasks = document.getElementById('view-tasks');
             const noticeText = document.getElementById('notice-text');
 
-            [btnDaily, btnPending, btnCalendar].forEach(b => b.className = "py-2 rounded-xl transition text-slate-500");
+            [btnPending, btnCalendar].forEach(b => b.className = "py-2.5 rounded-xl transition text-slate-500");
 
             if (tab === 'calendar') {
-                btnCalendar.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                btnCalendar.className = "py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
                 viewCalendar.classList.remove('hidden');
                 viewTasks.classList.add('hidden');
                 noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้านและกิจกรรม";
                 renderCalendar();
                 selectDate(selectedDateStr);
             } else {
-                if (tab === 'daily') {
-                    btnDaily.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
-                    noticeText.innerText = "แสดงเฉพาะรายการการบ้านที่มีกำหนดส่งวันนี้";
-                } else if (tab === 'pending') {
-                    btnPending.className = "py-2 rounded-xl transition bg-pink-500 text-white shadow-sm";
-                    noticeText.innerText = "แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด";
-                }
+                btnPending.className = "py-2.5 rounded-xl transition bg-pink-500 text-white shadow-sm";
+                noticeText.innerText = "แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด";
                 viewCalendar.classList.add('hidden');
                 viewTasks.classList.remove('hidden');
                 renderTasks();
@@ -466,7 +473,6 @@
                     textStyle = "text-white font-extrabold";
                 }
 
-                // แสดงจุดสัญลักษณ์ (มีงานสีชมพู/ขาว, มีกิจกรรมสีม่วง)
                 let indicatorsHTML = '<div class="flex gap-1 items-center justify-center mt-0.5">';
                 if (hasDueTask) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-white' : 'bg-rose-500'} rounded-full"></span>`;
                 if (hasEvent) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-amber-300' : 'bg-purple-600'} rounded-full"></span>`;
@@ -491,7 +497,6 @@
                 dateLabelEl.innerText = `รายการวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
             }
 
-            // จัดการแสดงผลกิจกรรมประจำวัน
             const eventTextView = document.getElementById('event-text-view');
             const dailyEventInput = document.getElementById('daily-event-input');
             const currentEvent = dailyEvents[selectedDateStr] || '';
@@ -504,7 +509,6 @@
                 dailyEventInput.value = currentEvent;
             }
 
-            // จัดการแสดงผลการบ้านในวันนั้น
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             const container = document.getElementById('selected-date-tasks');
             const countEl = document.getElementById('selected-task-count');
@@ -632,21 +636,15 @@
             taskContainer.innerHTML = '';
 
             let filteredTasks = tasks;
-            if (currentTab === 'daily') {
-                filteredTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === todayStr);
-                if (pinnedSection) pinnedSection.classList.add('hidden');
-                if (taskSectionTitle) taskSectionTitle.innerText = "TASKS DUE TODAY";
-            } else {
-                if (pinnedSection) pinnedSection.classList.remove('hidden');
-                if (taskSectionTitle) taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
-            }
+            if (pinnedSection) pinnedSection.classList.remove('hidden');
+            if (taskSectionTitle) taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
 
             const pinnedTasks = filteredTasks.filter(t => t.isPinned);
             const normalTasks = filteredTasks.filter(t => !t.isPinned);
             const countEl = document.getElementById('task-count');
             if (countEl) countEl.innerText = `${filteredTasks.length} ITEMS`;
 
-            if (currentTab !== 'daily' && pinnedSection) {
+            if (pinnedSection) {
                 if (pinnedTasks.length === 0) {
                     pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
                 } else {
@@ -654,8 +652,8 @@
                 }
             }
 
-            if (normalTasks.length === 0 && (currentTab === 'daily' || pinnedTasks.length === 0)) {
-                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">${currentTab === 'daily' ? 'ไม่มีงานที่ต้องส่งวันนี้' : 'ไม่มีรายการงานทั่วไป'}</div>`;
+            if (normalTasks.length === 0 && pinnedTasks.length === 0) {
+                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">ไม่มีรายการงานทั่วไป</div>`;
             } else {
                 normalTasks.forEach(item => { taskContainer.innerHTML += createTaskCardHTML(item, false); });
             }
@@ -773,7 +771,6 @@
                 return;
             }
 
-            // ระบบป้องกันวันสั่งย้อนหลัง
             if (assignDate > dueDate) {
                 alert('❌ วันที่สั่งงานไม่สามารถอยู่หลังวันที่ส่งงานได้ครับ!');
                 return;
@@ -798,6 +795,7 @@
             document.getElementById('task-detail').value = '';
             document.getElementById('assign-date-input').value = '';
             document.getElementById('due-date-input').value = '';
+            document.getElementById('admin-form').classList.add('hidden');
 
             selectedDateStr = newTask.dueDate;
             renderTasks();
