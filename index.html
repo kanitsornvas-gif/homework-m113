@@ -66,7 +66,6 @@
                 <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
             </div>
             <div class="flex items-center gap-1.5">
-                <!-- ปุ่มดูประวัติการใช้งานเฉพาะ Admin -->
                 <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งานของผู้ใช้" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                 </button>
@@ -223,7 +222,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Strict 7-Min Idle Lock
+            Version Exact Expiry Logging
         </span>
     </footer>
 
@@ -339,7 +338,7 @@
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
         // -----------------------------------------------------------------
-        // STRICT IDLE & TIMEOUT CHECK
+        // STRICT IDLE & TIMEOUT CHECK (คำนวณเวลาหมดอายุจริง)
         // -----------------------------------------------------------------
         function resetIdleTimer() {
             if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -360,9 +359,19 @@
             const savedLastActive = localStorage.getItem('lastActiveTime');
 
             if (isLoggedIn === 'true' && savedLastActive) {
-                const diff = Date.now() - parseInt(savedLastActive, 10);
+                const lastActive = parseInt(savedLastActive, 10);
+                const diff = Date.now() - lastActive;
+
                 if (diff >= IDLE_TIMEOUT_MS) {
-                    logout();
+                    // คำนวณเวลาหมดอายุที่แท้จริง (เวลา Active ล่าสุด + 7 นาที)
+                    const exactExpiryDate = new Date(lastActive + IDLE_TIMEOUT_MS);
+                    const timeString = `${exactExpiryDate.getDate()}/${exactExpiryDate.getMonth()+1}/${exactExpiryDate.getFullYear()+543} ${String(exactExpiryDate.getHours()).padStart(2,'0')}:${String(exactExpiryDate.getMinutes()).padStart(2,'0')}:${String(exactExpiryDate.getSeconds()).padStart(2,'0')}`;
+
+                    // บันทึก Log ด้วยเวลาที่หมดอายุเป๊ะๆ
+                    logActivityWithCustomTime('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที', timeString);
+                    
+                    // ออกจากระบบโดยไม่ต้องลง Log logout ซ้ำ
+                    performLogoutCleanup();
                     alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
                     return false;
                 }
@@ -372,8 +381,11 @@
 
         function autoLogout() {
             if (localStorage.getItem('isLoggedIn') === 'true') {
-                logActivity('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที');
-                logout();
+                const now = new Date();
+                const timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+                
+                logActivityWithCustomTime('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที', timeString);
+                performLogoutCleanup();
                 alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
             }
         }
@@ -383,7 +395,7 @@
         });
 
         // -----------------------------------------------------------------
-        // ACTIVITY LOGGING SYSTEM
+        // ACTIVITY LOGGING SYSTEM (ปรับให้รองรับระบุเวลา Custom ได้)
         // -----------------------------------------------------------------
         function getDeviceInfo() {
             const ua = navigator.userAgent;
@@ -395,13 +407,17 @@
         }
 
         async function logActivity(action, details = '') {
-            const device = getDeviceInfo();
             const now = new Date();
             const timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+            logActivityWithCustomTime(action, details, timeString);
+        }
+
+        async function logActivityWithCustomTime(action, details, customTimeString) {
+            const device = getDeviceInfo();
 
             const logEntry = {
                 id: Date.now(),
-                timestamp: timeString,
+                timestamp: customTimeString,
                 username: currentUsername || 'Guest',
                 displayName: localStorage.getItem('userName') || currentUsername.toUpperCase() || 'Guest',
                 role: currentRole,
@@ -669,6 +685,10 @@
 
         function logout() {
             logActivity('ออกจากระบบ', 'ผู้ใช้ออกจากระบบเรียบร้อย');
+            performLogoutCleanup();
+        }
+
+        function performLogoutCleanup() {
             if (idleTimer) clearTimeout(idleTimer);
 
             localStorage.removeItem('isLoggedIn');
