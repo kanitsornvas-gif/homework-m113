@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1.7 Fast Speed</title>
+    <title>Homework M.113 - V.1.8 Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -218,7 +218,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Lightning Fast UI Enabled
+            Fast Speed & Event Bug Fixed
         </span>
     </footer>
 
@@ -468,7 +468,12 @@
             const eventTextView = document.getElementById('event-text-view');
             eventTextView.innerText = currentEvent ? currentEvent : '- ไม่มีกิจกรรมพิเศษในวันนี้ -';
             eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold" : "text-xs text-slate-400 font-medium";
-            document.getElementById('daily-event-input').value = currentEvent;
+            
+            // ป้องกันไม่ให้ค่าใน input ซ้ำกันตอนเปลี่ยนวัน
+            const inputEl = document.getElementById('daily-event-input');
+            if (inputEl.value !== currentEvent) {
+                inputEl.value = currentEvent;
+            }
 
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
@@ -481,7 +486,11 @@
 
         function saveDailyEvent() {
             const val = document.getElementById('daily-event-input').value.trim();
-            if (val) dailyEvents[selectedDateStr] = val; else delete dailyEvents[selectedDateStr];
+            if (val) {
+                dailyEvents[selectedDateStr] = val;
+            } else {
+                delete dailyEvents[selectedDateStr];
+            }
             localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
             selectDate(selectedDateStr);
             alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
@@ -490,6 +499,7 @@
         function deleteDailyEvent() {
             delete dailyEvents[selectedDateStr];
             localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
+            document.getElementById('daily-event-input').value = '';
             selectDate(selectedDateStr);
             alert('ลบกิจกรรมแล้ว');
         }
@@ -636,7 +646,6 @@
                 action: 'add'
             };
 
-            // [Optimistic UI] แสดงผลทันที ไม่ต้องรอ Google Sheets ตอบกลับ
             tasks.unshift(newTask);
             localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
 
@@ -653,7 +662,6 @@
             selectDate(selectedDateStr);
             document.getElementById('success-popup').classList.remove('hidden');
 
-            // ส่งข้อมูลไปบันทึกเบื้องหลังแบบเงียบๆ
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
