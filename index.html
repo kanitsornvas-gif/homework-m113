@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1.5 beta </title>
+    <title>Homework M.113 - V.1.5 beta</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -194,7 +194,7 @@
                     </label>
                 </div>
 
-                <button onclick="addTask()" class="w-full py-2.5 bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold rounded-xl text-xs transition shadow-md shadow-[#FF75BC]/20">
+                <button id="add-task-btn" onclick="addTask()" class="w-full py-2.5 bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold rounded-xl text-xs transition shadow-md shadow-[#FF75BC]/20">
                     บันทึกข้อมูล
                 </button>
             </div>
@@ -500,7 +500,7 @@
                     </div>
                     ${log.details ? `<p class="text-[11px] text-slate-500 bg-white p-2 rounded-xl border border-slate-100 mt-1">${escapeHtml(log.details)}</p>` : ''}
                     
-                    <button onclick="deleteSingleLog(${log.id})" title="ลบรายการนี้" class="absolute top-2.5 right-2 text-slate-300 hover:text-rose-500 text-xs p-1 transition">
+                    <button onclick="deleteSingleLog('${log.id}')" title="ลบรายการนี้" class="absolute top-2.5 right-2 text-slate-300 hover:text-rose-500 text-xs p-1 transition">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -510,7 +510,7 @@
         async function deleteSingleLog(logId) {
             if (currentRole !== 'admin') return;
             if (confirm('คุณต้องการลบประวัติรายการนี้ใช่หรือไม่?')) {
-                userLogs = userLogs.filter(l => l.id !== logId);
+                userLogs = userLogs.filter(l => String(l.id) !== String(logId));
                 localStorage.setItem('homework_cached_logs', JSON.stringify(userLogs));
                 renderLogsList();
 
@@ -576,9 +576,9 @@
             if (!cleanStr) return '-';
             const parts = cleanStr.split('-');
             if (parts.length < 3) return dateStr;
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]) - 1;
-            const day = parseInt(parts[2]);
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
             const d = new Date(year, month, day);
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
@@ -838,8 +838,8 @@
 
             const parts = selectedDateStr.split('-');
             const dateLabelEl = document.getElementById('selected-date-label');
-            if (dateLabelEl) {
-                dateLabelEl.innerText = `รายการวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
+            if (dateLabelEl && parts.length === 3) {
+                dateLabelEl.innerText = `รายการวันที่ ${parseInt(parts[2], 10)} ${MONTH_NAMES_TH[parseInt(parts[1], 10) - 1]} ${parseInt(parts[0], 10) + 543}`;
             }
 
             const eventTextView = document.getElementById('event-text-view');
@@ -1013,10 +1013,10 @@
             let pinButton = '';
             let deleteButton = '';
 
-            deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
+            deleteButton = `<button onclick="deleteTask('${item.id}')" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
 
             if (currentRole === 'admin') {
-                pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
+                pinButton = `<button onclick="togglePin('${item.id}')" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
             }
 
             const actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
@@ -1066,7 +1066,7 @@
                 alert('คุณไม่มีสิทธิ์ใช้งานฟังก์ชันนี้');
                 return;
             }
-            const task = tasks.find(t => t.id === id);
+            const task = tasks.find(t => String(t.id) === String(id));
             if (task) {
                 task.isPinned = !task.isPinned;
                 logActivity('ปักหมุดการบ้าน', `วิชา: ${task.subject || task.code}, สถานะปักหมุด: ${task.isPinned}`);
@@ -1085,12 +1085,12 @@
         }
 
         async function deleteTask(id) {
-            const taskToDelete = tasks.find(t => t.id === id);
+            const taskToDelete = tasks.find(t => String(t.id) === String(id));
             if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
                 if (taskToDelete) {
                     logActivity('ลบการบ้าน', `วิชา: ${taskToDelete.subject || taskToDelete.code}, รายละเอียด: ${taskToDelete.detail}`);
                 }
-                tasks = tasks.filter(t => t.id !== id);
+                tasks = tasks.filter(t => String(t.id) !== String(id));
                 localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
                 renderTasks();
                 renderCalendar();
@@ -1114,6 +1114,7 @@
             const detail = document.getElementById('task-detail').value.trim();
             const assignDate = document.getElementById('assign-date-input').value;
             const dueDate = document.getElementById('due-date-input').value;
+            const addBtn = document.getElementById('add-task-btn');
 
             if (!code || !subject || !detail || !assignDate || !dueDate) {
                 alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
@@ -1125,8 +1126,10 @@
                 return;
             }
 
+            if (addBtn) addBtn.disabled = true;
+
             const newTask = { 
-                id: Date.now(), 
+                id: Date.now().toString(), 
                 code, 
                 subject, 
                 detail, 
@@ -1157,13 +1160,18 @@
             selectDate(selectedDateStr);
             showSuccessPopup();
 
-            // ส่งข้อมูลลง Google Sheets ปรับรองรับ Safari บน iPadOS
-            await fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                body: JSON.stringify(newTask) 
-            }).catch(console.error);
+            try {
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(newTask) 
+                });
+            } catch (err) {
+                console.error('เกิดข้อผิดพลาดขณะส่งข้อมูล:', err);
+            } finally {
+                if (addBtn) addBtn.disabled = false;
+            }
         }
     </script>
 </body>
