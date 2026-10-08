@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1.8 Fixed</title>
+    <title>Homework M.113 - V.1.9 Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -144,18 +144,27 @@
                     <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
                 </div>
 
-                <div id="event-box" class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2">
+                <!-- กล่องกิจกรรมแก้ไขแยกส่วนเด็ดขาด -->
+                <div id="event-box" class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2.5">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
                             <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรมพิเศษ:
                         </span>
                         <div>
-                            <button onclick="saveDailyEvent()" class="text-[10px] bg-[#50D8FF] text-slate-900 font-extrabold px-2 py-1 rounded-lg">บันทึก</button>
-                            <button onclick="deleteDailyEvent()" class="text-[10px] bg-rose-100 text-rose-600 font-bold px-2 py-1 rounded-lg ml-1">ลบ</button>
+                            <button onclick="saveDailyEvent()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2.5 py-1 rounded-lg transition">บันทึก</button>
+                            <button onclick="deleteDailyEvent()" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-2.5 py-1 rounded-lg transition ml-1">ลบ</button>
                         </div>
                     </div>
-                    <p id="event-text-view" class="text-xs text-sky-950 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
-                    <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรมของวันนี้" class="w-full p-2 text-xs bg-white rounded-xl border border-[#50D8FF]/50 focus:outline-none">
+                    
+                    <!-- ส่วนแสดงผลข้อความ -->
+                    <div class="bg-white/80 p-2 rounded-xl border border-sky-100">
+                        <p id="event-text-view" class="text-xs text-sky-950 font-bold">- ไม่มีกิจกรรมพิเศษในวันนี้ -</p>
+                    </div>
+
+                    <!-- ช่องสำหรับพิมพ์กรอก -->
+                    <div>
+                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรมใหม่เพื่อบันทึก..." class="w-full p-2.5 text-xs bg-white rounded-xl border border-[#50D8FF]/50 focus:outline-none focus:border-[#50D8FF]">
+                    </div>
                 </div>
 
                 <div id="selected-date-tasks" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
@@ -218,7 +227,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Fast Speed & Event Bug Fixed
+            Event Display Bug Completely Fixed
         </span>
     </footer>
 
@@ -465,15 +474,16 @@
             }
 
             const currentEvent = dailyEvents[selectedDateStr] || '';
+            
+            // อัปเดตก่องแสดงผลข้อความ
             const eventTextView = document.getElementById('event-text-view');
             eventTextView.innerText = currentEvent ? currentEvent : '- ไม่มีกิจกรรมพิเศษในวันนี้ -';
             eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold" : "text-xs text-slate-400 font-medium";
             
-            // ป้องกันไม่ให้ค่าใน input ซ้ำกันตอนเปลี่ยนวัน
+            // ล้างหรือเซ็ตค่าในช่อง Input แยกต่างหาก
             const inputEl = document.getElementById('daily-event-input');
-            if (inputEl.value !== currentEvent) {
-                inputEl.value = currentEvent;
-            }
+            inputEl.value = ''; // ให้ช่องพิมพ์ว่างเสมอเวลาเปลี่ยนวัน จะได้ไม่ซ้ำกัน
+            inputEl.placeholder = currentEvent ? `แก้ไข: ${currentEvent}` : 'พิมพ์กิจกรรมใหม่ของวันนี้...';
 
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
@@ -488,18 +498,17 @@
             const val = document.getElementById('daily-event-input').value.trim();
             if (val) {
                 dailyEvents[selectedDateStr] = val;
+                localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
+                selectDate(selectedDateStr);
+                alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
             } else {
-                delete dailyEvents[selectedDateStr];
+                alert('กรุณาพิมพ์ข้อความกิจกรรมก่อนกดบันทึก');
             }
-            localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
-            selectDate(selectedDateStr);
-            alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
         }
 
         function deleteDailyEvent() {
             delete dailyEvents[selectedDateStr];
             localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
-            document.getElementById('daily-event-input').value = '';
             selectDate(selectedDateStr);
             alert('ลบกิจกรรมแล้ว');
         }
