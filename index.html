@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.1.9 Fixed</title>
+    <title>Homework M.113 - V.2.0 Popup Event</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -92,7 +92,7 @@
                 <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold text-xs shadow-md shadow-[#FF75BC]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
                 </button>
-                <button onclick="jumpToEventCreation()" id="btn-event-create" class="py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
+                <button onclick="openEventModal()" id="btn-event-create" class="py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-star"></i> สร้างกิจกรรม
                 </button>
             </div>
@@ -144,27 +144,12 @@
                     <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
                 </div>
 
-                <!-- กล่องกิจกรรมแก้ไขแยกส่วนเด็ดขาด -->
-                <div id="event-box" class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2.5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
-                            <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรมพิเศษ:
-                        </span>
-                        <div>
-                            <button onclick="saveDailyEvent()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2.5 py-1 rounded-lg transition">บันทึก</button>
-                            <button onclick="deleteDailyEvent()" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-2.5 py-1 rounded-lg transition ml-1">ลบ</button>
-                        </div>
+                <div class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i class="fa-solid fa-star text-[#50D8FF] shrink-0"></i>
+                        <span id="event-text-view" class="text-xs text-sky-950 font-bold truncate">- ไม่มีกิจกรรมพิเศษในวันนี้ -</span>
                     </div>
-                    
-                    <!-- ส่วนแสดงผลข้อความ -->
-                    <div class="bg-white/80 p-2 rounded-xl border border-sky-100">
-                        <p id="event-text-view" class="text-xs text-sky-950 font-bold">- ไม่มีกิจกรรมพิเศษในวันนี้ -</p>
-                    </div>
-
-                    <!-- ช่องสำหรับพิมพ์กรอก -->
-                    <div>
-                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรมใหม่เพื่อบันทึก..." class="w-full p-2.5 text-xs bg-white rounded-xl border border-[#50D8FF]/50 focus:outline-none focus:border-[#50D8FF]">
-                    </div>
+                    <button onclick="openEventModal()" class="shrink-0 text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2.5 py-1.5 rounded-xl transition">จัดการกิจกรรม</button>
                 </div>
 
                 <div id="selected-date-tasks" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
@@ -227,7 +212,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Event Display Bug Completely Fixed
+            Popup Event Modal Enabled
         </span>
     </footer>
 
@@ -242,6 +227,28 @@
             <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 text-white font-bold text-xs rounded-xl">
                 ตกลง
             </button>
+        </div>
+    </div>
+
+    <!-- POPUP EVENT MODAL (สร้างกิจกรรมใหม่) -->
+    <div id="event-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-xs font-extrabold text-sky-900 flex items-center gap-1.5">
+                    <i class="fa-solid fa-star text-[#50D8FF]"></i> จัดการกิจกรรมประจำวัน
+                </h3>
+                <button onclick="closeEventModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <span id="modal-date-label" class="text-[11px] font-bold text-slate-500 block mb-1">วันที่เลือก: -</span>
+                    <input type="text" id="daily-event-input" placeholder="พิมพ์ชื่อกิจกรรม หรือ วันสำคัญ..." class="w-full p-3 text-xs bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#50D8FF] font-medium">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="deleteDailyEvent()" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition">ลบกิจกรรม</button>
+                <button onclick="saveDailyEvent()" class="py-2.5 bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs rounded-xl transition shadow-md shadow-[#50D8FF]/20">บันทึก</button>
+            </div>
         </div>
     </div>
 
@@ -391,11 +398,6 @@
             if (!adminForm.classList.contains('hidden')) adminForm.scrollIntoView({ behavior: 'smooth' });
         }
 
-        function jumpToEventCreation() {
-            switchTab('calendar');
-            document.getElementById('daily-event-input').focus();
-        }
-
         function switchTab(tab) {
             currentTab = tab;
             const btnPending = document.getElementById('tab-pending');
@@ -474,16 +476,9 @@
             }
 
             const currentEvent = dailyEvents[selectedDateStr] || '';
-            
-            // อัปเดตก่องแสดงผลข้อความ
             const eventTextView = document.getElementById('event-text-view');
             eventTextView.innerText = currentEvent ? currentEvent : '- ไม่มีกิจกรรมพิเศษในวันนี้ -';
-            eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold" : "text-xs text-slate-400 font-medium";
-            
-            // ล้างหรือเซ็ตค่าในช่อง Input แยกต่างหาก
-            const inputEl = document.getElementById('daily-event-input');
-            inputEl.value = ''; // ให้ช่องพิมพ์ว่างเสมอเวลาเปลี่ยนวัน จะได้ไม่ซ้ำกัน
-            inputEl.placeholder = currentEvent ? `แก้ไข: ${currentEvent}` : 'พิมพ์กิจกรรมใหม่ของวันนี้...';
+            eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold truncate" : "text-xs text-slate-400 font-medium truncate";
 
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
@@ -494,22 +489,39 @@
                 : matchedTasks.map(t => createTaskCardHTML(t, t.isPinned)).join('');
         }
 
+        // จัดการเปิด/ปิด ป๊อปอัปสร้างกิจกรรม
+        function openEventModal() {
+            switchTab('calendar');
+            const parts = selectedDateStr.split('-');
+            if (parts.length === 3) {
+                document.getElementById('modal-date-label').innerText = `วันที่เลือก: ${parseInt(parts[2], 10)} ${MONTH_NAMES_TH[parseInt(parts[1], 10) - 1]} ${parseInt(parts[0], 10) + 543}`;
+            }
+            document.getElementById('daily-event-input').value = dailyEvents[selectedDateStr] || '';
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
         function saveDailyEvent() {
             const val = document.getElementById('daily-event-input').value.trim();
             if (val) {
                 dailyEvents[selectedDateStr] = val;
-                localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
-                selectDate(selectedDateStr);
-                alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
             } else {
-                alert('กรุณาพิมพ์ข้อความกิจกรรมก่อนกดบันทึก');
+                delete dailyEvents[selectedDateStr];
             }
+            localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
+            selectDate(selectedDateStr);
+            closeEventModal();
+            alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
         }
 
         function deleteDailyEvent() {
             delete dailyEvents[selectedDateStr];
             localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
             selectDate(selectedDateStr);
+            closeEventModal();
             alert('ลบกิจกรรมแล้ว');
         }
 
