@@ -64,10 +64,6 @@
                 <span class="font-extrabold text-[#FF75BC] text-lg tracking-wider">HOMEWORK</span>
                 <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
                 <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
-                <!-- ยศ ADMINISTRATOR สำหรับแอดมิน -->
-                <span id="admin-tag" class="hidden bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-md shadow-sm border border-purple-300 flex items-center gap-1">
-                    <i class="fa-solid fa-user-shield text-[9px]"></i> Administrator
-                </span>
             </div>
             <div class="flex items-center gap-1.5">
                 <!-- ปุ่มดูประวัติการใช้งานเฉพาะ Admin -->
@@ -227,7 +223,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Administrator & Activity Logging Sync
+            Version Strict 7-Min Idle Lock
         </span>
     </footer>
 
@@ -307,6 +303,7 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvlcyMwTWNwdZYGu8Tcnhb5krceutmqxtOMIhFXjTZ73FGKf_Uij4VV5MaYklalJzf/exec';
 
+        // 7 นาที = 420,000 มิลลิวินาที
         const IDLE_TIMEOUT_MS = 7 * 60 * 1000;
         let idleTimer = null;
 
@@ -342,7 +339,51 @@
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
         // -----------------------------------------------------------------
-        // ACTIVITY LOGGING SYSTEM (ระบบบันทึกประวัติกิจกรรมผู้ใช้งาน)
+        // STRICT IDLE & TIMEOUT CHECK
+        // -----------------------------------------------------------------
+        function resetIdleTimer() {
+            if (localStorage.getItem('isLoggedIn') !== 'true') {
+                if (idleTimer) clearTimeout(idleTimer);
+                return;
+            }
+
+            localStorage.setItem('lastActiveTime', Date.now().toString());
+
+            if (idleTimer) clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                autoLogout();
+            }, IDLE_TIMEOUT_MS);
+        }
+
+        function checkSessionExpiry() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            const savedLastActive = localStorage.getItem('lastActiveTime');
+
+            if (isLoggedIn === 'true' && savedLastActive) {
+                const diff = Date.now() - parseInt(savedLastActive, 10);
+                if (diff >= IDLE_TIMEOUT_MS) {
+                    logout();
+                    alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function autoLogout() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                logActivity('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที');
+                logout();
+                alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
+            }
+        }
+
+        ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+            window.addEventListener(evt, resetIdleTimer, { passive: true });
+        });
+
+        // -----------------------------------------------------------------
+        // ACTIVITY LOGGING SYSTEM
         // -----------------------------------------------------------------
         function getDeviceInfo() {
             const ua = navigator.userAgent;
@@ -369,13 +410,11 @@
                 device: device
             };
 
-            // บันทึกใน LocalStorage
             let logs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
             logs.unshift(logEntry);
-            if (logs.length > 50) logs = logs.slice(0, 50); // เก็บสำรองสูงสุด 50 รายการ
+            if (logs.length > 50) logs = logs.slice(0, 50);
             localStorage.setItem('homework_cached_logs', JSON.stringify(logs));
 
-            // บันทึกซิงค์ไปยัง Google Sheets
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -446,34 +485,6 @@
             `).join('');
         }
 
-        // -----------------------------------------------------------------
-        // AUTO LOGOUT SYSTEM (7 นาที)
-        // -----------------------------------------------------------------
-        function resetIdleTimer() {
-            if (localStorage.getItem('isLoggedIn') !== 'true') {
-                if (idleTimer) clearTimeout(idleTimer);
-                return;
-            }
-
-            if (idleTimer) clearTimeout(idleTimer);
-
-            idleTimer = setTimeout(() => {
-                autoLogout();
-            }, IDLE_TIMEOUT_MS);
-        }
-
-        function autoLogout() {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                logActivity('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที');
-                logout();
-                alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
-            }
-        }
-
-        ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
-            window.addEventListener(evt, resetIdleTimer, { passive: true });
-        });
-
         function escapeHtml(str) {
             if (!str) return '';
             return String(str)
@@ -528,13 +539,14 @@
                 try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
             }
 
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            if (isLoggedIn === 'true') {
-                currentRole = localStorage.getItem('userRole') || 'member';
-                currentUsername = localStorage.getItem('usernameKey') || '';
-                const savedName = localStorage.getItem('userName') || currentUsername.toUpperCase();
-                openDashboard(savedName, false);
-                resetIdleTimer();
+            if (checkSessionExpiry()) {
+                const isLoggedIn = localStorage.getItem('isLoggedIn');
+                if (isLoggedIn === 'true') {
+                    currentRole = localStorage.getItem('userRole') || 'member';
+                    currentUsername = localStorage.getItem('usernameKey') || '';
+                    const savedName = localStorage.getItem('userName') || currentUsername.toUpperCase();
+                    openDashboard(savedName, false);
+                }
             }
 
             backgroundFetch();
@@ -634,16 +646,13 @@
 
             const btnManageHistory = document.getElementById('btn-manage-history');
             const btnViewLogs = document.getElementById('btn-view-logs');
-            const adminTag = document.getElementById('admin-tag');
 
             if (currentRole === 'admin') {
                 btnManageHistory.classList.remove('hidden');
                 btnViewLogs.classList.remove('hidden');
-                adminTag.classList.remove('hidden');
             } else {
                 btnManageHistory.classList.add('hidden');
                 btnViewLogs.classList.add('hidden');
-                adminTag.classList.add('hidden');
             }
             
             switchTab('pending');
@@ -666,6 +675,7 @@
             localStorage.removeItem('userRole');
             localStorage.removeItem('userName');
             localStorage.removeItem('usernameKey');
+            localStorage.removeItem('lastActiveTime');
 
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
