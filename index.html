@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.2.1 Multi Events</title>
+    <title>Homework M.113 - V.2.2 Multi Events</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -214,9 +214,9 @@
 
     <div class="flex-grow"></div>
 
-    <!-- Footer ซิงค์กับ Title อัตโนมัติ -->
+    <!-- Footer เป็น Homework M.113 ตามต้องการ -->
     <footer class="py-4 text-center z-20 w-full">
-        <span id="footer-version" class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
+        <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
             Homework M.113
         </span>
     </footer>
@@ -324,10 +324,6 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            // ซิงค์ข้อความที่ Footer กับหัวข้อเว็บ (Title) อัตโนมัติ
-            const footerEl = document.getElementById('footer-version');
-            if (footerEl) footerEl.innerText = document.title;
-
             const savedTasks = localStorage.getItem('homework_cached_tasks');
             if (savedTasks) {
                 try { tasks = JSON.parse(savedTasks); } catch(e) {}
