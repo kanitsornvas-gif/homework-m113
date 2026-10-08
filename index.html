@@ -144,7 +144,6 @@
                     <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
                 </div>
 
-                <!-- กล่องแสดงรายการกิจกรรมทั้งหมดของวันนั้น -->
                 <div class="bg-[#50D8FF]/15 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
@@ -215,9 +214,10 @@
 
     <div class="flex-grow"></div>
 
+    <!-- Footer ซิงค์กับ Title อัตโนมัติ -->
     <footer class="py-4 text-center z-20 w-full">
-        <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Multi-Events per Day Enabled
+        <span id="footer-version" class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
+            Homework M.113
         </span>
     </footer>
 
@@ -235,7 +235,7 @@
         </div>
     </div>
 
-    <!-- POPUP EVENT MODAL (เพิ่มได้หลายกิจกรรม) -->
+    <!-- POPUP EVENT MODAL -->
     <div id="event-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
         <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -266,7 +266,7 @@
         let currentDate = new Date();
         let selectedDateStr = getFormattedDate(new Date());
         let tasks = [];
-        let dailyEvents = {}; // โครงสร้างใหม่: { '2026-10-08': ['กิจรรม 1', 'กิจกรรม 2'] }
+        let dailyEvents = {};
 
         const FALLBACK_USERS = [
             { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
@@ -324,6 +324,10 @@
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            // ซิงค์ข้อความที่ Footer กับหัวข้อเว็บ (Title) อัตโนมัติ
+            const footerEl = document.getElementById('footer-version');
+            if (footerEl) footerEl.innerText = document.title;
+
             const savedTasks = localStorage.getItem('homework_cached_tasks');
             if (savedTasks) {
                 try { tasks = JSON.parse(savedTasks); } catch(e) {}
@@ -332,7 +336,6 @@
             if (savedEvents) {
                 try { 
                     const parsed = JSON.parse(savedEvents);
-                    // รองรับข้อมูลเก่าที่เป็น string ให้แปลงเป็น Array อัตโนมัติ
                     for (let key in parsed) {
                         if (typeof parsed[key] === 'string') {
                             dailyEvents[key] = [parsed[key]];
