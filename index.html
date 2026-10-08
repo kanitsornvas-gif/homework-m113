@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - _/ๅ//_ถ_</title>
+    <title>Homework M.113 - Strict Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -222,7 +222,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Exact Expiry Logging
+            Version Admin Delete Logs Supported
         </span>
     </footer>
 
@@ -287,10 +287,15 @@
                 <button onclick="closeLogsModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
             </div>
             <div class="flex justify-between items-center text-[11px]">
-                <span class="font-bold text-slate-500">บันทึกกิจกรรมย้อนหลังของสมาชิก</span>
-                <button onclick="fetchActivityLogs(true)" class="text-[10px] bg-purple-100 text-purple-700 hover:bg-purple-200 px-2 py-1 rounded-lg font-bold transition">
-                    <i class="fa-solid fa-rotate mr-1"></i>อัปเดตข้อมูล
-                </button>
+                <span class="font-bold text-slate-500">บันทึกกิจกรรมย้อนหลัง</span>
+                <div class="flex gap-1.5">
+                    <button onclick="clearAllLogs()" class="text-[10px] bg-rose-100 text-rose-700 hover:bg-rose-200 px-2 py-1 rounded-lg font-bold transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i>ล้างทั้งหมด
+                    </button>
+                    <button onclick="fetchActivityLogs(true)" class="text-[10px] bg-purple-100 text-purple-700 hover:bg-purple-200 px-2 py-1 rounded-lg font-bold transition">
+                        <i class="fa-solid fa-rotate mr-1"></i>อัปเดต
+                    </button>
+                </div>
             </div>
             <div id="logs-list-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                 <!-- ข้อมูล Logs แสดงที่นี่ -->
@@ -302,7 +307,6 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvlcyMwTWNwdZYGu8Tcnhb5krceutmqxtOMIhFXjTZ73FGKf_Uij4VV5MaYklalJzf/exec';
 
-        // 7 นาที = 420,000 มิลลิวินาที
         const IDLE_TIMEOUT_MS = 7 * 60 * 1000;
         let idleTimer = null;
 
@@ -338,7 +342,7 @@
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
 
         // -----------------------------------------------------------------
-        // STRICT IDLE & TIMEOUT CHECK (คำนวณเวลาหมดอายุจริง)
+        // STRICT IDLE & TIMEOUT CHECK
         // -----------------------------------------------------------------
         function resetIdleTimer() {
             if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -363,14 +367,10 @@
                 const diff = Date.now() - lastActive;
 
                 if (diff >= IDLE_TIMEOUT_MS) {
-                    // คำนวณเวลาหมดอายุที่แท้จริง (เวลา Active ล่าสุด + 7 นาที)
                     const exactExpiryDate = new Date(lastActive + IDLE_TIMEOUT_MS);
                     const timeString = `${exactExpiryDate.getDate()}/${exactExpiryDate.getMonth()+1}/${exactExpiryDate.getFullYear()+543} ${String(exactExpiryDate.getHours()).padStart(2,'0')}:${String(exactExpiryDate.getMinutes()).padStart(2,'0')}:${String(exactExpiryDate.getSeconds()).padStart(2,'0')}`;
 
-                    // บันทึก Log ด้วยเวลาที่หมดอายุเป๊ะๆ
                     logActivityWithCustomTime('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที', timeString);
-                    
-                    // ออกจากระบบโดยไม่ต้องลง Log logout ซ้ำ
                     performLogoutCleanup();
                     alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
                     return false;
@@ -395,7 +395,7 @@
         });
 
         // -----------------------------------------------------------------
-        // ACTIVITY LOGGING SYSTEM (ปรับให้รองรับระบุเวลา Custom ได้)
+        // ACTIVITY LOGGING & LOG DELETION SYSTEM
         // -----------------------------------------------------------------
         function getDeviceInfo() {
             const ua = navigator.userAgent;
@@ -454,7 +454,7 @@
                 const res = await fetch(`${SCRIPT_URL}?action=getLogs&t=${new Date().getTime()}`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
+                    if (Array.isArray(data)) {
                         userLogs = data;
                         localStorage.setItem('homework_cached_logs', JSON.stringify(data));
                         renderLogsList();
@@ -484,8 +484,8 @@
             }
 
             container.innerHTML = logs.map(log => `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-1 text-xs">
-                    <div class="flex justify-between items-center">
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-1 text-xs relative group">
+                    <div class="flex justify-between items-center pr-5">
                         <span class="font-extrabold text-purple-900 flex items-center gap-1">
                             <i class="fa-solid fa-user text-[10px] text-purple-500"></i> ${escapeHtml(log.displayName || log.username)}
                             <span class="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.2 rounded font-bold uppercase">${log.role || 'member'}</span>
@@ -497,8 +497,46 @@
                         <span class="text-[10px] bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-md font-semibold"><i class="fa-solid fa-mobile-screen mr-1"></i>${escapeHtml(log.device || 'Web')}</span>
                     </div>
                     ${log.details ? `<p class="text-[11px] text-slate-500 bg-white p-2 rounded-xl border border-slate-100 mt-1">${escapeHtml(log.details)}</p>` : ''}
+                    
+                    <!-- ปุ่มลบประวัติรายการนี้ -->
+                    <button onclick="deleteSingleLog(${log.id})" title="ลบรายการนี้" class="absolute top-2.5 right-2 text-slate-300 hover:text-rose-500 text-xs p-1 transition">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             `).join('');
+        }
+
+        // ฟังก์ชั่นลบประวัติเฉพาะรายการที่เลือก
+        async function deleteSingleLog(logId) {
+            if (currentRole !== 'admin') return;
+            if (confirm('คุณต้องการลบประวัติรายการนี้ใช่หรือไม่?')) {
+                userLogs = userLogs.filter(l => l.id !== logId);
+                localStorage.setItem('homework_cached_logs', JSON.stringify(userLogs));
+                renderLogsList();
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'deleteLog', logId: logId, username: currentUsername, role: currentRole })
+                }).catch(console.error);
+            }
+        }
+
+        // ฟังก์ชั่นล้างประวัติทั้งหมด
+        async function clearAllLogs() {
+            if (currentRole !== 'admin') return;
+            if (confirm('⚠️ คุณแน่ใจหรือไม่ว่าต้องการ "ล้างประวัติทั้งหมด"? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
+                userLogs = [];
+                localStorage.setItem('homework_cached_logs', JSON.stringify([]));
+                renderLogsList();
+
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'clearAllLogs', username: currentUsername, role: currentRole })
+                }).catch(console.error);
+                alert('ล้างประวัติการใช้งานทั้งหมดเรียบร้อยแล้ว');
+            }
         }
 
         function escapeHtml(str) {
