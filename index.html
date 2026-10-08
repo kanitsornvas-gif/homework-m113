@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <title>Homework M.113 - V.2.0 Popup Event</title>
+    <title>Homework M.113 - V.2.1 Multi Events</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -144,12 +144,17 @@
                     <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
                 </div>
 
-                <div class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <i class="fa-solid fa-star text-[#50D8FF] shrink-0"></i>
-                        <span id="event-text-view" class="text-xs text-sky-950 font-bold truncate">- ไม่มีกิจกรรมพิเศษในวันนี้ -</span>
+                <!-- กล่องแสดงรายการกิจกรรมทั้งหมดของวันนั้น -->
+                <div class="bg-[#50D8FF]/15 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
+                            <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรมในวันนี้:
+                        </span>
+                        <button onclick="openEventModal()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2.5 py-1 rounded-xl transition">+ เพิ่มกิจกรรม</button>
                     </div>
-                    <button onclick="openEventModal()" class="shrink-0 text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2.5 py-1.5 rounded-xl transition">จัดการกิจกรรม</button>
+                    <div id="event-list-view" class="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-400 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
+                    </div>
                 </div>
 
                 <div id="selected-date-tasks" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
@@ -212,7 +217,7 @@
 
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Popup Event Modal Enabled
+            Multi-Events per Day Enabled
         </span>
     </footer>
 
@@ -230,12 +235,12 @@
         </div>
     </div>
 
-    <!-- POPUP EVENT MODAL (สร้างกิจกรรมใหม่) -->
+    <!-- POPUP EVENT MODAL (เพิ่มได้หลายกิจกรรม) -->
     <div id="event-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
         <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="text-xs font-extrabold text-sky-900 flex items-center gap-1.5">
-                    <i class="fa-solid fa-star text-[#50D8FF]"></i> จัดการกิจกรรมประจำวัน
+                    <i class="fa-solid fa-star text-[#50D8FF]"></i> เพิ่มกิจกรรมในวันนี้
                 </h3>
                 <button onclick="closeEventModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
             </div>
@@ -245,9 +250,8 @@
                     <input type="text" id="daily-event-input" placeholder="พิมพ์ชื่อกิจกรรม หรือ วันสำคัญ..." class="w-full p-3 text-xs bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#50D8FF] font-medium">
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-2 pt-2">
-                <button onclick="deleteDailyEvent()" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition">ลบกิจกรรม</button>
-                <button onclick="saveDailyEvent()" class="py-2.5 bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs rounded-xl transition shadow-md shadow-[#50D8FF]/20">บันทึก</button>
+            <div class="pt-2">
+                <button onclick="saveDailyEvent()" class="w-full py-2.5 bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs rounded-xl transition shadow-md shadow-[#50D8FF]/20">เพิ่มกิจกรรมนี้</button>
             </div>
         </div>
     </div>
@@ -262,7 +266,7 @@
         let currentDate = new Date();
         let selectedDateStr = getFormattedDate(new Date());
         let tasks = [];
-        let dailyEvents = {};
+        let dailyEvents = {}; // โครงสร้างใหม่: { '2026-10-08': ['กิจรรม 1', 'กิจกรรม 2'] }
 
         const FALLBACK_USERS = [
             { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
@@ -326,7 +330,17 @@
             }
             const savedEvents = localStorage.getItem('homework_daily_events');
             if (savedEvents) {
-                try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
+                try { 
+                    const parsed = JSON.parse(savedEvents);
+                    // รองรับข้อมูลเก่าที่เป็น string ให้แปลงเป็น Array อัตโนมัติ
+                    for (let key in parsed) {
+                        if (typeof parsed[key] === 'string') {
+                            dailyEvents[key] = [parsed[key]];
+                        } else if (Array.isArray(parsed[key])) {
+                            dailyEvents[key] = parsed[key];
+                        }
+                    }
+                } catch(e) {}
             }
 
             if (localStorage.getItem('isLoggedIn') === 'true') {
@@ -442,7 +456,8 @@
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
-                const hasEvent = dailyEvents[dateStr] && dailyEvents[dateStr].trim() !== '';
+                const eventsList = dailyEvents[dateStr] || [];
+                const hasEvent = eventsList.length > 0;
                 const isSelected = (dateStr === selectedDateStr);
                 
                 let boxStyle = "bg-slate-50 border border-slate-100 hover:border-[#50D8FF]";
@@ -475,10 +490,19 @@
                 document.getElementById('selected-date-label').innerText = `รายการวันที่ ${parseInt(parts[2], 10)} ${MONTH_NAMES_TH[parseInt(parts[1], 10) - 1]} ${parseInt(parts[0], 10) + 543}`;
             }
 
-            const currentEvent = dailyEvents[selectedDateStr] || '';
-            const eventTextView = document.getElementById('event-text-view');
-            eventTextView.innerText = currentEvent ? currentEvent : '- ไม่มีกิจกรรมพิเศษในวันนี้ -';
-            eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold truncate" : "text-xs text-slate-400 font-medium truncate";
+            const eventsList = dailyEvents[selectedDateStr] || [];
+            const eventListView = document.getElementById('event-list-view');
+            
+            if (eventsList.length === 0) {
+                eventListView.innerHTML = `<p class="text-xs text-slate-400 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>`;
+            } else {
+                eventListView.innerHTML = eventsList.map((ev, idx) => `
+                    <div class="bg-white/90 px-2.5 py-1.5 rounded-xl border border-sky-100 flex items-center justify-between text-xs">
+                        <span class="font-bold text-sky-950 flex items-center gap-1.5"><i class="fa-solid fa-circle text-[5px] text-[#50D8FF]"></i> ${escapeHtml(ev)}</span>
+                        <button onclick="deleteSingleEvent(${idx})" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-1.5 py-0.5 bg-rose-50 rounded transition">ลบ</button>
+                    </div>
+                `).join('');
+            }
 
             const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
             document.getElementById('selected-task-count').innerText = `${matchedTasks.length} รายการ`;
@@ -489,14 +513,13 @@
                 : matchedTasks.map(t => createTaskCardHTML(t, t.isPinned)).join('');
         }
 
-        // จัดการเปิด/ปิด ป๊อปอัปสร้างกิจกรรม
         function openEventModal() {
             switchTab('calendar');
             const parts = selectedDateStr.split('-');
             if (parts.length === 3) {
                 document.getElementById('modal-date-label').innerText = `วันที่เลือก: ${parseInt(parts[2], 10)} ${MONTH_NAMES_TH[parseInt(parts[1], 10) - 1]} ${parseInt(parts[0], 10) + 543}`;
             }
-            document.getElementById('daily-event-input').value = dailyEvents[selectedDateStr] || '';
+            document.getElementById('daily-event-input').value = '';
             document.getElementById('event-modal').classList.remove('hidden');
         }
 
@@ -506,23 +529,31 @@
 
         function saveDailyEvent() {
             const val = document.getElementById('daily-event-input').value.trim();
-            if (val) {
-                dailyEvents[selectedDateStr] = val;
-            } else {
-                delete dailyEvents[selectedDateStr];
+            if (!val) {
+                alert('กรุณากรอกชื่อกิจกรรม');
+                return;
             }
+
+            if (!dailyEvents[selectedDateStr]) {
+                dailyEvents[selectedDateStr] = [];
+            }
+            dailyEvents[selectedDateStr].push(val);
+
             localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
             selectDate(selectedDateStr);
             closeEventModal();
-            alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
+            alert('เพิ่มกิจกรรมเรียบร้อยแล้ว');
         }
 
-        function deleteDailyEvent() {
-            delete dailyEvents[selectedDateStr];
-            localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
-            selectDate(selectedDateStr);
-            closeEventModal();
-            alert('ลบกิจกรรมแล้ว');
+        function deleteSingleEvent(index) {
+            if (dailyEvents[selectedDateStr]) {
+                dailyEvents[selectedDateStr].splice(index, 1);
+                if (dailyEvents[selectedDateStr].length === 0) {
+                    delete dailyEvents[selectedDateStr];
+                }
+                localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
+                selectDate(selectedDateStr);
+            }
         }
 
         function changeMonth(offset) {
