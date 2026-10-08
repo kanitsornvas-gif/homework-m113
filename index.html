@@ -1,1170 +1,534 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <title>Homework M.113 - V.1.5 beta </title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Sarabun', 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #ffe4f0 0%, #e0e7ff 50%, #f3e8ff 100%);
-            min-height: 100vh;
-        }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        @keyframes modalPop {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop { animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework M.113 - V.1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Kanit', sans-serif;
+    }
+
+    body {
+      background-color: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px 10px;
+    }
+
+    .app-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 28px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #f43f5e;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-m113 {
+      background-color: #0f172a;
+      color: #ffffff;
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    .tag-superpower {
+      display: inline-block;
+      background-color: #fce7f3;
+      color: #ec4899;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #8b5cf6;
+      font-size: 1rem;
+      padding: 2px;
+    }
+
+    .logout-btn {
+      color: #f43f5e;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Buttons Grid */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: opacity 0.15s;
+    }
+
+    .btn:active {
+      opacity: 0.8;
+    }
+
+    .btn-pink-soft {
+      background-color: #f472b6;
+      color: #ffffff;
+    }
+
+    .btn-gray-soft {
+      background-color: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    .btn-pink-main {
+      background-color: #ec4899;
+      color: #ffffff;
+    }
+
+    .btn-cyan-main {
+      background-color: #38bdf8;
+      color: #ffffff;
+    }
+
+    /* Notice */
+    .notice-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-left: 4px;
+    }
+
+    .badge-notice {
+      background-color: #ec4899;
+      color: white;
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .notice-text {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    /* Pinned Section */
+    .section-pinned {
+      background-color: #fffdf0;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .pinned-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fbbf24;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .empty-pinned {
+      text-align: center;
+      color: #f59e0b;
+      font-size: 0.8rem;
+      padding: 6px 0;
+      font-weight: 400;
+    }
+
+    /* Active Tasks Section */
+    .tasks-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .tasks-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+    }
+
+    .tasks-count {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Task Card Item */
+    .task-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid #f8fafc;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .task-author {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+    }
+
+    .author-icon {
+      width: 16px;
+      height: 16px;
+      background-color: #ec4899;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: bold;
+    }
+
+    .task-content {
+      font-size: 0.95rem;
+      color: #0f172a;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .task-dates {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+      font-size: 0.7rem;
+      color: #f43f5e;
+    }
+
+    /* Modal ป๊อปอัปเพิ่มงาน */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 16px;
+    }
+
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 360px;
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .btn-cancel {
+      background: #f1f5f9;
+      color: #64748b;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .btn-submit {
+      background: #ec4899;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+  </style>
 </head>
-<body class="flex flex-col items-center justify-between p-3 sm:p-6 min-h-screen relative antialiased">
+<body>
 
-    <div class="flex-grow"></div>
-
-    <!-- ==================== หน้าที่ 1: Sign In ==================== -->
-    <div id="login-page" class="w-full max-w-sm bg-white/85 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 transition-all duration-200">
-        <div class="text-center mb-8">
-            <div class="w-14 h-14 bg-gradient-to-br from-[#FF75BC] via-purple-500 to-[#50D8FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#FF75BC]/30 transform -rotate-3">
-                <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ระบบการบ้านที่เพื่อนๆ ทุกคนช่วยกันเพิ่มกิจกรรมได้</p>
+  <div class="app-card">
+    <!-- Header Section -->
+    <div class="header">
+      <div>
+        <div class="title-group">
+          <span class="title">HOMEWORK</span>
+          <span class="badge-m113">M113</span>
         </div>
-
-        <div class="space-y-1.5 mb-6">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (USERNAME)</label>
-            <div class="relative">
-                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" id="username" placeholder="พิมพ์ชื่อผู้ใช้งานของคุณ" onkeydown="if(event.key === 'Enter') login()" class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-[#FF75BC] focus:ring-4 focus:ring-[#FF75BC]/10 transition">
-            </div>
+        <div>
+          <span class="tag-superpower">Superpower</span>
         </div>
-
-        <button id="login-btn" onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF75BC] to-rose-400 hover:from-[#e065a6] hover:to-rose-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF75BC]/30 active:scale-[0.98] transition duration-150">
-            เข้าสู่ระบบ
-        </button>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="loadTasks()">🔄</button>
+        <button class="icon-btn">📑</button>
+        <button class="icon-btn">🔄</button>
+        <button class="logout-btn">LOGOUT</button>
+      </div>
     </div>
 
-    <!-- ==================== หน้าที่ 2: Dashboard ==================== -->
-    <div id="main-page" class="hidden w-full max-w-md bg-white/85 backdrop-blur-2xl rounded-3xl p-5 border border-white/80 shadow-2xl shadow-slate-200/60 relative z-10 transition-all duration-200">
-        
-        <!-- Header -->
-        <div class="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
-            <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-extrabold text-[#FF75BC] text-lg tracking-wider">HOMEWORK</span>
-                <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
-                <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งานของผู้ใช้" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </button>
-                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-list-check"></i>
-                </button>
-                <button onclick="fetchHomeworks(true)" title="รีเฟรชข้อมูลล่าสุด" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-rotate"></i>
-                </button>
-                <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
-                    LOGOUT
-                </button>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs & Actions -->
-        <div class="space-y-2 mb-4">
-            <div class="flex bg-slate-100/80 p-1 rounded-2xl text-center text-xs font-bold gap-1">
-                <button id="tab-pending" onclick="switchTab('pending')" class="flex-1 py-2.5 rounded-xl transition bg-[#FF75BC] text-white shadow-sm">งานค้าง</button>
-                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
-            </div>
-            
-            <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
-                <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold text-xs shadow-md shadow-[#FF75BC]/20 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
-                </button>
-                <button onclick="jumpToEventCreation()" id="btn-event-create" class="py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-star"></i> สร้างกิจกรรม
-                </button>
-            </div>
-        </div>
-
-        <!-- NOTICE Banner -->
-        <div class="bg-slate-100/70 p-2.5 rounded-2xl flex items-center justify-between mb-4 text-xs font-semibold text-slate-600">
-            <span class="bg-[#FF75BC] text-white text-[10px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
-                <i class="fa-solid fa-bullhorn"></i> NOTICE
-            </span>
-            <span id="notice-text" class="text-slate-500 text-[11px]">แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด</span>
-        </div>
-
-        <!-- ================= VIEW 1: CALENDAR VIEW ================= -->
-        <div id="view-calendar" class="hidden space-y-4">
-            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">ปฏิทินงานและกิจกรรม</span>
-                <div class="flex gap-1">
-                    <button onclick="changeMonth(-1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">PREV</button>
-                    <button onclick="changeMonth(1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200 hover:bg-slate-50">NEXT</button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
-                <div class="flex items-center gap-2 mb-3">
-                    <i class="fa-regular fa-calendar-days text-[#50D8FF]"></i>
-                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน</h3>
-                </div>
-
-                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold mb-2">
-                    <span class="text-rose-500">SUN</span>
-                    <span class="text-amber-500">MON</span>
-                    <span class="text-[#FF75BC]">TUE</span>
-                    <span class="text-emerald-500">WED</span>
-                    <span class="text-orange-500">THU</span>
-                    <span class="text-sky-500">FRI</span>
-                    <span class="text-purple-500">SAT</span>
-                </div>
-
-                <div id="calendar-days" class="grid grid-cols-7 gap-1"></div>
-            </div>
-
-            <div id="calendar-detail-section" class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-list-check text-[#50D8FF]"></i>
-                        <span id="selected-date-label">รายการของวันที่เลือก</span>
-                    </span>
-                    <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
-                </div>
-
-                <div id="event-box" class="bg-[#50D8FF]/10 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
-                            <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรม / วันสำคัญวันนี้:
-                        </span>
-                        <div>
-                            <button onclick="saveDailyEvent()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2 py-1 rounded-lg transition">บันทึก</button>
-                            <button onclick="deleteDailyEvent()" class="text-[10px] bg-rose-100 hover:bg-rose-200 text-rose-600 font-bold px-2 py-1 rounded-lg transition ml-1">ลบ</button>
-                        </div>
-                    </div>
-                    <div id="event-display-area">
-                        <p id="event-text-view" class="text-xs text-sky-950 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
-                    </div>
-                    <div class="pt-1">
-                        <input type="text" id="daily-event-input" placeholder="พิมพ์กิจกรรม/วันสำคัญของวันนี้" class="w-full p-2 text-xs bg-white rounded-xl border border-[#50D8FF]/50 focus:outline-none focus:border-[#50D8FF]">
-                    </div>
-                </div>
-
-                <div id="selected-date-tasks" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-
-        <!-- ================= VIEW 2: TASKS VIEW ================= -->
-        <div id="view-tasks" class="space-y-4">
-            <div id="admin-form" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
-                <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-[#FF75BC]"></i> เพิ่มรายการการบ้าน <span class="text-[10px] text-rose-500 font-normal">(ต้องกรอกทุกช่อง)</span>
-                </h3>
-                <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="task-code" list="code-options" placeholder="รหัสวิชา" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#FF75BC]">
-                    <datalist id="code-options"></datalist>
-
-                    <input type="text" id="task-subject" list="subject-options" placeholder="ชื่อวิชา" class="col-span-2 w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#FF75BC]">
-                    <datalist id="subject-options"></datalist>
-                </div>
-                
-                <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#FF75BC]">
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <label class="flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer">
-                        <span class="text-[11px] font-extrabold text-slate-500 whitespace-nowrap mr-1">วันสั่ง:</span>
-                        <input type="date" id="assign-date-input" class="w-full text-xs text-slate-700 bg-transparent outline-none cursor-pointer">
-                    </label>
-
-                    <label class="flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer">
-                        <span class="text-[11px] font-extrabold text-rose-500 whitespace-nowrap mr-1">วันส่ง:</span>
-                        <input type="date" id="due-date-input" class="w-full text-xs text-slate-700 bg-transparent outline-none cursor-pointer">
-                    </label>
-                </div>
-
-                <button onclick="addTask()" class="w-full py-2.5 bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold rounded-xl text-xs transition shadow-md shadow-[#FF75BC]/20">
-                    บันทึกข้อมูล
-                </button>
-            </div>
-
-            <div id="pinned-section" class="bg-amber-50/60 border border-amber-100 rounded-3xl p-4 space-y-3">
-                <div class="flex items-center gap-2 text-amber-800 text-xs font-bold">
-                    <i class="fa-solid fa-thumbtack text-amber-500"></i>
-                    <span>ปักหมุดไว้</span>
-                </div>
-                <div id="pinned-list" class="space-y-2.5"></div>
-            </div>
-
-            <div class="space-y-2.5">
-                <div class="flex justify-between items-center">
-                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
-                    <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ITEMS</span>
-                </div>
-                <div id="task-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-
+    <!-- Action Grid Buttons -->
+    <div class="action-grid">
+      <button class="btn btn-pink-soft">งานค้าง</button>
+      <button class="btn btn-gray-soft">ปฏิทินงาน</button>
+      <button class="btn btn-pink-main" onclick="openModal()">+ เพิ่มงานค้าง</button>
+      <button class="btn btn-cyan-main">★ สร้างกิจกรรม</button>
     </div>
 
-    <div class="flex-grow"></div>
-
-    <footer class="py-4 text-center z-20 w-full">
-        <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Version Admin Delete Logs Supported
-        </span>
-    </footer>
-
-    <!-- POPUP ERROR MODAL -->
-    <div id="error-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-3xl p-6 w-80 text-center shadow-2xl border border-slate-100 animate-pop">
-            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-rose-500/20">
-                <i class="fa-solid fa-circle-xmark"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800 mb-1">ไม่พบชื่อผู้ใช้งาน</h3>
-            <p class="text-xs text-slate-400 mb-5">ไม่พบชื่อผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบอีกครั้ง</p>
-            <button onclick="closeErrorPopup()" class="w-full py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/20">
-                ตกลง
-            </button>
-        </div>
+    <!-- Notice -->
+    <div class="notice-box">
+      <span class="badge-notice">📢 NOTICE</span>
+      <span class="notice-text">แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด</span>
     </div>
 
-    <!-- POPUP SUCCESS MODAL -->
-    <div id="success-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-3xl p-6 w-80 text-center shadow-2xl border border-slate-100 animate-pop">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-emerald-500/20">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800 mb-1">เพิ่มงานสำเร็จ</h3>
-            <p class="text-xs text-slate-400 mb-5">บันทึกข้อมูลการบ้านลงระบบเรียบร้อยแล้ว</p>
-            <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20">
-                ตกลง
-            </button>
-        </div>
+    <!-- Pinned Section -->
+    <div class="section-pinned">
+      <div class="pinned-title">📌 ปักหมุดไว้</div>
+      <div class="empty-pinned">ไม่มีรายการที่ปักหมุดไว้</div>
     </div>
 
-    <!-- MANAGE SUBJECT/CODE HISTORY MODAL -->
-    <div id="manage-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-list-check text-[#50D8FF]"></i> จัดการประวัติรหัสและชื่อวิชา
-                </h3>
-                <button onclick="closeManageModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
-            </div>
-            <div class="space-y-3 max-h-[260px] overflow-y-auto pr-1">
-                <div>
-                    <span class="text-[11px] font-bold text-slate-600 block mb-1">รหัสวิชาทั้งหมด:</span>
-                    <div id="manage-codes-list" class="space-y-1"></div>
-                </div>
-                <div>
-                    <span class="text-[11px] font-bold text-slate-600 block mb-1">ชื่อวิชาทั้งหมด:</span>
-                    <div id="manage-subjects-list" class="space-y-1"></div>
-                </div>
-            </div>
-            <button onclick="closeManageModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">ปิดหน้าต่าง</button>
-        </div>
+    <!-- Active Tasks Section -->
+    <div class="tasks-header">
+      <span class="tasks-title">ROOM ACTIVE TASKS</span>
+      <span class="tasks-count" id="task-count">0 ITEMS</span>
     </div>
 
-    <!-- ACTIVITY LOGS MODAL FOR ADMINISTRATOR -->
-    <div id="logs-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-white rounded-3xl p-5 w-full max-w-md shadow-2xl border border-slate-100 animate-pop space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-xs font-extrabold text-purple-800 flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield-halved text-purple-600"></i> ประวัติการใช้งานระบบ (Administrator Logs)
-                </h3>
-                <button onclick="closeLogsModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
-            </div>
-            <div class="flex justify-between items-center text-[11px]">
-                <span class="font-bold text-slate-500">บันทึกกิจกรรมย้อนหลัง</span>
-                <div class="flex gap-1.5">
-                    <button onclick="clearAllLogs()" class="text-[10px] bg-rose-100 text-rose-700 hover:bg-rose-200 px-2 py-1 rounded-lg font-bold transition">
-                        <i class="fa-solid fa-trash-can mr-1"></i>ล้างทั้งหมด
-                    </button>
-                    <button onclick="fetchActivityLogs(true)" class="text-[10px] bg-purple-100 text-purple-700 hover:bg-purple-200 px-2 py-1 rounded-lg font-bold transition">
-                        <i class="fa-solid fa-rotate mr-1"></i>อัปเดต
-                    </button>
-                </div>
-            </div>
-            <div id="logs-list-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                <!-- ข้อมูล Logs แสดงที่นี่ -->
-            </div>
-            <button onclick="closeLogsModal()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl">ปิดหน้าต่าง</button>
-        </div>
+    <div id="tasks-container">
+      <div style="text-align: center; color: #cbd5e1; font-size: 0.8rem; padding: 16px;">
+        กำลังโหลดข้อมูล...
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Web App URL ตัวใหม่ล่าสุดที่แก้ไขระบบ Backend แล้ว
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-qNQz4V4cWP3edAEztmGRig9nGPtsRGD86SucGhD5IxuIMzbMnEbp_GvgK1DOVbda/exec';
+  <!-- Modal สำหรับกด + เพิ่มงานค้าง -->
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <div class="modal-title">เพิ่มงานค้างใหม่</div>
+      <form id="addHomeworkForm">
+        <div class="form-group">
+          <label>รหัสวิชา / วิชา</label>
+          <input type="text" id="subject" placeholder="เช่น ภาษาไทย">
+        </div>
+        <div class="form-group">
+          <label>รายละเอียดการบ้าน</label>
+          <textarea id="detail" rows="2" placeholder="เช่น รายละเอียด..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>กำหนดส่ง</label>
+          <input type="date" id="dueDate" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
+          <button type="submit" class="btn-submit" id="submitBtn">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-        const IDLE_TIMEOUT_MS = 7 * 60 * 1000;
-        let idleTimer = null;
+  <script>
+    // URL Apps Script ของคุณ
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbZpeF0Pz21CQRoDtp-z11v6en9Tyjzo6tER6gyFFXDZpTS1AdYWP7cVl6Fstq-k2y/exec';
 
-        let currentRole = 'member';
-        let currentUsername = '';
-        let currentTab = 'pending';
-        let currentDate = new Date();
-        let selectedDateStr = getFormattedDate(new Date());
-        let tasks = [];
-        let dailyEvents = {};
-        let userLogs = [];
+    function openModal() {
+      document.getElementById('addModal').style.display = 'flex';
+    }
 
-        const FALLBACK_USERS = [
-            { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
-            { username: "porsche_62031", role: "member", name: "Porsche_62031" },
-            { username: "captain_62032", role: "member", name: "Captain_62032" },
-            { username: "munich_62033", role: "member", name: "Munich_62033" },
-            { username: "kin_62034", role: "member", name: "Kin_62034" },
-            { username: "tonboon_62035", role: "member", name: "Tonboon_62035" },
-            { username: "plub_62036", role: "member", name: "Plub_62036" },
-            { username: "organ_62037", role: "member", name: "Organ_62037" },
-            { username: "kan_62038", role: "member", name: "Kan_62038" },
-            { username: "nodt_62039", role: "member", name: "Nodt_62039" },
-            { username: "nine_62040", role: "member", name: "Nine_62040" },
-            { username: "mark_62041", role: "member", name: "Mark_62041" },
-            { username: "near_62032", role: "member", name: "Near_62032" },
-            { username: "pp_62033", role: "member", name: "PP_62033" },
-            { username: "foreground_62034", role: "member", name: "Foreground_62034" }
-        ];
+    function closeModal() {
+      document.getElementById('addModal').style.display = 'none';
+      document.getElementById('addHomeworkForm').reset();
+    }
 
-        const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-        const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-        const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
+    // ดึงการบ้านจาก Google Sheets
+    async function loadTasks() {
+      const container = document.getElementById('tasks-container');
+      const countEl = document.getElementById('task-count');
+      
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const result = await response.json();
 
-        // -----------------------------------------------------------------
-        // STRICT IDLE & TIMEOUT CHECK
-        // -----------------------------------------------------------------
-        function resetIdleTimer() {
-            if (localStorage.getItem('isLoggedIn') !== 'true') {
-                if (idleTimer) clearTimeout(idleTimer);
-                return;
-            }
+        if (result.status === 'success' && result.data) {
+          const tasks = result.data;
+          countEl.innerText = `${tasks.length} ITEMS`;
 
-            localStorage.setItem('lastActiveTime', Date.now().toString());
+          if (tasks.length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: #cbd5e1; font-size: 0.8rem; padding: 16px;">ไม่มีการบ้านค้างอยู่</div>';
+            return;
+          }
 
-            if (idleTimer) clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                autoLogout();
-            }, IDLE_TIMEOUT_MS);
+          container.innerHTML = tasks.map(task => `
+            <div class="task-card">
+              <div class="task-author">
+                <div class="author-icon">t</div>
+                <span>โดย: ${task.CreatedBy || 'Superpower'}</span>
+              </div>
+              <div class="task-content">
+                ${task.Subject ? `[${task.Subject}] ` : ''}${task.Detail || task.title || '-'}
+              </div>
+              <div class="task-dates">
+                <div>📋 สั่ง: ${formatDate(task.Timestamp)}</div>
+                <div>⌛ ส่ง: ${formatDate(task.DueDate)}</div>
+              </div>
+            </div>
+          `).join('');
         }
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        container.innerHTML = '<div style="text-align: center; color: #ef4444; font-size: 0.8rem; padding: 16px;">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
+      }
+    }
 
-        function checkSessionExpiry() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            const savedLastActive = localStorage.getItem('lastActiveTime');
+    // บันทึกการบ้านใหม่ลง Google Sheets
+    document.getElementById('addHomeworkForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.innerText = 'กำลังบันทึก...';
+      submitBtn.disabled = true;
 
-            if (isLoggedIn === 'true' && savedLastActive) {
-                const lastActive = parseInt(savedLastActive, 10);
-                const diff = Date.now() - lastActive;
+      const newHomework = {
+        subject: document.getElementById('subject').value,
+        detail: document.getElementById('detail').value,
+        dueDate: document.getElementById('dueDate').value,
+        createdBy: 'Superpower'
+      };
 
-                if (diff >= IDLE_TIMEOUT_MS) {
-                    const exactExpiryDate = new Date(lastActive + IDLE_TIMEOUT_MS);
-                    const timeString = `${exactExpiryDate.getDate()}/${exactExpiryDate.getMonth()+1}/${exactExpiryDate.getFullYear()+543} ${String(exactExpiryDate.getHours()).padStart(2,'0')}:${String(exactExpiryDate.getMinutes()).padStart(2,'0')}:${String(exactExpiryDate.getSeconds()).padStart(2,'0')}`;
-
-                    logActivityWithCustomTime('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที', timeString);
-                    performLogoutCleanup();
-                    alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function autoLogout() {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                const now = new Date();
-                const timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-                
-                logActivityWithCustomTime('หมดเวลาการใช้งาน', 'ไม่มีการเคลื่อนไหวนานเกิน 7 นาที', timeString);
-                performLogoutCleanup();
-                alert('⏰ ไม่มีการใช้งานเกิน 7 นาที ระบบได้ทำการออกจากระบบโดยอัตโนมัติเพื่อความปลอดภัยครับ');
-            }
-        }
-
-        ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
-            window.addEventListener(evt, resetIdleTimer, { passive: true });
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify(newHomework)
         });
 
-        // -----------------------------------------------------------------
-        // ACTIVITY LOGGING & LOG DELETION SYSTEM
-        // -----------------------------------------------------------------
-        function getDeviceInfo() {
-            const ua = navigator.userAgent;
-            if (/android/i.test(ua)) return "Android Phone";
-            if (/iPhone|iPad|iPod/i.test(ua)) return "iOS Device";
-            if (/Windows/i.test(ua)) return "Windows PC";
-            if (/Macintosh/i.test(ua)) return "Mac Computer";
-            return "Web Browser";
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          closeModal();
+          loadTasks();
+        } else {
+          alert('เกิดข้อผิดพลาด: ' + result.message);
         }
-
-        async function logActivity(action, details = '') {
-            const now = new Date();
-            const timeString = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()+543} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-            logActivityWithCustomTime(action, details, timeString);
-        }
-
-        async function logActivityWithCustomTime(action, details, customTimeString) {
-            const device = getDeviceInfo();
-
-            const logEntry = {
-                id: Date.now(),
-                timestamp: customTimeString,
-                username: currentUsername || 'Guest',
-                displayName: localStorage.getItem('userName') || currentUsername.toUpperCase() || 'Guest',
-                role: currentRole,
-                action: action,
-                details: details,
-                device: device
-            };
-
-            let logs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
-            logs.unshift(logEntry);
-            if (logs.length > 50) logs = logs.slice(0, 50);
-            localStorage.setItem('homework_cached_logs', JSON.stringify(logs));
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'logActivity', ...logEntry })
-            }).catch(console.error);
-        }
-
-        function openLogsModal() {
-            if (currentRole !== 'admin') return;
-            renderLogsList();
-            document.getElementById('logs-modal').classList.remove('hidden');
-            fetchActivityLogs();
-        }
-
-        function closeLogsModal() {
-            document.getElementById('logs-modal').classList.add('hidden');
-        }
-
-        async function fetchActivityLogs(forceAlert = false) {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getLogs&t=${new Date().getTime()}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data)) {
-                        userLogs = data;
-                        localStorage.setItem('homework_cached_logs', JSON.stringify(data));
-                        renderLogsList();
-                        if (forceAlert) alert('อัปเดตประวัติการใช้งานล่าสุดเรียบร้อยแล้ว');
-                        return;
-                    }
-                }
-            } catch (e) {}
-            
-            userLogs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
-            renderLogsList();
-            if (forceAlert) alert('อัปเดตประวัติล่าสุดจากข้อมูลในระบบเรียบร้อยแล้ว');
-        }
-
-        function renderLogsList() {
-            const container = document.getElementById('logs-list-container');
-            if (!container) return;
-
-            let logs = userLogs;
-            if (!logs || logs.length === 0) {
-                logs = JSON.parse(localStorage.getItem('homework_cached_logs') || '[]');
-            }
-
-            if (logs.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-100">ยังไม่มีบันทึกการใช้งาน</div>`;
-                return;
-            }
-
-            container.innerHTML = logs.map(log => `
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-1 text-xs relative group">
-                    <div class="flex justify-between items-center pr-5">
-                        <span class="font-extrabold text-purple-900 flex items-center gap-1">
-                            <i class="fa-solid fa-user text-[10px] text-purple-500"></i> ${escapeHtml(log.displayName || log.username)}
-                            <span class="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.2 rounded font-bold uppercase">${log.role || 'member'}</span>
-                        </span>
-                        <span class="text-[10px] text-slate-400 font-medium"><i class="fa-regular fa-clock"></i> ${log.timestamp}</span>
-                    </div>
-                    <div class="flex justify-between items-center text-slate-700 pt-0.5">
-                        <span class="font-bold text-slate-800"><i class="fa-solid fa-bolt text-amber-500 mr-1"></i>${escapeHtml(log.action)}</span>
-                        <span class="text-[10px] bg-slate-200/80 text-slate-600 px-2 py-0.5 rounded-md font-semibold"><i class="fa-solid fa-mobile-screen mr-1"></i>${escapeHtml(log.device || 'Web')}</span>
-                    </div>
-                    ${log.details ? `<p class="text-[11px] text-slate-500 bg-white p-2 rounded-xl border border-slate-100 mt-1">${escapeHtml(log.details)}</p>` : ''}
-                    
-                    <button onclick="deleteSingleLog(${log.id})" title="ลบรายการนี้" class="absolute top-2.5 right-2 text-slate-300 hover:text-rose-500 text-xs p-1 transition">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        async function deleteSingleLog(logId) {
-            if (currentRole !== 'admin') return;
-            if (confirm('คุณต้องการลบประวัติรายการนี้ใช่หรือไม่?')) {
-                userLogs = userLogs.filter(l => l.id !== logId);
-                localStorage.setItem('homework_cached_logs', JSON.stringify(userLogs));
-                renderLogsList();
-
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'deleteLog', logId: logId, username: currentUsername, role: currentRole })
-                }).catch(console.error);
-            }
-        }
-
-        async function clearAllLogs() {
-            if (currentRole !== 'admin') return;
-            if (confirm('⚠️ คุณแน่ใจหรือไม่ว่าต้องการ "ล้างประวัติทั้งหมด"? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
-                userLogs = [];
-                localStorage.setItem('homework_cached_logs', JSON.stringify([]));
-                renderLogsList();
-
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'clearAllLogs', username: currentUsername, role: currentRole })
-                }).catch(console.error);
-                alert('ล้างประวัติการใช้งานทั้งหมดเรียบร้อยแล้ว');
-            }
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
-        function getFormattedDate(d) {
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function normalizeDateStr(dateInput) {
-            if (!dateInput) return '';
-            let dateObj;
-            if (typeof dateInput === 'string') {
-                if (dateInput.includes('T')) dateInput = dateInput.split('T')[0];
-                const parts = dateInput.split('-');
-                if (parts.length === 3) return `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
-                dateObj = new Date(dateInput);
-            } else {
-                dateObj = new Date(dateInput);
-            }
-            return isNaN(dateObj.getTime()) ? '' : getFormattedDate(dateObj);
-        }
-
-        function formatThaiShortDate(dateStr) {
-            const cleanStr = normalizeDateStr(dateStr);
-            if (!cleanStr) return '-';
-            const parts = cleanStr.split('-');
-            if (parts.length < 3) return dateStr;
-            const year = parseInt(parts[0]);
-            const month = parseInt(parts[1]) - 1;
-            const day = parseInt(parts[2]);
-            const d = new Date(year, month, day);
-            return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedTasks = localStorage.getItem('homework_cached_tasks');
-            if (savedTasks) {
-                try { tasks = JSON.parse(savedTasks); } catch(e) {}
-            }
-
-            const savedEvents = localStorage.getItem('homework_daily_events');
-            if (savedEvents) {
-                try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
-            }
-
-            if (checkSessionExpiry()) {
-                const isLoggedIn = localStorage.getItem('isLoggedIn');
-                if (isLoggedIn === 'true') {
-                    currentRole = localStorage.getItem('userRole') || 'member';
-                    currentUsername = localStorage.getItem('usernameKey') || '';
-                    const savedName = localStorage.getItem('userName') || currentUsername.toUpperCase();
-                    openDashboard(savedName, false);
-                }
-            }
-
-            backgroundFetch();
-            backgroundFetchUsers();
-        });
-
-        async function backgroundFetchUsers() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
-                const users = await res.json();
-                if (Array.isArray(users) && users.length > 0) {
-                    localStorage.setItem('homework_cached_users', JSON.stringify(users));
-                }
-            } catch (e) {}
-        }
-
-        async function login() {
-            const userInput = document.getElementById('username');
-            const loginBtn = document.getElementById('login-btn');
-            if (!userInput) return;
-
-            const rawUser = userInput.value.trim().toLowerCase();
-            if (!rawUser) {
-                alert('กรุณากรอกชื่อผู้ใช้งาน');
-                return;
-            }
-
-            let users = FALLBACK_USERS;
-            const cachedUsers = localStorage.getItem('homework_cached_users');
-            if (cachedUsers) {
-                try {
-                    const parsed = JSON.parse(cachedUsers);
-                    if (Array.isArray(parsed) && parsed.length > 0) users = parsed;
-                } catch(err) {}
-            }
-
-            let foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
-
-            if (!foundUser) {
-                if (loginBtn) {
-                    loginBtn.disabled = true;
-                    loginBtn.innerText = 'กำลังตรวจสอบ...';
-                }
-
-                try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
-                    if (res.ok) {
-                        const liveUsers = await res.json();
-                        if (Array.isArray(liveUsers) && liveUsers.length > 0) {
-                            users = liveUsers;
-                            localStorage.setItem('homework_cached_users', JSON.stringify(liveUsers));
-                            foundUser = users.find(u => String(u.username || '').trim().toLowerCase() === rawUser);
-                        }
-                    }
-                } catch (e) {
-                    console.error('ไม่สามารถดึงข้อมูลสดได้:', e);
-                } finally {
-                    if (loginBtn) {
-                        loginBtn.disabled = false;
-                        loginBtn.innerText = 'เข้าสู่ระบบ';
-                    }
-                }
-            }
-
-            if (!foundUser) {
-                document.getElementById('error-popup').classList.remove('hidden');
-                return;
-            }
-
-            currentRole = String(foundUser.role || 'member').toLowerCase();
-            if (rawUser.includes('admin')) {
-                currentRole = 'admin';
-            }
-
-            currentUsername = rawUser;
-            const displayName = foundUser.name || rawUser.toUpperCase();
-
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', currentRole);
-            localStorage.setItem('userName', displayName);
-            localStorage.setItem('usernameKey', currentUsername);
-
-            openDashboard(displayName, true);
-            logActivity('เข้าสู่ระบบ', `เข้าใช้งานสำเร็จด้วยชื่อ ${displayName}`);
-        }
-
-        function closeErrorPopup() {
-            document.getElementById('error-popup').classList.add('hidden');
-        }
-
-        function openDashboard(roleName, animate = true) {
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('main-page').classList.remove('hidden');
-            
-            const finalName = roleName && roleName !== 'undefined' ? roleName : (currentUsername ? currentUsername.toUpperCase() : 'MEMBER');
-            document.getElementById('guest-badge').innerText = finalName;
-
-            const btnManageHistory = document.getElementById('btn-manage-history');
-            const btnViewLogs = document.getElementById('btn-view-logs');
-
-            if (currentRole === 'admin') {
-                btnManageHistory.classList.remove('hidden');
-                btnViewLogs.classList.remove('hidden');
-            } else {
-                btnManageHistory.classList.add('hidden');
-                btnViewLogs.classList.add('hidden');
-            }
-            
-            switchTab('pending');
-            renderTasks();
-            renderCalendar();
-            selectDate(selectedDateStr);
-
-            resetIdleTimer();
-
-            if (animate) {
-                backgroundFetch();
-            }
-        }
-
-        function logout() {
-            logActivity('ออกจากระบบ', 'ผู้ใช้ออกจากระบบเรียบร้อย');
-            performLogoutCleanup();
-        }
-
-        function performLogoutCleanup() {
-            if (idleTimer) clearTimeout(idleTimer);
-
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('usernameKey');
-            localStorage.removeItem('lastActiveTime');
-
-            document.getElementById('main-page').classList.add('hidden');
-            document.getElementById('login-page').classList.remove('hidden');
-            document.getElementById('username').value = '';
-        }
-
-        function toggleAddForm() {
-            switchTab('pending');
-            const adminForm = document.getElementById('admin-form');
-            if (adminForm.classList.contains('hidden')) {
-                adminForm.classList.remove('hidden');
-                adminForm.scrollIntoView({ behavior: 'smooth' });
-            } else {
-                adminForm.classList.add('hidden');
-            }
-        }
-
-        function jumpToEventCreation() {
-            switchTab('calendar');
-            const eventInput = document.getElementById('daily-event-input');
-            if (eventInput) {
-                eventInput.focus();
-                document.getElementById('calendar-detail-section').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        function switchTab(tab) {
-            currentTab = tab;
-            const btnPending = document.getElementById('tab-pending');
-            const btnCalendar = document.getElementById('tab-calendar');
-            const viewCalendar = document.getElementById('view-calendar');
-            const viewTasks = document.getElementById('view-tasks');
-            const noticeText = document.getElementById('notice-text');
-            const adminForm = document.getElementById('admin-form');
-
-            [btnPending, btnCalendar].forEach(b => b.className = "flex-1 py-2.5 rounded-xl transition text-slate-500");
-
-            if (adminForm) adminForm.classList.add('hidden');
-
-            if (tab === 'calendar') {
-                btnCalendar.className = "flex-1 py-2.5 rounded-xl transition bg-[#50D8FF] text-slate-900 font-extrabold shadow-sm";
-                viewCalendar.classList.remove('hidden');
-                viewTasks.classList.add('hidden');
-                noticeText.innerText = "คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้านและกิจกรรม";
-                renderCalendar();
-                selectDate(selectedDateStr);
-            } else {
-                btnPending.className = "flex-1 py-2.5 rounded-xl transition bg-[#FF75BC] text-white shadow-sm";
-                noticeText.innerText = "แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด";
-                viewCalendar.classList.add('hidden');
-                viewTasks.classList.remove('hidden');
-                renderTasks();
-            }
-        }
-
-        function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            document.getElementById('calendar-month-year').innerText = `ปฏิทิน: ${MONTH_NAMES_TH[month]} (${year + 543})`;
-
-            const firstDayIndex = new Date(year, month, 1).getDay();
-            const totalDays = new Date(year, month + 1, 0).getDate();
-            const daysContainer = document.getElementById('calendar-days');
-            daysContainer.innerHTML = '';
-
-            for (let i = 0; i < firstDayIndex; i++) {
-                daysContainer.innerHTML += `<div class="h-14 rounded-2xl bg-slate-50/50"></div>`;
-            }
-
-            for (let day = 1; day <= totalDays; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
-                const hasEvent = dailyEvents[dateStr] && dailyEvents[dateStr].trim() !== '';
-                const isSelected = (dateStr === selectedDateStr);
-                
-                let boxStyle = "bg-slate-50 border border-slate-100 hover:border-[#50D8FF]";
-                let textStyle = "text-slate-600";
-
-                if (isSelected) {
-                    boxStyle = "bg-[#50D8FF] border-2 border-[#50D8FF] text-slate-900 shadow-md shadow-[#50D8FF]/30 scale-105 z-10";
-                    textStyle = "text-slate-900 font-extrabold";
-                }
-
-                let indicatorsHTML = '<div class="flex gap-1 items-center justify-center mt-0.5">';
-                if (hasDueTask) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-slate-900' : 'bg-rose-500'} rounded-full"></span>`;
-                if (hasEvent) indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-amber-700' : 'bg-sky-600'} rounded-full"></span>`;
-                indicatorsHTML += '</div>';
-
-                daysContainer.innerHTML += `
-                    <button onclick="selectDate('${dateStr}')" class="h-14 ${boxStyle} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold transition duration-150">
-                        <span class="${textStyle}">${day}</span>
-                        ${indicatorsHTML}
-                    </button>
-                `;
-            }
-        }
-
-        function selectDate(dateStr) {
-            selectedDateStr = normalizeDateStr(dateStr);
-            renderCalendar();
-
-            const parts = selectedDateStr.split('-');
-            const dateLabelEl = document.getElementById('selected-date-label');
-            if (dateLabelEl) {
-                dateLabelEl.innerText = `รายการวันที่ ${parseInt(parts[2])} ${MONTH_NAMES_TH[parseInt(parts[1]) - 1]} ${parseInt(parts[0]) + 543}`;
-            }
-
-            const eventTextView = document.getElementById('event-text-view');
-            const dailyEventInput = document.getElementById('daily-event-input');
-            const currentEvent = dailyEvents[selectedDateStr] || '';
-            
-            if (eventTextView) {
-                eventTextView.innerText = currentEvent ? currentEvent : '- ไม่มีกิจกรรมพิเศษในวันนี้ -';
-                eventTextView.className = currentEvent ? "text-xs text-sky-950 font-bold" : "text-xs text-slate-400 font-medium";
-            }
-            if (dailyEventInput) {
-                dailyEventInput.value = currentEvent;
-            }
-
-            const matchedTasks = tasks.filter(t => normalizeDateStr(t.dueDate) === selectedDateStr || normalizeDateStr(t.assignDate) === selectedDateStr);
-            const container = document.getElementById('selected-date-tasks');
-            const countEl = document.getElementById('selected-task-count');
-            if (countEl) countEl.innerText = `${matchedTasks.length} รายการ`;
-            if (container) {
-                container.innerHTML = '';
-                if (matchedTasks.length === 0) {
-                    container.innerHTML = `<div class="text-center py-3 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">ไม่มีการบ้านสำหรับวันนี้</div>`;
-                } else {
-                    matchedTasks.forEach(task => {
-                        container.innerHTML += createTaskCardHTML(task, task.isPinned);
-                    });
-                }
-            }
-        }
-
-        function saveDailyEvent() {
-            const inputVal = document.getElementById('daily-event-input').value.trim();
-            if (inputVal) {
-                dailyEvents[selectedDateStr] = inputVal;
-                logActivity('บันทึกกิจกรรมประจำวัน', `วันที่ ${selectedDateStr}: ${inputVal}`);
-            } else {
-                delete dailyEvents[selectedDateStr];
-                logActivity('ลบกิจกรรมประจำวัน', `วันที่ ${selectedDateStr}`);
-            }
-            localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
-            selectDate(selectedDateStr);
-            alert('บันทึกกิจกรรมเรียบร้อยแล้ว');
-        }
-
-        function deleteDailyEvent() {
-            if (dailyEvents[selectedDateStr]) {
-                logActivity('ลบกิจกรรมประจำวัน', `วันที่ ${selectedDateStr}`);
-                delete dailyEvents[selectedDateStr];
-                localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
-                selectDate(selectedDateStr);
-                alert('ลบกิจกรรมเรียบร้อยแล้ว');
-            }
-        }
-
-        function changeMonth(offset) {
-            currentDate.setMonth(currentDate.getMonth() + offset);
-            renderCalendar();
-        }
-
-        function updateDatalists() {
-            const codeOptions = document.getElementById('code-options');
-            const subjectOptions = document.getElementById('subject-options');
-            if (!codeOptions || !subjectOptions) return;
-
-            const codes = [...new Set(tasks.map(t => t.code).filter(c => c && c.trim() !== ''))];
-            const subjects = [...new Set(tasks.map(t => t.subject).filter(s => s && s.trim() !== ''))];
-
-            codeOptions.innerHTML = codes.map(c => `<option value="${escapeHtml(c)}">`).join('');
-            subjectOptions.innerHTML = subjects.map(s => `<option value="${escapeHtml(s)}">`).join('');
-        }
-
-        function openManageModal() {
-            if (currentRole !== 'admin') return;
-            renderManageLists();
-            document.getElementById('manage-modal').classList.remove('hidden');
-        }
-
-        function closeManageModal() {
-            document.getElementById('manage-modal').classList.add('hidden');
-        }
-
-        function renderManageLists() {
-            const codesListEl = document.getElementById('manage-codes-list');
-            const subjectsListEl = document.getElementById('manage-subjects-list');
-            if (!codesListEl || !subjectsListEl) return;
-
-            const codes = [...new Set(tasks.map(t => t.code).filter(c => c && c.trim() !== ''))];
-            const subjects = [...new Set(tasks.map(t => t.subject).filter(s => s && s.trim() !== ''))];
-
-            codesListEl.innerHTML = codes.length === 0 ? `<span class="text-[10px] text-slate-400">ไม่มีรหัสวิชา</span>` : codes.map(c => `
-                <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-xs">
-                    <span class="font-bold text-slate-700">${escapeHtml(c)}</span>
-                    <button onclick="removeHistoryItem('code', '${escapeHtml(c)}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบ</button>
-                </div>
-            `).join('');
-
-            subjectsListEl.innerHTML = subjects.length === 0 ? `<span class="text-[10px] text-slate-400">ไม่มีชื่อวิชา</span>` : subjects.map(s => `
-                <div class="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100 text-xs">
-                    <span class="font-bold text-slate-700">${escapeHtml(s)}</span>
-                    <button onclick="removeHistoryItem('subject', '${escapeHtml(s)}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-2 py-0.5 bg-rose-50 rounded-md">ลบ</button>
-                </div>
-            `).join('');
-        }
-
-        async function removeHistoryItem(type, value) {
-            if (currentRole !== 'admin') return;
-            if (confirm(`คุณต้องการลบ "${value}" ออกจากตัวเลือกทั้งหมดใช่หรือไม่?`)) {
-                let updated = false;
-                tasks.forEach(t => {
-                    if (type === 'code' && t.code === value) { t.code = ''; updated = true; }
-                    if (type === 'subject' && t.subject === value) { t.subject = ''; updated = true; }
-                });
-
-                if (updated) {
-                    logActivity('ลบประวัติวิชา/รหัส', `ประเภท: ${type}, ค่า: ${value}`);
-                    localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-                    renderTasks();
-                    renderCalendar();
-                    selectDate(selectedDateStr);
-                    renderManageLists();
-                    alert('ลบประวัติเรียบร้อยแล้ว');
-                    
-                    await fetch(SCRIPT_URL, { 
-                        method: 'POST', 
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                        body: JSON.stringify({ action: 'clearHistoryType', type: type, value: value, username: currentUsername, role: currentRole }) 
-                    }).catch(console.error);
-                }
-            }
-        }
-
-        function renderTasks() {
-            const pinnedContainer = document.getElementById('pinned-list');
-            const taskContainer = document.getElementById('task-list');
-            const pinnedSection = document.getElementById('pinned-section');
-            const taskSectionTitle = document.getElementById('task-section-title');
-
-            if (!pinnedContainer || !taskContainer) return;
-
-            pinnedContainer.innerHTML = '';
-            taskContainer.innerHTML = '';
-
-            let filteredTasks = tasks;
-            if (pinnedSection) pinnedSection.classList.remove('hidden');
-            if (taskSectionTitle) taskSectionTitle.innerText = "ROOM ACTIVE TASKS";
-
-            const pinnedTasks = filteredTasks.filter(t => t.isPinned);
-            const normalTasks = filteredTasks.filter(t => !t.isPinned);
-            const countEl = document.getElementById('task-count');
-            if (countEl) countEl.innerText = `${filteredTasks.length} ITEMS`;
-
-            if (pinnedSection) {
-                if (pinnedTasks.length === 0) {
-                    pinnedContainer.innerHTML = `<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>`;
-                } else {
-                    pinnedTasks.forEach(item => { pinnedContainer.innerHTML += createTaskCardHTML(item, true); });
-                }
-            }
-
-            if (normalTasks.length === 0 && pinnedTasks.length === 0) {
-                taskContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">ไม่มีรายการงานทั่วไป</div>`;
-            } else {
-                normalTasks.forEach(item => { taskContainer.innerHTML += createTaskCardHTML(item, false); });
-            }
-
-            updateDatalists();
-        }
-
-        function createTaskCardHTML(item, isPinned) {
-            let pinButton = '';
-            let deleteButton = '';
-
-            deleteButton = `<button onclick="deleteTask(${item.id})" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition" title="ลบงาน"><i class="fa-solid fa-trash-can"></i></button>`;
-
-            if (currentRole === 'admin') {
-                pinButton = `<button onclick="togglePin(${item.id})" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition" title="ปักหมุด"><i class="fa-solid fa-thumbtack"></i></button>`;
-            }
-
-            const actionButtons = `<div class="flex items-center gap-1">${pinButton}${deleteButton}</div>`;
-            const displayLabel = escapeHtml((item.code && item.code.trim() !== "") ? item.code : item.subject);
-            const creatorInfo = item.createdByName ? `<span class="text-[9px] text-slate-400 font-normal">โดย: ${escapeHtml(item.createdByName)}</span>` : '';
-
-            return `
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
-                    <div class="flex justify-between items-start gap-2">
-                        <div class="flex items-center gap-1.5">
-                            <span class="bg-[#FF75BC] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${displayLabel}</span>
-                            ${creatorInfo}
-                        </div>
-                        ${actionButtons}
-                    </div>
-                    <h4 class="text-xs font-bold text-slate-800 pt-0.5">${escapeHtml(item.detail)}</h4>
-                    <div class="flex flex-col items-end text-[10px] pt-1 space-y-0.5">
-                        <span class="text-slate-400 font-medium"><i class="fa-regular fa-calendar-plus"></i> สั่ง: ${formatThaiShortDate(item.assignDate)}</span>
-                        <span class="text-rose-500 font-bold"><i class="fa-regular fa-hourglass-half"></i> ส่ง: ${formatThaiShortDate(item.dueDate)}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        async function fetchHomeworks(force = false) {
-            backgroundFetch();
-            backgroundFetchUsers();
-            if (force) alert('รีเฟรชข้อมูลล่าสุดเรียบร้อยแล้ว');
-        }
-
-        async function backgroundFetch() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?t=${new Date().getTime()}`);
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    tasks = data;
-                    localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-                    renderTasks();
-                    renderCalendar();
-                    selectDate(selectedDateStr);
-                }
-            } catch (err) {}
-        }
-
-        async function togglePin(id) {
-            if (currentRole !== 'admin') {
-                alert('คุณไม่มีสิทธิ์ใช้งานฟังก์ชันนี้');
-                return;
-            }
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.isPinned = !task.isPinned;
-                logActivity('ปักหมุดการบ้าน', `วิชา: ${task.subject || task.code}, สถานะปักหมุด: ${task.isPinned}`);
-                localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-                renderTasks();
-                renderCalendar();
-                selectDate(selectedDateStr);
-
-                await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                    body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned, username: currentUsername, role: currentRole }) 
-                }).catch(console.error);
-            }
-        }
-
-        async function deleteTask(id) {
-            const taskToDelete = tasks.find(t => t.id === id);
-            if (confirm('คุณต้องการลบรายการการบ้านนี้ใช่หรือไม่?')) {
-                if (taskToDelete) {
-                    logActivity('ลบการบ้าน', `วิชา: ${taskToDelete.subject || taskToDelete.code}, รายละเอียด: ${taskToDelete.detail}`);
-                }
-                tasks = tasks.filter(t => t.id !== id);
-                localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-                renderTasks();
-                renderCalendar();
-                selectDate(selectedDateStr);
-
-                await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                    body: JSON.stringify({ action: 'delete', id: id, username: currentUsername, role: currentRole }) 
-                }).catch(console.error);
-            }
-        }
-
-        function showSuccessPopup() { document.getElementById('success-popup').classList.remove('hidden'); }
-        function closeSuccessPopup() { document.getElementById('success-popup').classList.add('hidden'); }
-
-        async function addTask() {
-            const code = document.getElementById('task-code').value.trim();
-            const subject = document.getElementById('task-subject').value.trim();
-            const detail = document.getElementById('task-detail').value.trim();
-            const assignDate = document.getElementById('assign-date-input').value;
-            const dueDate = document.getElementById('due-date-input').value;
-
-            if (!code || !subject || !detail || !assignDate || !dueDate) {
-                alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
-                return;
-            }
-
-            if (assignDate > dueDate) {
-                alert('❌ วันที่สั่งงานไม่สามารถอยู่หลังวันที่ส่งงานได้ครับ!');
-                return;
-            }
-
-            const newTask = { 
-                id: Date.now(), 
-                code, 
-                subject, 
-                detail, 
-                assignDate: normalizeDateStr(assignDate), 
-                dueDate: normalizeDateStr(dueDate), 
-                isPinned: false, 
-                username: currentUsername,
-                role: currentRole,
-                createdByName: localStorage.getItem('userName') || currentUsername.toUpperCase(),
-                action: 'add' 
-            };
-
-            tasks.unshift(newTask);
-            localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-
-            logActivity('เพิ่มการบ้าน', `วิชา: ${subject} (${code}), รายละเอียด: ${detail}`);
-
-            document.getElementById('task-code').value = '';
-            document.getElementById('task-subject').value = '';
-            document.getElementById('task-detail').value = '';
-            document.getElementById('assign-date-input').value = '';
-            document.getElementById('due-date-input').value = '';
-            document.getElementById('admin-form').classList.add('hidden');
-
-            selectedDateStr = newTask.dueDate;
-            renderTasks();
-            renderCalendar();
-            selectDate(selectedDateStr);
-            showSuccessPopup();
-
-            // ส่งข้อมูลลง Google Sheets ปรับรองรับ Safari บน iPadOS
-            await fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                body: JSON.stringify(newTask) 
-            }).catch(console.error);
-        }
-    </script>
+      } catch (error) {
+        console.error('Error adding homework:', error);
+        alert('บันทึกไม่สำเร็จ กรุณาเช็กการเชื่อมต่อ');
+      } finally {
+        submitBtn.innerText = 'บันทึก';
+        submitBtn.disabled = false;
+      }
+    });
+
+    // รูปแบบการแสดงวันที่ให้ตรงกับของเดิม (พฤ. 8 ต.ค. 69)
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      
+      const days = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+      const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+      
+      const dayName = days[d.getDay()];
+      const day = d.getDate();
+      const monthName = months[d.getMonth()];
+      const year = (d.getFullYear() + 543).toString().slice(-2);
+
+      return `${dayName} ${day} ${monthName} ${year}`;
+    }
+
+    // โหลดการบ้านทันทีเมื่อเปิดหน้าเว็บ
+    loadTasks();
+  </script>
 </body>
 </html>
