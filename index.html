@@ -305,8 +305,9 @@
     </div>
 
     <script>
-        // Web App URL ตัวใหม่ล่าสุดที่แก้ไขระบบ Backend แล้ว
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-qNQz4V4cWP3edAEztmGRig9nGPtsRGD86SucGhD5IxuIMzbMnEbp_GvgK1DOVbda/exec';
+        // Dual-Backend URLs
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybX962kjcskmLNprzLfsi2p9o2J-EyGlqWOHIAv7DmIr1eV_F-xW62CZpeSk0MilQbQA/exec';
+        const USERS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxG5ZiU0Yzsw963co0Wjp9HoTxrSX5h3WxUQ91IepFhenyZOfpqMvH601Rx-kqTePEI/exec';
 
         const IDLE_TIMEOUT_MS = 7 * 60 * 1000;
         let idleTimer = null;
@@ -610,7 +611,7 @@
 
         async function backgroundFetchUsers() {
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
+                const res = await fetch(`${USERS_SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
                 const users = await res.json();
                 if (Array.isArray(users) && users.length > 0) {
                     localStorage.setItem('homework_cached_users', JSON.stringify(users));
@@ -647,7 +648,7 @@
                 }
 
                 try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
+                    const res = await fetch(`${USERS_SCRIPT_URL}?action=getUsers&t=${new Date().getTime()}`);
                     if (res.ok) {
                         const liveUsers = await res.json();
                         if (Array.isArray(liveUsers) && liveUsers.length > 0) {
