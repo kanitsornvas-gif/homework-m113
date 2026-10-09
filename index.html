@@ -66,12 +66,6 @@
                 <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
             </div>
             <div class="flex items-center gap-1.5">
-                <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งาน" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </button>
-                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-list-check"></i>
-                </button>
                 <button onclick="fetchHomeworks(true)" title="รีเฟรช" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
@@ -85,7 +79,7 @@
         <div class="space-y-2 mb-4">
             <div class="flex bg-slate-100/80 p-1 rounded-2xl text-center text-xs font-bold gap-1">
                 <button id="tab-pending" onclick="switchTab('pending')" class="flex-1 py-2.5 rounded-xl transition bg-[#FF75BC] text-white shadow-sm">งานค้าง</button>
-                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
+                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทิน</button>
             </div>
             
             <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
@@ -214,7 +208,6 @@
 
     <div class="flex-grow"></div>
 
-    <!-- Footer เป็น Homework M.113 ตามต้องการ -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
             Homework M.113
@@ -380,16 +373,6 @@
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
-
-            const btnManageHistory = document.getElementById('btn-manage-history');
-            const btnViewLogs = document.getElementById('btn-view-logs');
-            if (currentRole === 'admin') {
-                btnManageHistory.classList.remove('hidden');
-                btnViewLogs.classList.remove('hidden');
-            } else {
-                btnManageHistory.classList.add('hidden');
-                btnViewLogs.classList.add('hidden');
-            }
             
             switchTab('pending');
             renderTasks();
@@ -590,7 +573,16 @@
             const pinBtn = currentRole === 'admin' ? `<button onclick="togglePin('${item.id}')" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition"><i class="fa-solid fa-thumbtack"></i></button>` : '';
             const delBtn = `<button onclick="deleteTask('${item.id}')" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>`;
             const label = escapeHtml(item.code || item.subject);
-            const creator = item.createdByName ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(item.createdByName)}</span>` : '';
+            
+            // แปลงวันที่สร้าง (จาก item.id หรือ assignDate) ให้เป็นรูปแบบสั้นภาษาไทย
+            let createdDateFormatted = '-';
+            if (item.id && !isNaN(item.id)) {
+                createdDateFormatted = formatThaiShortDate(new Date(parseInt(item.id, 10)));
+            } else if (item.assignDate) {
+                createdDateFormatted = formatThaiShortDate(item.assignDate);
+            }
+
+            const creator = item.createdByName ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(item.createdByName)} เพิ่มเมื่อวันที่ ${createdDateFormatted}</span>` : '';
 
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
