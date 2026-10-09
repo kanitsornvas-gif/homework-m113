@@ -2,966 +2,157 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Homework M.113 - V.1.41</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: 'Sarabun', 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #ffe4f0 0%, #e0e7ff 50%, #f3e8ff 100%);
-            min-height: 100vh;
-        }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        @keyframes modalPop {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-pop {
-            animation: modalPop 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Homework M.113</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 650px;
+      margin: 30px auto;
+      padding: 16px;
+      background: #f2f6ff;
+      color: #20304a;
+    }
+    .panel {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 3px 14px #0001;
+    }
+    input, button {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input { border: 1px solid #ccd4e0; }
+    button {
+      border: 0;
+      background: #3568d4;
+      color: white;
+      cursor: pointer;
+    }
+    #status { white-space: pre-wrap; margin-top: 14px; }
+    li { margin: 8px 0; }
+  </style>
 </head>
+<body>
+  <div class="panel">
+    <h1>Homework M.113</h1>
+    <h2>บันทึกกิจกรรม</h2>
 
-<body class="flex flex-col items-center justify-between p-3 sm:p-6 min-h-screen relative antialiased">
+    <label for="eventDate">วันที่</label>
+    <input id="eventDate" type="date">
 
-    <div class="flex-grow"></div>
+    <label for="eventText">กิจกรรม / การบ้าน</label>
+    <input id="eventText" type="text"
+           placeholder="พิมพ์กิจกรรมที่ต้องทำ">
 
-    <!-- หน้าเข้าสู่ระบบ -->
-    <div id="login-page" class="w-full max-w-sm bg-white/85 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl shadow-slate-200/50 relative z-10 transition-all duration-200">
-        <div class="text-center mb-8">
-            <div class="w-14 h-14 bg-gradient-to-br from-[#FF75BC] via-purple-500 to-[#50D8FF] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-[#FF75BC]/30 transform -rotate-3">
-                <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Homework M.113</h1>
-            <p class="text-xs text-slate-400 mt-1 font-medium">ระบบการบ้านที่เพื่อนๆ ทุกคนช่วยกันเพิ่มได้ (V.1.4)</p>
-        </div>
+    <button id="saveBtn" onclick="saveEvent()">บันทึกกิจกรรม</button>
+    <button onclick="loadEvents()">โหลดกิจกรรม</button>
 
-        <div class="space-y-1.5 mb-6">
-            <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider">ชื่อผู้ใช้งาน (USERNAME)</label>
-            <div class="relative">
-                <i class="fa-regular fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                <input type="text" id="username" placeholder="พิมพ์ชื่อผู้ใช้งานของคุณ"
-                    onkeydown="if(event.key === 'Enter') login()"
-                    class="w-full pl-10 pr-4 py-3 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs font-semibold text-slate-700 outline-none focus:bg-white focus:border-[#FF75BC] focus:ring-4 focus:ring-[#FF75BC]/10 transition">
-            </div>
-        </div>
+    <p id="status">พร้อมใช้งาน</p>
+    <ul id="eventList"></ul>
+  </div>
 
-        <button id="login-btn" onclick="login()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#FF75BC] to-rose-400 hover:from-[#e065a6] hover:to-rose-500 text-white font-bold text-xs tracking-wide shadow-lg shadow-[#FF75BC]/30 active:scale-[0.98] transition duration-150">
-            เข้าสู่ระบบ
-        </button>
-    </div>
+  <script>
+    const SCRIPT_URL =
+      "https://script.google.com/macros/s/AKfycbxj4EvTJRFfYPhRSY5vn87lxaaauPmfF3KeHbN-rrwnzBJa645u5R5qV4vCyhLmD4Ir9A/exec";
 
-    <!-- Dashboard -->
-    <div id="main-page" class="hidden w-full max-w-md bg-white/85 backdrop-blur-2xl rounded-3xl p-5 border border-white/80 shadow-2xl shadow-slate-200/60 relative z-10 transition-all duration-200">
+    const statusEl = document.getElementById("status");
+    const dateEl = document.getElementById("eventDate");
+    const textEl = document.getElementById("eventText");
+    const listEl = document.getElementById("eventList");
 
-        <div class="flex justify-between items-center pb-4 border-b border-slate-100 mb-4">
-            <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-extrabold text-[#FF75BC] text-lg tracking-wider">HOMEWORK</span>
-                <span class="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">M113</span>
-                <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งาน" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </button>
-                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-list-check"></i>
-                </button>
-                <button onclick="fetchHomeworks(true)" title="รีเฟรช" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
-                    <i class="fa-solid fa-rotate"></i>
-                </button>
-                <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-bold transition">
-                    LOGOUT
-                </button>
-            </div>
-        </div>
+    dateEl.value = new Date().toLocaleDateString("en-CA");
 
-        <div class="space-y-2 mb-4">
-            <div class="flex bg-slate-100/80 p-1 rounded-2xl text-center text-xs font-bold gap-1">
-                <button id="tab-pending" onclick="switchTab('pending')" class="flex-1 py-2.5 rounded-xl transition bg-[#FF75BC] text-white shadow-sm">งานค้าง</button>
-                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
-            </div>
+    async function loadEvents() {
+      statusEl.textContent = "กำลังโหลด...";
+      try {
+        const response = await fetch(
+          SCRIPT_URL + "?type=events&t=" + Date.now()
+        );
+        const data = await response.json();
 
-            <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
-                <button onclick="toggleAddForm()" class="py-2.5 px-3 rounded-2xl bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold text-xs shadow-md shadow-[#FF75BC]/20 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-plus"></i> เพิ่มงานค้าง
-                </button>
-                <button onclick="openEventModal()" id="btn-event-create" class="py-2.5 px-3 rounded-2xl bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs shadow-md shadow-[#50D8FF]/20 transition flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-star"></i> สร้างกิจกรรม
-                </button>
-            </div>
-        </div>
-
-        <div class="bg-slate-100/70 p-2.5 rounded-2xl flex items-center justify-between mb-4 text-xs font-semibold text-slate-600">
-            <span class="bg-[#FF75BC] text-white text-[10px] font-bold px-2.5 py-1 rounded-xl flex items-center gap-1">
-                <i class="fa-solid fa-bullhorn"></i> NOTICE
-            </span>
-            <span id="notice-text" class="text-slate-500 text-[11px]">แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด</span>
-        </div>
-
-        <!-- ปฏิทิน -->
-        <div id="view-calendar" class="hidden space-y-4">
-            <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wide">ปฏิทิน</span>
-                <div class="flex gap-1">
-                    <button onclick="changeMonth(-1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200">PREV</button>
-                    <button onclick="changeMonth(1)" class="px-2.5 py-1 text-[11px] font-bold bg-white text-slate-600 rounded-lg border border-slate-200">NEXT</button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm">
-                <div class="flex items-center gap-2 mb-3">
-                    <i class="fa-regular fa-calendar-days text-[#50D8FF]"></i>
-                    <h3 id="calendar-month-year" class="text-xs font-bold text-slate-800">ปฏิทิน</h3>
-                </div>
-
-                <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold mb-2">
-                    <span class="text-rose-500">SUN</span>
-                    <span class="text-amber-500">MON</span>
-                    <span class="text-[#FF75BC]">TUE</span>
-                    <span class="text-emerald-500">WED</span>
-                    <span class="text-orange-500">THU</span>
-                    <span class="text-sky-500">FRI</span>
-                    <span class="text-purple-500">SAT</span>
-                </div>
-
-                <div id="calendar-days" class="grid grid-cols-7 gap-1"></div>
-            </div>
-
-            <div id="calendar-detail-section" class="bg-slate-50/80 p-4 rounded-3xl border border-slate-200/60 space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
-                        <i class="fa-solid fa-list-check text-[#50D8FF]"></i>
-                        <span id="selected-date-label">รายการของวันที่เลือก</span>
-                    </span>
-                    <span id="selected-task-count" class="bg-[#50D8FF]/20 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">0 รายการ</span>
-                </div>
-
-                <div class="bg-[#50D8FF]/15 border border-[#50D8FF]/30 p-3 rounded-2xl space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-extrabold text-sky-900 flex items-center gap-1">
-                            <i class="fa-solid fa-star text-[#50D8FF]"></i> กิจกรรมในวันนี้:
-                        </span>
-                        <button onclick="openEventModal()" class="text-[10px] bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold px-2.5 py-1 rounded-xl transition">+ เพิ่มกิจกรรม</button>
-                    </div>
-                    <div id="event-list-view" class="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
-                        <p class="text-xs text-slate-400 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>
-                    </div>
-                </div>
-
-                <div id="selected-date-tasks" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-
-        <!-- รายการการบ้าน -->
-        <div id="view-tasks" class="space-y-4">
-            <div id="admin-form" class="hidden bg-slate-50 p-4 rounded-2xl border border-slate-200/70 space-y-3 mb-3">
-                <h3 class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <i class="fa-solid fa-plus text-[#FF75BC]"></i> เพิ่มรายการการบ้าน
-                </h3>
-                <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="task-code" list="code-options" placeholder="รหัสวิชา" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#FF75BC]">
-                    <datalist id="code-options"></datalist>
-                    <input type="text" id="task-subject" list="subject-options" placeholder="ชื่อวิชา" class="col-span-2 w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#FF75BC]">
-                    <datalist id="subject-options"></datalist>
-                </div>
-
-                <input type="text" id="task-detail" placeholder="รายละเอียดการบ้าน" class="w-full p-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-[#FF75BC]">
-
-                <div class="grid grid-cols-2 gap-2">
-                    <label class="flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer">
-                        <span class="text-[11px] font-extrabold text-slate-500 whitespace-nowrap mr-1">วันสั่ง:</span>
-                        <input type="date" id="assign-date-input" class="w-full text-xs text-slate-700 bg-transparent outline-none">
-                    </label>
-                    <label class="flex items-center bg-white border border-slate-200 rounded-xl px-2.5 py-2 cursor-pointer">
-                        <span class="text-[11px] font-extrabold text-rose-500 whitespace-nowrap mr-1">วันส่ง:</span>
-                        <input type="date" id="due-date-input" class="w-full text-xs text-slate-700 bg-transparent outline-none">
-                    </label>
-                </div>
-
-                <button id="add-task-btn" onclick="addTask()" class="w-full py-2.5 bg-[#FF75BC] hover:bg-[#e065a6] text-white font-bold rounded-xl text-xs transition shadow-md shadow-[#FF75BC]/20">
-                    บันทึกข้อมูลทันที
-                </button>
-            </div>
-
-            <div id="pinned-section" class="bg-amber-50/60 border border-amber-100 rounded-3xl p-4 space-y-3">
-                <div class="flex items-center gap-2 text-amber-800 text-xs font-bold">
-                    <i class="fa-solid fa-thumbtack text-amber-500"></i>
-                    <span>ปักหมุดไว้</span>
-                </div>
-                <div id="pinned-list" class="space-y-2.5"></div>
-            </div>
-
-            <div class="space-y-2.5">
-                <div class="flex justify-between items-center">
-                    <span id="task-section-title" class="text-xs font-extrabold text-slate-400 uppercase tracking-wide">ROOM ACTIVE TASKS</span>
-                    <span id="task-count" class="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full">0 ITEMS</span>
-                </div>
-                <div id="task-list" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="flex-grow"></div>
-
-    <footer class="py-4 text-center z-20 w-full">
-        <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
-            Homework M.113
-        </span>
-    </footer>
-
-    <!-- Popup สำเร็จ -->
-    <div id="success-popup" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-3xl p-6 w-80 text-center shadow-2xl border border-slate-100 animate-pop">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl shadow-lg shadow-emerald-500/20">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 class="text-base font-extrabold text-slate-800 mb-1">เพิ่มงานสำเร็จ</h3>
-            <p class="text-xs text-slate-400 mb-5">บันทึกข้อมูลเรียบร้อยแล้ว</p>
-            <button onclick="closeSuccessPopup()" class="w-full py-2.5 bg-emerald-500 text-white font-bold text-xs rounded-xl">ตกลง</button>
-        </div>
-    </div>
-
-    <!-- Popup กิจกรรม -->
-    <div id="event-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-xs font-extrabold text-sky-900 flex items-center gap-1.5">
-                    <i class="fa-solid fa-star text-[#50D8FF]"></i> เพิ่มกิจกรรมในวันนี้
-                </h3>
-                <button onclick="closeEventModal()" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <span id="modal-date-label" class="text-[11px] font-bold text-slate-500 block mb-1">วันที่เลือก: -</span>
-                    <input type="text" id="daily-event-input" placeholder="พิมพ์ชื่อกิจกรรม หรือ วันสำคัญ..." class="w-full p-3 text-xs bg-slate-50 rounded-2xl border border-slate-200 focus:outline-none focus:border-[#50D8FF] font-medium">
-                </div>
-            </div>
-            <div class="pt-2">
-                <button onclick="saveDailyEvent()" class="w-full py-2.5 bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs rounded-xl transition shadow-md shadow-[#50D8FF]/20">เพิ่มกิจกรรมนี้</button>
-            </div>
-        </div>
-    </div>
-
-<script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbjwer6KVbj6IjBJiv7k_8TAK9NY6onkJk3w1i_USnYRjBdKXhs38KgxZ_ayOZkPZV4g/exec';
-    const USERS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxG5ZiU0Yzsw963co0Wjp9HoTxrSX5h3WxUQ91IepFhenyZOfpqMvH601Rx-kqTePEI/exec';
-
-    let currentRole = 'member';
-    let currentUsername = '';
-    let currentTab = 'pending';
-    let currentDate = new Date();
-    let selectedDateStr = getFormattedDate(new Date());
-    let tasks = [];
-    let dailyEvents = {};
-    let allowedUsersList = [];
-
-    const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-    const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-    const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
-
-    function getFormattedDate(d) {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function normalizeDateStr(dateInput) {
-        if (!dateInput) return '';
-        let dateObj;
-
-        if (typeof dateInput === 'string') {
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) return dateInput;
-            if (dateInput.includes('T')) dateInput = dateInput.split('T')[0];
-
-            const parts = dateInput.split('-');
-            if (parts.length === 3) {
-                return `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
-            }
-            dateObj = new Date(dateInput);
-        } else {
-            dateObj = new Date(dateInput);
+        if (data.status !== "success" || !data.events) {
+          throw new Error(data.message || "รูปแบบข้อมูลไม่ถูกต้อง");
         }
 
-        return isNaN(dateObj.getTime()) ? '' : getFormattedDate(dateObj);
-    }
+        listEl.replaceChildren();
+        const events = data.events[dateEl.value] || [];
 
-    function formatThaiShortDate(dateStr) {
-        const cleanStr = normalizeDateStr(dateStr);
-        if (!cleanStr) return '-';
-
-        const parts = cleanStr.split('-');
-        if (parts.length < 3) return dateStr;
-
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        const d = new Date(year, month, day);
-
-        return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-        try {
-            const savedTasks = localStorage.getItem('homework_cached_tasks');
-            if (savedTasks) tasks = JSON.parse(savedTasks);
-        } catch (e) {
-            console.error('อ่านงานที่บันทึกไว้ไม่สำเร็จ', e);
-        }
-
-        try {
-            const savedEvents = localStorage.getItem('homework_cached_events');
-            if (savedEvents) {
-                const parsedEvents = JSON.parse(savedEvents);
-                dailyEvents = parsedEvents?.events ?? parsedEvents;
-            }
-        } catch (e) {
-            console.error('อ่านกิจกรรมที่บันทึกไว้ไม่สำเร็จ', e);
-        }
-
-        if (localStorage.getItem('isLoggedIn') === 'true') {
-            currentRole = localStorage.getItem('userRole') || 'member';
-            currentUsername = localStorage.getItem('usernameKey') || '';
-            openDashboard(localStorage.getItem('userName') || currentUsername.toUpperCase(), false);
-        }
-
-        fetchUsersFromSheet();
-        backgroundFetch();
-        fetchEventsFromSheet();
-    });
-
-    async function fetchUsersFromSheet() {
-        try {
-            const res = await fetch(`${USERS_SCRIPT_URL}?t=${Date.now()}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            const data = await res.json();
-
-            if (Array.isArray(data) && data.length > 0) {
-                allowedUsersList = data.map(u => ({
-                    username: String(u.username || u.Username || '').trim().toLowerCase(),
-                    role: String(u.role || u.Role || 'member').trim().toLowerCase(),
-                    name: String(u.name || u.Name || u.username || '').trim()
-                }));
-            }
-        } catch (e) {
-            console.error('โหลดรายชื่อจากชีทไม่สำเร็จ', e);
-        }
-    }
-
-    // แก้ไข: รองรับทั้ง {date: [...]} และ {status:"success", events:{date:[...]}}
-    async function fetchEventsFromSheet() {
-        try {
-            const res = await fetch(`${SCRIPT_URL}?type=events&t=${Date.now()}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            const data = await res.json();
-
-            if (data?.status === 'error') {
-                throw new Error(data.message || 'โหลดกิจกรรมไม่สำเร็จ');
-            }
-
-            const source = data?.events ?? data;
-
-            if (!source || typeof source !== 'object' || Array.isArray(source)) {
-                throw new Error('รูปแบบข้อมูลกิจกรรมไม่ถูกต้อง');
-            }
-
-            const normalized = {};
-
-            Object.entries(source).forEach(([date, items]) => {
-                if (date === 'status' || date === 'message') return;
-
-                const key = normalizeDateStr(date);
-                if (!key || !Array.isArray(items)) return;
-
-                normalized[key] = items
-                    .filter(item => item !== null && item !== undefined)
-                    .map(item => String(item));
-            });
-
-            dailyEvents = normalized;
-
-            localStorage.setItem(
-                'homework_cached_events',
-                JSON.stringify(dailyEvents)
-            );
-
-            renderCalendar();
-            selectDate(selectedDateStr);
-
-            console.log('โหลดกิจกรรมจาก Google Sheets สำเร็จ', dailyEvents);
-            return true;
-        } catch (e) {
-            console.error('โหลดกิจกรรมจากชีทไม่สำเร็จ', e);
-            return false;
-        }
-    }
-
-    async function login() {
-        try {
-            const userInput = document.getElementById('username');
-            if (!userInput) {
-                alert('ไม่พบช่องกรอกชื่อผู้ใช้งาน');
-                return;
-            }
-
-            const rawUser = userInput.value.trim().toLowerCase();
-            if (!rawUser) {
-                alert('กรุณากรอกชื่อผู้ใช้งาน');
-                return;
-            }
-
-            const foundUser = allowedUsersList.find(u => u.username === rawUser);
-
-            if (!foundUser) {
-                alert('ชื่อผู้ใช้งานไม่ถูกต้อง หรือยังโหลดรายชื่อไม่เสร็จ กรุณาลองใหม่');
-                return;
-            }
-
-            currentRole = foundUser.role;
-            currentUsername = rawUser;
-            const displayName = foundUser.name;
-
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', currentRole);
-            localStorage.setItem('userName', displayName);
-            localStorage.setItem('usernameKey', currentUsername);
-
-            openDashboard(displayName, true);
-        } catch (err) {
-            console.error(err);
-            alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ' + err.message);
-        }
-    }
-
-    function openDashboard(roleName, animate = true) {
-        document.getElementById('login-page').classList.add('hidden');
-        document.getElementById('main-page').classList.remove('hidden');
-        document.getElementById('guest-badge').innerText = roleName;
-
-        const btnManageHistory = document.getElementById('btn-manage-history');
-        const btnViewLogs = document.getElementById('btn-view-logs');
-
-        if (currentRole === 'admin') {
-            if (btnManageHistory) btnManageHistory.classList.remove('hidden');
-            if (btnViewLogs) btnViewLogs.classList.remove('hidden');
-        } else {
-            if (btnManageHistory) btnManageHistory.classList.add('hidden');
-            if (btnViewLogs) btnViewLogs.classList.add('hidden');
-        }
-
-        switchTab('pending');
-        renderTasks();
-        renderCalendar();
-        selectDate(selectedDateStr);
-    }
-
-    function logout() {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('usernameKey');
-
-        document.getElementById('main-page').classList.add('hidden');
-        document.getElementById('login-page').classList.remove('hidden');
-        document.getElementById('username').value = '';
-    }
-
-    function toggleAddForm() {
-        switchTab('pending');
-        const adminForm = document.getElementById('admin-form');
-        adminForm.classList.toggle('hidden');
-        if (!adminForm.classList.contains('hidden')) {
-            adminForm.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    function switchTab(tab) {
-        currentTab = tab;
-
-        const btnPending = document.getElementById('tab-pending');
-        const btnCalendar = document.getElementById('tab-calendar');
-        const viewCalendar = document.getElementById('view-calendar');
-        const viewTasks = document.getElementById('view-tasks');
-        const noticeText = document.getElementById('notice-text');
-
-        [btnPending, btnCalendar].forEach(b => {
-            b.className = 'flex-1 py-2.5 rounded-xl transition text-slate-500';
+        events.forEach(event => {
+          const li = document.createElement("li");
+          li.textContent = event;
+          listEl.appendChild(li);
         });
 
-        document.getElementById('admin-form').classList.add('hidden');
-
-        if (tab === 'calendar') {
-            btnCalendar.className = 'flex-1 py-2.5 rounded-xl transition bg-[#50D8FF] text-slate-900 font-extrabold shadow-sm';
-            viewCalendar.classList.remove('hidden');
-            viewTasks.classList.add('hidden');
-            noticeText.innerText = 'คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน';
-            renderCalendar();
-            selectDate(selectedDateStr);
-        } else {
-            btnPending.className = 'flex-1 py-2.5 rounded-xl transition bg-[#FF75BC] text-white shadow-sm';
-            noticeText.innerText = 'แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด';
-            viewCalendar.classList.add('hidden');
-            viewTasks.classList.remove('hidden');
-            renderTasks();
-        }
+        statusEl.textContent = events.length
+          ? "โหลดกิจกรรมสำเร็จ"
+          : "ยังไม่มีกิจกรรมในวันที่เลือก";
+      } catch (error) {
+        statusEl.textContent =
+          "โหลดไม่สำเร็จ: " + error.message +
+          "\nตรวจสอบ URL และการ Deploy ของ Apps Script";
+      }
     }
 
-    function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
+    async function saveEvent() {
+      const date = dateEl.value;
+      const eventText = textEl.value.trim();
 
-        document.getElementById('calendar-month-year').innerText =
-            `ปฏิทิน: ${MONTH_NAMES_TH[month]} (${year + 543})`;
+      if (!date || !eventText) {
+        statusEl.textContent = "กรุณาเลือกวันที่และกรอกกิจกรรม";
+        return;
+      }
 
-        const firstDayIndex = new Date(year, month, 1).getDay();
-        const totalDays = new Date(year, month + 1, 0).getDate();
-        const daysContainer = document.getElementById('calendar-days');
+      const btn = document.getElementById("saveBtn");
+      btn.disabled = true;
+      statusEl.textContent = "กำลังบันทึก...";
 
-        daysContainer.innerHTML = '';
-
-        for (let i = 0; i < firstDayIndex; i++) {
-            daysContainer.innerHTML += '<div class="h-14 rounded-2xl bg-slate-50/50"></div>';
-        }
-
-        for (let day = 1; day <= totalDays; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const hasDueTask = tasks.some(t => normalizeDateStr(t.dueDate) === dateStr);
-            const eventsList = Array.isArray(dailyEvents[dateStr]) ? dailyEvents[dateStr] : [];
-            const hasEvent = eventsList.length > 0;
-            const isSelected = dateStr === selectedDateStr;
-
-            let boxStyle = 'bg-slate-50 border border-slate-100 hover:border-[#50D8FF]';
-            let textStyle = 'text-slate-600';
-
-            if (isSelected) {
-                boxStyle = 'bg-[#50D8FF] border-2 border-[#50D8FF] text-slate-900 shadow-md shadow-[#50D8FF]/30 scale-105 z-10';
-                textStyle = 'text-slate-900 font-extrabold';
-            }
-
-            let indicatorsHTML = '<div class="flex gap-1 items-center justify-center mt-0.5">';
-
-            if (hasDueTask) {
-                indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-slate-900' : 'bg-rose-500'} rounded-full"></span>`;
-            }
-
-            if (hasEvent) {
-                indicatorsHTML += `<span class="w-1.5 h-1.5 ${isSelected ? 'bg-amber-700' : 'bg-sky-600'} rounded-full"></span>`;
-            }
-
-            indicatorsHTML += '</div>';
-
-            daysContainer.innerHTML += `
-                <button onclick="selectDate('${dateStr}')" class="h-14 ${boxStyle} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold transition">
-                    <span class="${textStyle}">${day}</span>
-                    ${indicatorsHTML}
-                </button>
-            `;
-        }
-    }
-
-    function selectDate(dateStr) {
-        selectedDateStr = normalizeDateStr(dateStr);
-        if (!selectedDateStr) return;
-
-        renderCalendar();
-
-        const parts = selectedDateStr.split('-');
-
-        document.getElementById('selected-date-label').innerText =
-            `รายการวันที่ ${parseInt(parts[2], 10)} ${MONTH_NAMES_TH[parseInt(parts[1], 10) - 1]} ${parseInt(parts[0], 10) + 543}`;
-
-        const eventsList = Array.isArray(dailyEvents[selectedDateStr])
-            ? dailyEvents[selectedDateStr]
-            : [];
-
-        const eventListView = document.getElementById('event-list-view');
-
-        if (eventsList.length === 0) {
-            eventListView.innerHTML =
-                '<p class="text-xs text-slate-400 font-medium">- ไม่มีกิจกรรมพิเศษ -</p>';
-        } else {
-            eventListView.innerHTML = eventsList.map((ev, idx) => `
-                <div class="bg-white/90 px-2.5 py-1.5 rounded-xl border border-sky-100 flex items-center justify-between text-xs">
-                    <span class="font-bold text-sky-950 flex items-center gap-1.5">
-                        <i class="fa-solid fa-circle text-[5px] text-[#50D8FF]"></i>
-                        ${escapeHtml(ev)}
-                    </span>
-                    <button onclick="deleteSingleEvent(${idx})" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-1.5 py-0.5 bg-rose-50 rounded transition">ลบ</button>
-                </div>
-            `).join('');
-        }
-
-        const matchedTasks = tasks.filter(t =>
-            normalizeDateStr(t.dueDate) === selectedDateStr ||
-            normalizeDateStr(t.assignDate) === selectedDateStr
+      try {
+        // โหลดกิจกรรมเดิมก่อน เพื่อไม่เขียนทับกิจกรรมอื่นในวันเดียวกัน
+        const response = await fetch(
+          SCRIPT_URL + "?type=events&t=" + Date.now()
         );
+        const data = await response.json();
 
-        document.getElementById('selected-task-count').innerText =
-            `${matchedTasks.length} รายการ`;
-
-        const container = document.getElementById('selected-date-tasks');
-
-        container.innerHTML = matchedTasks.length === 0
-            ? '<div class="text-center py-3 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">ไม่มีการบ้านสำหรับวันนี้</div>'
-            : matchedTasks.map(t => createTaskCardHTML(t, t.isPinned)).join('');
-    }
-
-    function openEventModal() {
-        switchTab('calendar');
-
-        const parts = selectedDateStr.split('-');
-
-        if (parts.length === 3) {
-            document.getElementById('modal-date-label').innerText =
-                `วันที่เลือก: ${parseInt(parts[2], 10)} ${MONTH_NAMES_TH[parseInt(parts[1], 10) - 1]} ${parseInt(parts[0], 10) + 543}`;
+        if (data.status !== "success" || !data.events) {
+          throw new Error(data.message || "โหลดข้อมูลเดิมไม่ได้");
         }
 
-        document.getElementById('daily-event-input').value = '';
-        document.getElementById('event-modal').classList.remove('hidden');
-    }
+        const events = data.events[date] || [];
+        events.push(eventText);
 
-    function closeEventModal() {
-        document.getElementById('event-modal').classList.add('hidden');
-    }
+        const url = SCRIPT_URL +
+          "?type=saveEvent" +
+          "&date=" + encodeURIComponent(date) +
+          "&events=" + encodeURIComponent(JSON.stringify(events));
 
-    // แก้ไข: บันทึกลง Sheets ก่อน แล้วจึงอัปเดตหน้าจอ
-    async function saveDailyEvent() {
-        const input = document.getElementById('daily-event-input');
-        const value = input.value.trim();
-        const date = normalizeDateStr(selectedDateStr);
+        const saveResponse = await fetch(url);
+        const result = await saveResponse.json();
 
-        if (!value) {
-            alert('กรุณากรอกชื่อกิจกรรม');
-            return;
+        if (result.status !== "success") {
+          throw new Error(result.message || "เซิร์ฟเวอร์ปฏิเสธการบันทึก");
         }
 
-        if (!date) {
-            alert('วันที่ไม่ถูกต้อง');
-            return;
-        }
-
-        const newEvents = [...(dailyEvents[date] || []), value];
-        const button = document.querySelector('#event-modal button[onclick="saveDailyEvent()"]');
-
-        if (button) button.disabled = true;
-
-        try {
-            const params = new URLSearchParams({
-                type: 'saveEvent',
-                date: date,
-                events: JSON.stringify(newEvents),
-                t: String(Date.now())
-            });
-
-            const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-
-            if (result.status !== 'success') {
-                throw new Error(result.message || 'Apps Script ไม่ยืนยันการบันทึก');
-            }
-
-            dailyEvents[date] = newEvents;
-
-            localStorage.setItem(
-                'homework_cached_events',
-                JSON.stringify(dailyEvents)
-            );
-
-            renderCalendar();
-            selectDate(date);
-            closeEventModal();
-
-            alert('บันทึกกิจกรรมลง Google Sheets สำเร็จ');
-        } catch (error) {
-            console.error('บันทึกกิจกรรมไม่สำเร็จ', error);
-            alert('บันทึกกิจกรรมไม่สำเร็จ กรุณาตรวจสอบ Apps Script และลองใหม่\n' + error.message);
-        } finally {
-            if (button) button.disabled = false;
-        }
+        textEl.value = "";
+        statusEl.textContent = "บันทึกสำเร็จ ✓";
+        await loadEvents();
+      } catch (error) {
+        statusEl.textContent =
+          "บันทึกไม่สำเร็จ: " + error.message +
+          "\nตรวจสอบว่า Apps Script Deploy เป็น Web app และตั้งสิทธิ์การเข้าถึงถูกต้อง";
+      } finally {
+        btn.disabled = false;
+      }
     }
 
-    // แก้ไข: ยืนยันการลบกับ Sheets ก่อนอัปเดตหน้าจอ
-    async function deleteSingleEvent(index) {
-        const date = normalizeDateStr(selectedDateStr);
-        if (!date || !Array.isArray(dailyEvents[date])) return;
-
-        if (!confirm('ต้องการลบกิจกรรมนี้ใช่หรือไม่?')) return;
-
-        const newEvents = [...dailyEvents[date]];
-        newEvents.splice(index, 1);
-
-        try {
-            const params = new URLSearchParams({
-                type: 'saveEvent',
-                date: date,
-                events: JSON.stringify(newEvents),
-                t: String(Date.now())
-            });
-
-            const response = await fetch(`${SCRIPT_URL}?${params.toString()}`);
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const result = await response.json();
-
-            if (result.status !== 'success') {
-                throw new Error(result.message || 'Apps Script ไม่ยืนยันการลบ');
-            }
-
-            if (newEvents.length > 0) {
-                dailyEvents[date] = newEvents;
-            } else {
-                delete dailyEvents[date];
-            }
-
-            localStorage.setItem(
-                'homework_cached_events',
-                JSON.stringify(dailyEvents)
-            );
-
-            renderCalendar();
-            selectDate(date);
-
-            alert('ลบกิจกรรมสำเร็จ');
-        } catch (error) {
-            console.error('ลบกิจกรรมไม่สำเร็จ', error);
-            alert('ลบกิจกรรมไม่สำเร็จ กรุณาลองใหม่\n' + error.message);
-        }
-    }
-
-    function changeMonth(offset) {
-        currentDate.setMonth(currentDate.getMonth() + offset);
-        renderCalendar();
-    }
-
-    function updateDatalists() {
-        const codes = [...new Set(tasks.map(t => t.code).filter(Boolean))];
-        const subjects = [...new Set(tasks.map(t => t.subject).filter(Boolean))];
-
-        document.getElementById('code-options').innerHTML =
-            codes.map(c => `<option value="${escapeHtml(c)}">`).join('');
-
-        document.getElementById('subject-options').innerHTML =
-            subjects.map(s => `<option value="${escapeHtml(s)}">`).join('');
-    }
-
-    function renderTasks() {
-        const pinnedContainer = document.getElementById('pinned-list');
-        const taskContainer = document.getElementById('task-list');
-        const pinnedTasks = tasks.filter(t => t.isPinned);
-        const normalTasks = tasks.filter(t => !t.isPinned);
-
-        document.getElementById('task-count').innerText = `${tasks.length} ITEMS`;
-
-        pinnedContainer.innerHTML = pinnedTasks.length === 0
-            ? '<div class="text-center py-2 text-xs text-amber-600/60 font-bold">ไม่มีรายการที่ปักหมุดไว้</div>'
-            : pinnedTasks.map(t => createTaskCardHTML(t, true)).join('');
-
-        taskContainer.innerHTML = normalTasks.length === 0 && pinnedTasks.length === 0
-            ? '<div class="text-center py-6 text-xs text-slate-400 font-bold bg-white rounded-2xl border border-slate-100">ไม่มีรายการงานทั่วไป</div>'
-            : normalTasks.map(t => createTaskCardHTML(t, false)).join('');
-
-        updateDatalists();
-    }
-
-    function createTaskCardHTML(item, isPinned) {
-        const pinBtn = currentRole === 'admin'
-            ? `<button onclick="togglePin('${item.id}')" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition"><i class="fa-solid fa-thumbtack"></i></button>`
-            : '';
-
-        const delBtn = `<button onclick="deleteTask('${item.id}')" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>`;
-        const label = escapeHtml(item.code || item.subject);
-        const creator = item.createdByName
-            ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(item.createdByName)}</span>`
-            : '';
-
-        return `
-            <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
-                <div class="flex justify-between items-start">
-                    <div class="flex items-center gap-1.5">
-                        <span class="bg-[#FF75BC] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${label}</span>
-                        ${creator}
-                    </div>
-                    <div class="flex items-center gap-1">${pinBtn}${delBtn}</div>
-                </div>
-                <h4 class="text-xs font-bold text-slate-800">${escapeHtml(item.detail)}</h4>
-                <div class="flex flex-col items-end text-[10px] pt-1 space-y-0.5">
-                    <span class="text-slate-400"><i class="fa-regular fa-calendar-plus"></i> สั่ง: ${formatThaiShortDate(item.assignDate)}</span>
-                    <span class="text-rose-500 font-bold"><i class="fa-regular fa-hourglass-half"></i> ส่ง: ${formatThaiShortDate(item.dueDate)}</span>
-                </div>
-            </div>
-        `;
-    }
-
-    // แก้ไข: รอให้การโหลดเสร็จก่อนแจ้งผล
-    async function fetchHomeworks(force = false) {
-        const results = await Promise.allSettled([
-            backgroundFetch(),
-            fetchEventsFromSheet()
-        ]);
-
-        const tasksLoaded = results[0].status === 'fulfilled' && results[0].value === true;
-        const eventsLoaded = results[1].status === 'fulfilled' && results[1].value === true;
-
-        if (force) {
-            if (tasksLoaded && eventsLoaded) {
-                alert('อัปเดตข้อมูลการบ้านและกิจกรรมเรียบร้อยแล้ว');
-            } else if (tasksLoaded || eventsLoaded) {
-                alert('โหลดข้อมูลได้บางส่วน กรุณาตรวจสอบการเชื่อมต่อ');
-            } else {
-                alert('โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบ Apps Script และอินเทอร์เน็ต');
-            }
-        }
-    }
-
-    async function backgroundFetch() {
-        try {
-            const res = await fetch(`${SCRIPT_URL}?t=${Date.now()}`);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-            const data = await res.json();
-
-            if (Array.isArray(data)) {
-                tasks = data;
-                localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-                renderTasks();
-                renderCalendar();
-                selectDate(selectedDateStr);
-                return true;
-            }
-
-            throw new Error('รูปแบบข้อมูลการบ้านไม่ถูกต้อง');
-        } catch (e) {
-            console.error('โหลดการบ้านไม่สำเร็จ', e);
-            return false;
-        }
-    }
-
-    async function togglePin(id) {
-        if (currentRole !== 'admin') return;
-
-        const task = tasks.find(item => String(item.id) === String(id));
-
-        if (task) {
-            task.isPinned = !task.isPinned;
-
-            localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-            renderTasks();
-            renderCalendar();
-            selectDate(selectedDateStr);
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'togglePin', id: id, isPinned: task.isPinned })
-            }).catch(console.error);
-        }
-    }
-
-    async function deleteTask(id) {
-        if (!confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) return;
-
-        tasks = tasks.filter(item => String(item.id) !== String(id));
-
-        localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-        renderTasks();
-        renderCalendar();
-        selectDate(selectedDateStr);
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'delete', id: id })
-        }).catch(console.error);
-    }
-
-    function closeSuccessPopup() {
-        document.getElementById('success-popup').classList.add('hidden');
-    }
-
-    async function addTask() {
-        const code = document.getElementById('task-code').value.trim();
-        const subject = document.getElementById('task-subject').value.trim();
-        const detail = document.getElementById('task-detail').value.trim();
-        const assignDate = document.getElementById('assign-date-input').value;
-        const dueDate = document.getElementById('due-date-input').value;
-
-        if (!code || !subject || !detail || !assignDate || !dueDate) {
-            alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
-            return;
-        }
-
-        if (assignDate > dueDate) {
-            alert('วันที่สั่งงานไม่สามารถอยู่หลังวันที่ส่งงานได้ครับ!');
-            return;
-        }
-
-        const newTask = {
-            id: Date.now().toString(),
-            code,
-            subject,
-            detail,
-            assignDate: normalizeDateStr(assignDate),
-            dueDate: normalizeDateStr(dueDate),
-            isPinned: false,
-            username: currentUsername,
-            role: currentRole,
-            createdByName: localStorage.getItem('userName') || currentUsername.toUpperCase(),
-            action: 'add'
-        };
-
-        tasks.unshift(newTask);
-        localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
-
-        document.getElementById('task-code').value = '';
-        document.getElementById('task-subject').value = '';
-        document.getElementById('task-detail').value = '';
-        document.getElementById('assign-date-input').value = '';
-        document.getElementById('due-date-input').value = '';
-        document.getElementById('admin-form').classList.add('hidden');
-
-        selectedDateStr = newTask.dueDate;
-
-        renderTasks();
-        renderCalendar();
-        selectDate(selectedDateStr);
-        document.getElementById('success-popup').classList.remove('hidden');
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(newTask)
-        }).catch(console.error);
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
-</script>
+    dateEl.addEventListener("change", loadEvents);
+    loadEvents();
+  </script>
 </body>
 </html>
