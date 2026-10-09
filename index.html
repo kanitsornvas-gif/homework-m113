@@ -559,13 +559,9 @@
             closeEventModal();
             alert('เพิ่มกิจกรรมเรียบร้อยแล้ว');
 
-            // ซิงค์บันทึกไปที่ Google Sheets
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'saveEvent', date: selectedDateStr, events: dailyEvents[selectedDateStr] })
-            }).catch(console.error);
+            // ซิงค์บันทึกไปที่ Google Sheets ทันทีผ่าน GET Request
+            const syncUrl = `${SCRIPT_URL}?type=saveEvent&date=${encodeURIComponent(selectedDateStr)}&events=${encodeURIComponent(JSON.stringify(dailyEvents[selectedDateStr]))}&t=${Date.now()}`;
+            fetch(syncUrl).catch(console.error);
         }
 
         async function deleteSingleEvent(index) {
@@ -577,13 +573,10 @@
                 localStorage.setItem('homework_cached_events', JSON.stringify(dailyEvents));
                 selectDate(selectedDateStr);
 
-                // ซิงค์ลบไปที่ Google Sheets
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'saveEvent', date: selectedDateStr, events: dailyEvents[selectedDateStr] || [] })
-                }).catch(console.error);
+                // ซิงค์ลบไปที่ Google Sheets ทันทีผ่าน GET Request
+                const eventsToSend = dailyEvents[selectedDateStr] || [];
+                const syncUrl = `${SCRIPT_URL}?type=saveEvent&date=${encodeURIComponent(selectedDateStr)}&events=${encodeURIComponent(JSON.stringify(eventsToSend))}&t=${Date.now()}`;
+                fetch(syncUrl).catch(console.error);
             }
         }
 
