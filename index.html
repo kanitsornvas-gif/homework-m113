@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Homework M.113 - V.1.46</title>
+<title>Homework M.113 - V.1.47</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
       <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
     </div>
     <h1 class="text-2xl font-extrabold text-slate-800">Homework M.113</h1>
-    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.46)</p>
+    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.47)</p>
   </div>
   <div class="space-y-1.5 mb-6">
     <label class="block text-[11px] font-bold text-slate-600">ชื่อผู้ใช้งาน (USERNAME)</label>
@@ -194,10 +194,8 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
 <script>
 'use strict';
 
-/* อัปเดต URL ล่าสุดตรงกับ Web App ของคุณ 100% */
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1lacaaSbd6ZVh5jrD_s7yU1lmK6bmG_31yzUywyknR7xPZ7BDd_RLAygQHtgfvPRu/exec';
 
-// รายชื่อฐานข้อมูลสำรองสมบูรณ์ตรงตาม Google Sheets
 const FALLBACK_USERS = [
     { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
     { username: "porsche_62031", role: "member", name: "Porsche_62031" },
@@ -300,7 +298,6 @@ async function fetchUsersFromSheet(){
         role:String(u.role||u.Role||'member').trim().toLowerCase(),
         name:String(u.name||u.Name||u.username||u.Username||'').trim()
       })).filter(u=>u.username);
-
       if(sheetUsers.length > 0){
         allowedUsersList = sheetUsers;
         return true;
@@ -327,6 +324,7 @@ async function loadOptions(){
     return false;
   }
 }
+
 async function fetchEventsFromSheet(){
   try{
     const data=await fetchJSON(`${SCRIPT_URL}?type=events&t=${Date.now()}`);
@@ -360,7 +358,6 @@ async function login(){
   });
 
   let user = combinedList.find(u => u.username === raw);
-
   if(!user){
     btn.disabled=false;
     btn.innerText='เข้าสู่ระบบ';
@@ -390,6 +387,7 @@ function openDashboard(name){
   document.getElementById('btn-view-logs').classList.toggle('hidden',currentRole!=='admin');
   switchTab('pending');renderTasks();renderCalendar();selectDate(selectedDateStr);
 }
+
 function logout(){
   logActivity('logout','ออกจากระบบ');
   ['isLoggedIn','userRole','userName','usernameKey'].forEach(k=>localStorage.removeItem(k));
@@ -398,6 +396,7 @@ function logout(){
   document.getElementById('login-page').classList.remove('hidden');
   document.getElementById('username').value='';
 }
+
 function switchTab(tab){
   currentTab=tab;
   document.getElementById('tab-pending').className=tab==='pending'?'flex-1 py-2.5 rounded-xl bg-[#FF75BC] text-white':'flex-1 py-2.5 rounded-xl text-slate-500';
@@ -408,11 +407,13 @@ function switchTab(tab){
   document.getElementById('notice-text').textContent=tab==='calendar'?'คลิกเลือกวันที่ในปฏิทินเพื่อดูการบ้าน':'แสดงรายการการบ้านที่ค้างอยู่ทั้งหมด';
   if(tab==='calendar'){renderCalendar();selectDate(selectedDateStr);}else renderTasks();
 }
+
 function toggleAddForm(){
   switchTab('pending');
   const form=document.getElementById('admin-form');form.classList.toggle('hidden');
   if(!form.classList.contains('hidden'))form.scrollIntoView({behavior:'smooth'});
 }
+
 function renderCalendar(){
   const year=currentDate.getFullYear(),month=currentDate.getMonth();
   document.getElementById('calendar-month-year').textContent=`ปฏิทิน: ${MONTH_NAMES_TH[month]} (${year+543})`;
@@ -427,6 +428,7 @@ function renderCalendar(){
     box.insertAdjacentHTML('beforeend',`<button onclick="selectDate('${ds}')" class="h-14 ${style} rounded-2xl p-1 flex flex-col items-center justify-between text-[11px] font-bold"><span>${day}</span><div class="flex gap-1 mt-0.5">${due?'<span class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>':''}${event?'<span class="w-1.5 h-1.5 bg-sky-600 rounded-full"></span>':''}</div></button>`);
   }
 }
+
 function selectDate(date){
   selectedDateStr=normalizeDateStr(date);if(!selectedDateStr)return;
   renderCalendar();
@@ -438,6 +440,7 @@ function selectDate(date){
   document.getElementById('selected-task-count').textContent=`${matched.length} รายการ`;
   document.getElementById('selected-date-tasks').innerHTML=matched.length?matched.map(t=>createTaskCardHTML(t,t.isPinned)).join(''):'<div class="text-center py-3 text-xs text-slate-400 bg-white rounded-2xl">ไม่มีการบ้านสำหรับวันนี้</div>';
 }
+
 function changeMonth(offset){currentDate.setMonth(currentDate.getMonth()+offset);renderCalendar();}
 function openEventModal(){
   switchTab('calendar');
@@ -455,25 +458,52 @@ async function saveDailyEvent(){
   const before=JSON.stringify(dailyEvents);
   const next=[...(dailyEvents[date]||[]),value];
   try{
-    const params=new URLSearchParams({type:'saveEvent',date,events:JSON.stringify(next),username:currentUsername,t:String(Date.now())});
-    const result=await fetchJSON(`${SCRIPT_URL}?${params.toString()}`);
-    if(result.status!=='success')throw new Error(result.message||'บันทึกไม่สำเร็จ');
-    dailyEvents[date]=next;cacheEvents();renderCalendar();selectDate(date);closeEventModal();
+    const payload = {
+      action: 'saveEvent',
+      date: date,
+      events: JSON.stringify(next),
+      username: currentUsername
+    };
+    await fetch(SCRIPT_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    await new Promise(resolve => setTimeout(resolve, 900));
+    await fetchEventsFromSheet();
+    closeEventModal();
     logActivity('add_event',`เพิ่มกิจกรรม ${value} วันที่ ${date}`);
     showSuccess('เพิ่มกิจกรรมสำเร็จ','บันทึกกิจกรรมลง Google Sheets แล้ว');
-  }catch(e){dailyEvents=JSON.parse(before);alert('บันทึกกิจกรรมไม่สำเร็จ: '+e.message);}
-  finally{button.disabled=false;}
+  }catch(e){
+    dailyEvents=JSON.parse(before);
+    alert('บันทึกกิจกรรมไม่สำเร็จ: '+e.message);
+  }finally{
+    button.disabled=false;
+  }
 }
+
 async function deleteSingleEvent(index){
   const date=selectedDateStr,old=[...(dailyEvents[date]||[])];
   if(!old[index]||!confirm('ต้องการลบกิจกรรมนี้ใช่หรือไม่?'))return;
   const removed=old[index],next=old.filter((_,i)=>i!==index);
   try{
-    const params=new URLSearchParams({type:'saveEvent',date,events:JSON.stringify(next),username:currentUsername,t:String(Date.now())});
-    const result=await fetchJSON(`${SCRIPT_URL}?${params.toString()}`);
-    if(result.status!=='success')throw new Error(result.message||'ลบไม่สำเร็จ');
+    const payload = {
+      action: 'saveEvent',
+      date: date,
+      events: JSON.stringify(next),
+      username: currentUsername
+    };
+    await fetch(SCRIPT_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    await new Promise(resolve => setTimeout(resolve, 900));
     if(next.length)dailyEvents[date]=next;else delete dailyEvents[date];
-    cacheEvents();renderCalendar();selectDate(date);logActivity('delete_event',`ลบกิจกรรม ${removed} วันที่ ${date}`);
+    cacheEvents();renderCalendar();selectDate(date);
+    logActivity('delete_event',`ลบกิจกรรม ${removed} วันที่ ${date}`);
   }catch(e){alert('ลบกิจกรรมไม่สำเร็จ: '+e.message);}
 }
 
@@ -483,6 +513,7 @@ function updateDatalists(){
   document.getElementById('code-options').innerHTML=codes.map(v=>`<option value="${escapeHtml(v)}">`).join('');
   document.getElementById('subject-options').innerHTML=subjects.map(v=>`<option value="${escapeHtml(v)}">`).join('');
 }
+
 function renderTasks(){
   const pinned=tasks.filter(t=>t.isPinned),normal=tasks.filter(t=>!t.isPinned);
   document.getElementById('task-count').textContent=`${tasks.length} ITEMS`;
@@ -490,6 +521,7 @@ function renderTasks(){
   document.getElementById('task-list').innerHTML=normal.length?normal.map(t=>createTaskCardHTML(t,false)).join(''):(pinned.length?'':'<div class="text-center py-6 text-xs text-slate-400 bg-white rounded-2xl border">ไม่มีรายการงาน</div>');
   updateDatalists();
 }
+
 function createTaskCardHTML(item,pinned){
   const pin=currentRole==='admin'?`<button onclick="togglePin('${escapeHtml(item.id)}')" class="text-xs p-1 ${pinned?'text-amber-500':'text-slate-300'}"><i class="fa-solid fa-thumbtack"></i></button>`:'';
   const creator=item.createdByName?`<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(item.createdByName)}</span>`:'';
@@ -498,6 +530,7 @@ function createTaskCardHTML(item,pinned){
     <h4 class="text-xs font-bold text-slate-800">${escapeHtml(item.detail)}</h4>
     <div class="flex flex-col items-end text-[10px] pt-1"><span class="text-slate-400">สั่ง: ${formatThaiShortDate(item.assignDate)}</span><span class="text-rose-500 font-bold">ส่ง: ${formatThaiShortDate(item.dueDate)}</span></div></div>`;
 }
+
 async function backgroundFetch(){
   try{
     const data=await fetchJSON(`${SCRIPT_URL}?t=${Date.now()}`);
@@ -506,6 +539,7 @@ async function backgroundFetch(){
     cacheTasks();renderTasks();renderCalendar();selectDate(selectedDateStr);return true;
   }catch(e){console.error('โหลดการบ้านไม่สำเร็จ',e);return false;}
 }
+
 async function fetchHomeworks(force=false){
   const results=await Promise.allSettled([backgroundFetch(),fetchEventsFromSheet(),loadOptions()]);
   if(force){
@@ -523,6 +557,7 @@ async function postWrite(payload){
   await new Promise(resolve=>setTimeout(resolve,900));
   return await backgroundFetch();
 }
+
 async function togglePin(id){
   if(currentRole!=='admin')return alert('เฉพาะผู้ดูแลระบบเท่านั้นที่ปักหมุดได้');
   const task=tasks.find(t=>String(t.id)===String(id));if(!task)return;
@@ -534,6 +569,7 @@ async function togglePin(id){
     logActivity('toggle_pin',`${newValue?'ปักหมุด':'ยกเลิกปักหมุด'} งาน ${id}`);
   }catch(e){alert('อัปเดตสถานะปักหมุดไม่สำเร็จ กรุณารีเฟรชและตรวจสอบชีต');console.error(e);}
 }
+
 async function deleteTask(id){
   if(!confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?'))return;
   const old=tasks;
@@ -545,6 +581,7 @@ async function deleteTask(id){
     showSuccess('ลบรายการแล้ว','อัปเดตรายการจาก Google Sheets แล้ว');
   }catch(e){tasks=old;cacheTasks();renderTasks();renderCalendar();selectDate(selectedDateStr);alert('ลบงานไม่สำเร็จหรือยังยืนยันจากชีตไม่ได้ กรุณารีเฟรช');console.error(e);}
 }
+
 async function addTask(){
   const code=document.getElementById('task-code').value.trim();
   const subject=document.getElementById('task-subject').value.trim();
@@ -588,6 +625,7 @@ async function openLogsModal(){
   document.getElementById('logs-modal').classList.remove('hidden');
   await loadLogs();
 }
+
 async function loadLogs(){
   const status=document.getElementById('logs-status'),container=document.getElementById('logs-list');
   status.textContent='กำลังโหลดประวัติ...';container.innerHTML='';
@@ -604,11 +642,13 @@ function openManageModal(){
   document.getElementById('manage-modal').classList.remove('hidden');
   loadOptions();
 }
+
 function renderManageOptions(){
   const makeList=(values,type)=>values.length?values.map(v=>`<div class="p-2 border rounded-xl bg-slate-50"><div class="text-xs font-bold break-words">${escapeHtml(v)}</div><button onclick="disableOption('${type}','${escapeHtml(v).replace(/'/g,"&#039;")}')" class="mt-1 text-[10px] bg-rose-50 text-rose-600 px-2 py-1 rounded-lg">ซ่อนตัวเลือก</button></div>`).join(''):'<p class="text-[11px] text-slate-400">ไม่มีตัวเลือก</p>';
   document.getElementById('manage-codes').innerHTML=makeList(subjectOptions.codes,'code');
   document.getElementById('manage-subjects').innerHTML=makeList(subjectOptions.subjects,'subject');
 }
+
 async function disableOption(type,value){
   if(currentRole!=='admin')return;
   if(!confirm(`ต้องการซ่อนตัวเลือก "${value}" ใช่หรือไม่?`))return;
