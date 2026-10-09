@@ -269,25 +269,6 @@
         let dailyEvents = {};
         let allowedUsersList = [];
 
-        const FALLBACK_USERS = [
-            { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
-            { username: "porsche_62031", role: "member", name: "Porsche_62031" },
-            { username: "captain_62032", role: "member", name: "Captain_62032" },
-            { username: "munich_62033", role: "member", name: "Munich_62033" },
-            { username: "kin_62034", role: "member", name: "Kin_62034" },
-            { username: "tonboon_62035", role: "member", name: "Tonboon_62035" },
-            { username: "plub_62036", role: "member", name: "Plub_62036" },
-            { username: "organ_62037", role: "member", name: "Organ_62037" },
-            { username: "kan_62038", role: "member", name: "Kan_62038" },
-            { username: "nodt_62039", role: "member", name: "Nodt_62039" },
-            { username: "nine_62040", role: "member", name: "Nine_62040" },
-            { username: "mark_62041", role: "member", name: "Mark_62041" },
-            { username: "near_62032", role: "member", name: "Near_62032" },
-            { username: "pp_62033", role: "member", name: "PP_62033" },
-            { username: "foreground_62034", role: "member", name: "Foreground_62034" },
-            { username: "admin", role: "admin", name: "ADMIN" }
-        ];
-
         const MONTH_NAMES_TH = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const MONTH_SHORT_TH = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
         const DAY_SHORT_TH = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."];
@@ -366,7 +347,7 @@
                     }));
                 }
             } catch (e) {
-                console.error("โหลดรายชื่อจากชีทไม่สำเร็จ ใช้ FALLBACK แทน", e);
+                console.error("โหลดรายชื่อจากชีทไม่สำเร็จ", e);
             }
         }
 
@@ -383,8 +364,8 @@
                     return; 
                 }
 
-                const allValidUsers = [...allowedUsersList, ...FALLBACK_USERS];
-                let foundUser = allValidUsers.find(u => u.username === rawUser);
+                // ตรวจสอบเฉพาะจาก Google Sheets เท่านั้น
+                let foundUser = allowedUsersList.find(u => u.username === rawUser);
                 if (!foundUser) {
                     alert('ชื่อผู้ใช้งานไม่ถูกต้อง');
                     return;
