@@ -386,7 +386,7 @@
                 const allValidUsers = [...allowedUsersList, ...FALLBACK_USERS];
                 let foundUser = allValidUsers.find(u => u.username === rawUser);
                 if (!foundUser) {
-                    alert('❌ ชื่อผู้ใช้งานไม่ถูกต้อง หรือไม่อยู่ในรายชื่อที่อนุญาต!');
+                    alert('ชื่อผู้ใช้งานไม่ถูกต้อง');
                     return;
                 }
 
