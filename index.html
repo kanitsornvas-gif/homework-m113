@@ -66,6 +66,12 @@
                 <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
             </div>
             <div class="flex items-center gap-1.5">
+                <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งาน" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-list-check"></i>
+                </button>
                 <button onclick="fetchHomeworks(true)" title="รีเฟรช" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
@@ -318,7 +324,6 @@
 
         function getShortName(nameStr) {
             if (!nameStr) return '';
-            // ตัดเอาเฉพาะคำแรกก่อนเครื่องหมาย _ หรือ เว้นวรรค
             return nameStr.split(/[_ ]/)[0];
         }
 
@@ -379,8 +384,17 @@
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
             
-            // ตัดชื่อให้แสดงเฉพาะคำแรก
             document.getElementById('guest-badge').innerText = getShortName(roleName);
+
+            const btnManageHistory = document.getElementById('btn-manage-history');
+            const btnViewLogs = document.getElementById('btn-view-logs');
+            if (currentRole === 'admin') {
+                btnManageHistory.classList.remove('hidden');
+                btnViewLogs.classList.remove('hidden');
+            } else {
+                btnManageHistory.classList.add('hidden');
+                btnViewLogs.classList.add('hidden');
+            }
             
             switchTab('pending');
             renderTasks();
