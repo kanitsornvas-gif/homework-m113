@@ -66,6 +66,12 @@
                 <span id="guest-badge" class="bg-[#FF75BC]/20 text-[#db559a] text-[10px] font-bold px-2 py-0.5 rounded-md">MEMBER</span>
             </div>
             <div class="flex items-center gap-1.5">
+                <button onclick="openLogsModal()" id="btn-view-logs" title="ดูประวัติการใช้งาน" class="hidden text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </button>
+                <button onclick="openManageModal()" id="btn-manage-history" title="จัดการประวัติวิชา" class="hidden text-xs bg-[#50D8FF]/10 text-sky-700 hover:bg-[#50D8FF]/20 px-2.5 py-1.5 rounded-xl font-bold transition">
+                    <i class="fa-solid fa-list-check"></i>
+                </button>
                 <button onclick="fetchHomeworks(true)" title="รีเฟรช" class="text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl font-bold transition">
                     <i class="fa-solid fa-rotate"></i>
                 </button>
@@ -208,6 +214,7 @@
 
     <div class="flex-grow"></div>
 
+    <!-- Footer เป็น Homework M.113 ตามต้องการ -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
             Homework M.113
@@ -323,9 +330,18 @@
             if (savedTasks) {
                 try { tasks = JSON.parse(savedTasks); } catch(e) {}
             }
-            const savedEvents = localStorage.getItem('homework_cached_events');
+            const savedEvents = localStorage.getItem('homework_daily_events');
             if (savedEvents) {
-                try { dailyEvents = JSON.parse(savedEvents); } catch(e) {}
+                try { 
+                    const parsed = JSON.parse(savedEvents);
+                    for (let key in parsed) {
+                        if (typeof parsed[key] === 'string') {
+                            dailyEvents[key] = [parsed[key]];
+                        } else if (Array.isArray(parsed[key])) {
+                            dailyEvents[key] = parsed[key];
+                        }
+                    }
+                } catch(e) {}
             }
 
             if (localStorage.getItem('isLoggedIn') === 'true') {
@@ -336,7 +352,6 @@
             
             fetchUsersFromSheet();
             backgroundFetch();
-            fetchEventsFromSheet();
         });
 
         async function fetchUsersFromSheet() {
@@ -355,27 +370,18 @@
             }
         }
 
-        async function fetchEventsFromSheet() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?type=events&t=${Date.now()}`);
-                const data = await res.json();
-                if (data && typeof data === 'object') {
-                    dailyEvents = data;
-                    localStorage.setItem('homework_cached_events', JSON.stringify(dailyEvents));
-                    renderCalendar();
-                    selectDate(selectedDateStr);
-                }
-            } catch (e) {
-                console.error("โหลดกิจกรรมจากชีทไม่สำเร็จ", e);
-            }
-        }
-
         async function login() {
             try {
                 const userInput = document.getElementById('username');
-                if (!userInput) return;
+                if (!userInput) {
+                    alert('ไม่พบช่องกรอกชื่อผู้ใช้งาน');
+                    return;
+                }
                 const rawUser = userInput.value.trim().toLowerCase();
-                if (!rawUser) { alert('กรุณากรอกชื่อผู้ใช้งาน'); return; }
+                if (!rawUser) { 
+                    alert('กรุณากรอกชื่อผู้ใช้งาน'); 
+                    return; 
+                }
 
                 const allValidUsers = [...allowedUsersList, ...FALLBACK_USERS];
                 let foundUser = allValidUsers.find(u => u.username === rawUser);
@@ -396,7 +402,7 @@
                 openDashboard(displayName, true);
             } catch (err) {
                 console.error(err);
-                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ');
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ' + err.message);
             }
         }
 
@@ -404,6 +410,16 @@
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
             document.getElementById('guest-badge').innerText = roleName;
+
+            const btnManageHistory = document.getElementById('btn-manage-history');
+            const btnViewLogs = document.getElementById('btn-view-logs');
+            if (currentRole === 'admin') {
+                if (btnManageHistory) btnManageHistory.classList.remove('hidden');
+                if (btnViewLogs) btnViewLogs.classList.remove('hidden');
+            } else {
+                if (btnManageHistory) btnManageHistory.classList.add('hidden');
+                if (btnViewLogs) btnViewLogs.classList.add('hidden');
+            }
             
             switchTab('pending');
             renderTasks();
@@ -540,45 +556,32 @@
             document.getElementById('event-modal').classList.add('hidden');
         }
 
-        async function saveDailyEvent() {
+        function saveDailyEvent() {
             const val = document.getElementById('daily-event-input').value.trim();
-            if (!val) { alert('กรุณากรอกชื่อกิจกรรม'); return; }
+            if (!val) {
+                alert('กรุณากรอกชื่อกิจกรรม');
+                return;
+            }
 
             if (!dailyEvents[selectedDateStr]) {
                 dailyEvents[selectedDateStr] = [];
             }
             dailyEvents[selectedDateStr].push(val);
 
-            localStorage.setItem('homework_cached_events', JSON.stringify(dailyEvents));
+            localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
             selectDate(selectedDateStr);
             closeEventModal();
             alert('เพิ่มกิจกรรมเรียบร้อยแล้ว');
-
-            // ส่งข้อมูลไปบันทึกที่ Google Sheets
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'saveEvent', date: selectedDateStr, events: dailyEvents[selectedDateStr] })
-            }).catch(console.error);
         }
 
-        async function deleteSingleEvent(index) {
+        function deleteSingleEvent(index) {
             if (dailyEvents[selectedDateStr]) {
                 dailyEvents[selectedDateStr].splice(index, 1);
                 if (dailyEvents[selectedDateStr].length === 0) {
                     delete dailyEvents[selectedDateStr];
                 }
-                localStorage.setItem('homework_cached_events', JSON.stringify(dailyEvents));
+                localStorage.setItem('homework_daily_events', JSON.stringify(dailyEvents));
                 selectDate(selectedDateStr);
-
-                // ส่งข้อมูลไปอัปเดตที่ Google Sheets
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'saveEvent', date: selectedDateStr, events: dailyEvents[selectedDateStr] || [] })
-                }).catch(console.error);
             }
         }
 
@@ -639,7 +642,6 @@
 
         async function fetchHomeworks(force = false) {
             backgroundFetch();
-            fetchEventsFromSheet();
             if (force) alert('อัปเดตข้อมูลล่าสุดเรียบร้อย');
         }
 
@@ -728,7 +730,7 @@
             tasks.unshift(newTask);
             localStorage.setItem('homework_cached_tasks', JSON.stringify(tasks));
 
-            document.getElementById('task-code').value = ''
+            document.getElementById('task-code').value = '';
             document.getElementById('task-subject').value = '';
             document.getElementById('task-detail').value = '';
             document.getElementById('assign-date-input').value = '';
