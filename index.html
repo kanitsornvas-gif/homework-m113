@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Homework M.113 - V.1.42</title>
+<title>Homework M.113 - V.1.44</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
       <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
     </div>
     <h1 class="text-2xl font-extrabold text-slate-800">Homework M.113</h1>
-    <p class="text-xs text-slate-400 mt-1">ระบบการบ้านห้อง M.113 (V.1.42)</p>
+    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.44)</p>
   </div>
   <div class="space-y-1.5 mb-6">
     <label class="block text-[11px] font-bold text-slate-600">ชื่อผู้ใช้งาน (USERNAME)</label>
@@ -194,29 +194,8 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
 <script>
 'use strict';
 
-/* ใช้ Web App URL หลักเพียง URL เดียว */
+/* Web App URL */
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr-8Tl3ym-7hpTDY9nnOPw00KlrC84luYljmlJaDpQvfxHdGofsxRnPlSKfiFKxDM3yw/exec';
-
-// รายชื่อสำรองสำหรับป้องกันปัญหาชีต Users ว่างหรือดึงข้อมูลข้ามโดเมนไม่สำเร็จ
-const FALLBACK_USERS = [
-    { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
-    { username: "porsche_62031", role: "member", name: "Porsche_62031" },
-    { username: "captain_62032", role: "member", name: "Captain_62032" },
-    { username: "munich_62033", role: "member", name: "Munich_62033" },
-    { username: "kin_62034", role: "member", name: "Kin_62034" },
-    { username: "tonboon_62035", role: "member", name: "Tonboon_62035" },
-    { username: "plub_62036", role: "member", name: "Plub_62036" },
-    { username: "organ_62037", role: "member", name: "Organ_62037" },
-    { username: "kan_62038", role: "member", name: "Kan_62038" },
-    { username: "nodt_62039", role: "member", name: "Nodt_62039" },
-    { username: "nine_62040", role: "member", name: "Nine_62040" },
-    { username: "mark_62041", role: "member", name: "Mark_62041" },
-    { username: "near_62032", role: "member", name: "Near_62032" },
-    { username: "pp_62033", role: "member", name: "PP_62033" },
-    { username: "foreground_62034", role: "member", name: "Foreground_62034" },
-    { username: "superpower", role: "admin", name: "Superpower" },
-    { username: "admin", role: "admin", name: "Admin" }
-];
 
 let currentRole='member', currentUsername='', currentTab='pending';
 let currentDate=new Date(), selectedDateStr=getFormattedDate(new Date());
@@ -276,10 +255,12 @@ async function fetchJSON(url){
   if(!r.ok)throw new Error(`HTTP ${r.status}`);
   return await r.json();
 }
+
+/* ดึงรายชื่อผู้ใช้ตรงจาก Google Sheets แท็บ Users */
 async function fetchUsersFromSheet(){
   try{
     const data=await fetchJSON(`${SCRIPT_URL}?action=getUsers&t=${Date.now()}`);
-    if(Array.isArray(data) && data.length > 0){
+    if(Array.isArray(data)){
       allowedUsersList=data.map(u=>({
         username:String(u.username||u.Username||'').trim().toLowerCase(),
         role:String(u.role||u.Role||'member').trim().toLowerCase(),
@@ -287,13 +268,10 @@ async function fetchUsersFromSheet(){
       })).filter(u=>u.username);
       return true;
     }
-  }catch(e){console.error('โหลด Users จากชีตไม่สำเร็จ',e);}
-  
-  if(!allowedUsersList.length){
-    allowedUsersList = [...FALLBACK_USERS];
-  }
+  }catch(e){console.error('ดึงข้อมูล Users จาก Google Sheets ไม่สำเร็จ',e);}
   return false;
 }
+
 async function loadOptions(){
   try{
     const data=await fetchJSON(`${SCRIPT_URL}?action=getOptions&t=${Date.now()}`);
@@ -325,39 +303,42 @@ async function fetchEventsFromSheet(){
     return true;
   }catch(e){console.error('โหลดกิจกรรมไม่สำเร็จ',e);return false;}
 }
+
+/* ตรวจสอบล็อกอิน ยึดรายชื่อจากตาราง Users ใน Google Sheets 100% */
 async function login(){
   const raw=document.getElementById('username').value.trim().toLowerCase();
   if(!raw){alert('กรุณากรอกชื่อผู้ใช้งาน');return;}
-  if(!allowedUsersList.length)await fetchUsersFromSheet();
 
-  const combinedUsers = [...allowedUsersList];
-  FALLBACK_USERS.forEach(fb => {
-    if(!combinedUsers.some(u => u.username === fb.username)){
-      combinedUsers.push(fb);
-    }
-  });
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true;
+  btn.innerText='กำลังตรวจสอบ...';
 
-  let user = combinedUsers.find(u => u.username === raw);
+  // ดึงรายชื่อสดจาก Google Sheets ทุกครั้งเพื่อความแม่นยำ
+  await fetchUsersFromSheet();
 
-  if(!user && (raw.includes('admin') || raw.includes('superpower'))){
-    user = { username: raw, role: 'admin', name: raw.toUpperCase() };
-  } else if(!user && raw.length >= 2){
-    user = { username: raw, role: 'member', name: raw.toUpperCase() };
-  }
+  const user = allowedUsersList.find(u => u.username === raw);
 
   if(!user){
-    alert('ไม่พบชื่อผู้ใช้งาน กรุณาตรวจสอบอีกครั้ง');
+    btn.disabled=false;
+    btn.innerText='เข้าสู่ระบบ';
+    alert(`ไม่พบชื่อผู้ใช้งาน "${raw}" ในตาราง Users ของ Google Sheets\nกรุณาตรวจสอบชื่อผู้ใช้งานหรือติดต่อผู้ดูแลระบบครับ`);
     return;
   }
 
-  currentRole=user.role;currentUsername=user.username;
+  currentRole=user.role;
+  currentUsername=user.username;
   localStorage.setItem('isLoggedIn','true');
   localStorage.setItem('userRole',currentRole);
   localStorage.setItem('userName',user.name);
   localStorage.setItem('usernameKey',currentUsername);
+  
+  btn.disabled=false;
+  btn.innerText='เข้าสู่ระบบ';
+  
   openDashboard(user.name);
-  logActivity('login','เข้าสู่ระบบ');
+  logActivity('login','เข้าสู่ระบบสำเร็จ');
 }
+
 function openDashboard(name){
   document.getElementById('login-page').classList.add('hidden');
   document.getElementById('main-page').classList.remove('hidden');
