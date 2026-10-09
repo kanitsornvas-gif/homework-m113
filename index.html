@@ -352,28 +352,38 @@
         });
 
         async function login() {
-            const userInput = document.getElementById('username');
-            if (!userInput) return;
-            const rawUser = userInput.value.trim().toLowerCase();
-            if (!rawUser) { alert('กรุณากรอกชื่อผู้ใช้งาน'); return; }
+            try {
+                const userInput = document.getElementById('username');
+                if (!userInput) {
+                    alert('ไม่พบช่องกรอกชื่อผู้ใช้งาน');
+                    return;
+                }
+                const rawUser = userInput.value.trim().toLowerCase();
+                if (!rawUser) { 
+                    alert('กรุณากรอกชื่อผู้ใช้งาน'); 
+                    return; 
+                }
 
-            // ตรวจสอบชื่อผู้ใช้จากรายการ FALLBACK_USERS เท่านั้น ห้ามสร้างให้อัตโนมัติ
-            let foundUser = FALLBACK_USERS.find(u => u.username === rawUser);
-            if (!foundUser) {
-                alert('❌ ชื่อผู้ใช้งานไม่ถูกต้อง หรือไม่อยู่ในรายชื่อที่อนุญาต!');
-                return;
+                let foundUser = FALLBACK_USERS.find(u => u.username === rawUser);
+                if (!foundUser) {
+                    alert('❌ ชื่อผู้ใช้งานไม่ถูกต้อง หรือไม่อยู่ในรายชื่อที่อนุญาต!');
+                    return;
+                }
+
+                currentRole = foundUser.role;
+                currentUsername = rawUser;
+                const displayName = foundUser.name;
+
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userRole', currentRole);
+                localStorage.setItem('userName', displayName);
+                localStorage.setItem('usernameKey', currentUsername);
+
+                openDashboard(displayName, true);
+            } catch (err) {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ' + err.message);
             }
-
-            currentRole = foundUser.role;
-            currentUsername = rawUser;
-            const displayName = foundUser.name;
-
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('userRole', currentRole);
-            localStorage.setItem('userName', displayName);
-            localStorage.setItem('usernameKey', currentUsername);
-
-            openDashboard(displayName, true);
         }
 
         function openDashboard(roleName, animate = true) {
