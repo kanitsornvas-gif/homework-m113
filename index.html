@@ -316,6 +316,12 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
+        function getShortName(nameStr) {
+            if (!nameStr) return '';
+            // ตัดเอาเฉพาะคำแรกก่อนเครื่องหมาย _ หรือ เว้นวรรค
+            return nameStr.split(/[_ ]/)[0];
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const savedTasks = localStorage.getItem('homework_cached_tasks');
             if (savedTasks) {
@@ -372,7 +378,9 @@
         function openDashboard(roleName, animate = true) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
-            document.getElementById('guest-badge').innerText = roleName;
+            
+            // ตัดชื่อให้แสดงเฉพาะคำแรก
+            document.getElementById('guest-badge').innerText = getShortName(roleName);
             
             switchTab('pending');
             renderTasks();
@@ -574,7 +582,6 @@
             const delBtn = `<button onclick="deleteTask('${item.id}')" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>`;
             const label = escapeHtml(item.code || item.subject);
             
-            // แปลงวันที่สร้าง (จาก item.id หรือ assignDate) ให้เป็นรูปแบบสั้นภาษาไทย
             let createdDateFormatted = '-';
             if (item.id && !isNaN(item.id)) {
                 createdDateFormatted = formatThaiShortDate(new Date(parseInt(item.id, 10)));
@@ -582,7 +589,9 @@
                 createdDateFormatted = formatThaiShortDate(item.assignDate);
             }
 
-            const creator = item.createdByName ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(item.createdByName)} เพิ่มเมื่อวันที่ ${createdDateFormatted}</span>` : '';
+            const rawName = item.createdByName || '';
+            const shortCreatorName = getShortName(rawName);
+            const creator = shortCreatorName ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(shortCreatorName)} เพิ่มเมื่อวันที่ ${createdDateFormatted}</span>` : '';
 
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
