@@ -267,6 +267,7 @@
         let selectedDateStr = getFormattedDate(new Date());
         let tasks = [];
         let dailyEvents = {};
+        let allowedUsersList = [];
 
         const FALLBACK_USERS = [
             { username: "doiinn_62030", role: "member", name: "Doiinn_62030" },
@@ -348,8 +349,26 @@
                 currentUsername = localStorage.getItem('usernameKey') || '';
                 openDashboard(localStorage.getItem('userName') || currentUsername.toUpperCase(), false);
             }
+            
+            fetchUsersFromSheet();
             backgroundFetch();
         });
+
+        async function fetchUsersFromSheet() {
+            try {
+                const res = await fetch(`${USERS_SCRIPT_URL}?t=${Date.now()}`);
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    allowedUsersList = data.map(u => ({
+                        username: String(u.username || u.Username || '').trim().toLowerCase(),
+                        role: String(u.role || u.Role || 'member').trim().toLowerCase(),
+                        name: String(u.name || u.Name || u.username || '').trim()
+                    }));
+                }
+            } catch (e) {
+                console.error("โหลดรายชื่อจากชีทไม่สำเร็จ ใช้ FALLBACK แทน", e);
+            }
+        }
 
         async function login() {
             try {
@@ -364,7 +383,10 @@
                     return; 
                 }
 
-                let foundUser = FALLBACK_USERS.find(u => u.username === rawUser);
+                // รวมรายชื่อจาก Google Sheets และ Fallback สำรองเข้าด้วยกัน
+                const allValidUsers = [...allowedUsersList, ...FALLBACK_USERS];
+
+                let foundUser = allValidUsers.find(u => u.username === rawUser);
                 if (!foundUser) {
                     alert('❌ ชื่อผู้ใช้งานไม่ถูกต้อง หรือไม่อยู่ในรายชื่อที่อนุญาต!');
                     return;
