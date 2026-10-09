@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Homework M.113 - V.1.48</title>
+<title>Homework M.113 - V.1.49</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,6 +20,14 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
 <body class="flex flex-col items-center justify-between p-3 sm:p-6 min-h-screen relative antialiased">
 <div class="flex-grow"></div>
 
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
+  <div class="bg-white/90 rounded-3xl p-6 shadow-2xl flex flex-col items-center gap-3 animate-pop">
+    <div class="w-10 h-10 border-4 border-[#FF75BC] border-t-transparent rounded-full animate-spin"></div>
+    <p id="loading-text" class="text-xs font-bold text-slate-700">กำลังโหลดข้อมูล...</p>
+  </div>
+</div>
+
 <!-- LOGIN -->
 <div id="login-page" class="w-full max-w-sm bg-white/85 backdrop-blur-2xl rounded-3xl p-8 border border-white/60 shadow-xl relative z-10">
   <div class="text-center mb-8">
@@ -27,7 +35,7 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
       <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
     </div>
     <h1 class="text-2xl font-extrabold text-slate-800">Homework M.113</h1>
-    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.48 Turbo)</p>
+    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.49)</p>
   </div>
   <div class="space-y-1.5 mb-6">
     <label class="block text-[11px] font-bold text-slate-600">ชื่อผู้ใช้งาน (USERNAME)</label>
@@ -239,6 +247,14 @@ const MONTH_NAMES_TH=['มกราคม','กุมภาพันธ์','ม
 const MONTH_SHORT_TH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DAY_SHORT_TH=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
 
+function showLoading(text='กำลังโหลดข้อมูล...'){
+  document.getElementById('loading-text').textContent=text;
+  document.getElementById('loading-overlay').classList.remove('hidden');
+}
+function hideLoading(){
+  document.getElementById('loading-overlay').classList.add('hidden');
+}
+
 function getFormattedDate(d){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
@@ -271,8 +287,7 @@ function closeModal(id){document.getElementById(id).classList.add('hidden');}
 function cacheTasks(){localStorage.setItem('homework_cached_tasks_v2',JSON.stringify(tasks));}
 function cacheEvents(){localStorage.setItem('homework_cached_events_v2',JSON.stringify(dailyEvents));}
 
-// โหลดข้อมูลจาก Cache ทันทีเพื่อให้หน้าเว็บเปิดขึ้นมาไวที่สุดเท่าที่จะทำได้
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',async()=>{
   try{tasks=JSON.parse(localStorage.getItem('homework_cached_tasks_v2')||'[]');}catch(e){tasks=[];}
   try{const ev=JSON.parse(localStorage.getItem('homework_cached_events_v2')||'{}');dailyEvents=ev?.events??ev;}catch(e){dailyEvents={};}
   
@@ -283,8 +298,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   }
   renderTasks();renderCalendar();selectDate(selectedDateStr);
 
-  // ดึงข้อมูลสดแบบขนาน (Parallel Fetch) พร้อมกันทุกส่วนในเสี้ยววินาทีเดียว
-  fetchAllData(false);
+  showLoading('กำลังซิงค์ข้อมูลล่าสุด...');
+  await fetchAllData(false);
+  hideLoading();
 });
 
 async function fetchJSON(url){
@@ -293,8 +309,8 @@ async function fetchJSON(url){
   return await r.json();
 }
 
-// ⚡ TURBO PARALLEL FETCHING: ยิงขอข้อมูลทุกอย่างพร้อมกันในรอบเดียว
 async function fetchAllData(showAlert=false){
+  if(showAlert) showLoading('กำลังรีเฟรชข้อมูล...');
   try{
     const [tasksRes, usersRes, eventsRes, optionsRes] = await Promise.allSettled([
       fetchJSON(`${SCRIPT_URL}?t=${Date.now()}`),
@@ -303,13 +319,10 @@ async function fetchAllData(showAlert=false){
       fetchJSON(`${SCRIPT_URL}?action=getOptions&t=${Date.now()}`)
     ]);
 
-    // 1. จัดการ Task
     if(tasksRes.status==='fulfilled' && Array.isArray(tasksRes.value)){
       tasks=tasksRes.value.map(t=>({...t,id:String(t.id),isPinned:t.isPinned===true||String(t.isPinned).toUpperCase()==='TRUE'}));
       cacheTasks();
     }
-
-    // 2. จัดการ Users
     if(usersRes.status==='fulfilled' && Array.isArray(usersRes.value)){
       const sheetUsers = usersRes.value.map(u=>({
         username:String(u.username||u.Username||'').trim().toLowerCase(),
@@ -318,8 +331,6 @@ async function fetchAllData(showAlert=false){
       })).filter(u=>u.username);
       if(sheetUsers.length>0) allowedUsersList=sheetUsers;
     }
-
-    // 3. จัดการ Events
     if(eventsRes.status==='fulfilled'){
       const data=eventsRes.value;
       const source=data.events??data, normalized={};
@@ -331,8 +342,6 @@ async function fetchAllData(showAlert=false){
         dailyEvents=normalized; cacheEvents();
       }
     }
-
-    // 4. จัดการ Options
     if(optionsRes.status==='fulfilled'){
       const data=optionsRes.value;
       if(data.status!=='error'){
@@ -353,6 +362,8 @@ async function fetchAllData(showAlert=false){
     console.error('Turbo Fetch Error:', e);
     if(showAlert) alert('ซิงค์ข้อมูลไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ');
     return false;
+  }finally{
+    if(showAlert) hideLoading();
   }
 }
 
@@ -360,8 +371,9 @@ async function login(){
   const raw=document.getElementById('username').value.trim().toLowerCase();
   if(!raw){alert('กรุณากรอกชื่อผู้ใช้งาน');return;}
 
+  showLoading('กำลังตรวจสอบข้อมูลผู้ใช้...');
   const btn=document.getElementById('login-btn');
-  btn.disabled=true; btn.innerText='กำลังตรวจสอบ...';
+  btn.disabled=true;
 
   const combinedList = [...allowedUsersList];
   FALLBACK_USERS.forEach(fb => {
@@ -370,7 +382,8 @@ async function login(){
 
   let user = combinedList.find(u => u.username === raw);
   if(!user){
-    btn.disabled=false; btn.innerText='เข้าสู่ระบบ';
+    hideLoading();
+    btn.disabled=false;
     alert(`ไม่พบชื่อผู้ใช้งาน "${raw}" ในระบบ`);
     return;
   }
@@ -382,7 +395,8 @@ async function login(){
   localStorage.setItem('userName',user.name);
   localStorage.setItem('usernameKey',currentUsername);
   
-  btn.disabled=false; btn.innerText='เข้าสู่ระบบ';
+  hideLoading();
+  btn.disabled=false;
   openDashboard(user.name);
   logActivity('login','เข้าสู่ระบบสำเร็จ');
 }
@@ -459,7 +473,6 @@ function openEventModal(){
 }
 function closeEventModal(){document.getElementById('event-modal').classList.add('hidden');}
 
-// ⚡ OPTIMISTIC UI: บันทึกกิจกรรมแล้วแสดงผลทันที ไม่ต้องรอดีเลย์นาน
 async function saveDailyEvent(){
   const input=document.getElementById('daily-event-input'),value=input.value.trim(),date=selectedDateStr;
   if(!value)return alert('กรุณากรอกชื่อกิจกรรม');
@@ -588,12 +601,17 @@ async function openLogsModal(){
 async function loadLogs(){
   const status=document.getElementById('logs-status'),container=document.getElementById('logs-list');
   status.textContent='กำลังโหลดประวัติ...';container.innerHTML='';
+  showLoading('กำลังดึงประวัติการใช้งาน...');
   try{
     const data=await fetchJSON(`${SCRIPT_URL}?action=getLogs&username=${encodeURIComponent(currentUsername)}&t=${Date.now()}`);
+    hideLoading();
     if(!Array.isArray(data))throw new Error(data.message||'รูปแบบประวัติไม่ถูกต้อง');
     status.textContent=`แสดง ${data.length} รายการล่าสุด`;
     container.innerHTML=data.length?data.map(x=>`<div class="p-3 rounded-xl border bg-slate-50"><div class="flex justify-between gap-2"><b class="text-xs text-slate-800">${escapeHtml(x.displayName||x.username||'ผู้ใช้')}</b><span class="text-[10px] text-slate-400">${escapeHtml(x.timestamp||'')}</span></div><div class="text-xs text-purple-700 mt-1">${escapeHtml(x.action||'')}</div><div class="text-xs text-slate-600 mt-1">${escapeHtml(x.details||'')}</div><div class="text-[10px] text-slate-400 mt-1">${escapeHtml(x.role||'')} · ${escapeHtml(x.username||'')}</div></div>`).join(''):'<p class="text-xs text-slate-400">ยังไม่มีประวัติการใช้งาน</p>';
-  }catch(e){status.textContent='โหลดประวัติไม่สำเร็จ: '+e.message;}
+  }catch(e){
+    hideLoading();
+    status.textContent='โหลดประวัติไม่สำเร็จ: '+e.message;
+  }
 }
 
 function openManageModal(){
