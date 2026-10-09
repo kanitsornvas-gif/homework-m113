@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Homework M.113 - V.1.49</title>
+<title>Homework M.113 - V.1.50</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,7 +35,7 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
       <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
     </div>
     <h1 class="text-2xl font-extrabold text-slate-800">Homework M.113</h1>
-    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.49)</p>
+    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.50)</p>
   </div>
   <div class="space-y-1.5 mb-6">
     <label class="block text-[11px] font-bold text-slate-600">ชื่อผู้ใช้งาน (USERNAME)</label>
@@ -59,7 +59,8 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
     <div class="flex items-center gap-1.5">
       <button onclick="openLogsModal()" id="btn-view-logs" title="ประวัติ" class="hidden text-xs bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-clock-rotate-left"></i></button>
       <button onclick="openManageModal()" id="btn-manage-history" title="จัดการตัวเลือก" class="hidden text-xs bg-sky-100 text-sky-700 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-list-check"></i></button>
-      <button onclick="fetchAllData(true)" title="รีเฟรชด่วน" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-bolt"></i></button>
+      <!-- เปลี่ยนจากรูปสายฟ้าเป็นรูปซิงค์หมุน -->
+      <button onclick="fetchAllData(true)" title="ซิงค์ข้อมูล" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-rotate"></i></button>
       <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 px-3 py-1.5 rounded-xl font-bold">LOGOUT</button>
     </div>
   </div>
@@ -178,7 +179,10 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
     </div>
     <p id="logs-status" class="text-xs text-slate-500 mb-3">กำลังโหลด...</p>
     <div id="logs-list" class="space-y-2"></div>
-    <button onclick="loadLogs()" class="mt-4 w-full py-2 bg-purple-100 text-purple-700 rounded-xl text-xs font-bold">โหลดประวัติใหม่</button>
+    <div class="grid grid-cols-2 gap-2 mt-4">
+      <button onclick="clearLogs()" class="py-2 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold"><i class="fa-solid fa-trash-can"></i> ล้างประวัติทั้งหมด</button>
+      <button onclick="loadLogs()" class="py-2 bg-purple-100 text-purple-700 rounded-xl text-xs font-bold"><i class="fa-solid fa-rotate"></i> โหลดใหม่</button>
+    </div>
   </div>
 </div>
 
@@ -310,7 +314,7 @@ async function fetchJSON(url){
 }
 
 async function fetchAllData(showAlert=false){
-  if(showAlert) showLoading('กำลังรีเฟรชข้อมูล...');
+  if(showAlert) showLoading('กำลังซิงค์ข้อมูล...');
   try{
     const [tasksRes, usersRes, eventsRes, optionsRes] = await Promise.allSettled([
       fetchJSON(`${SCRIPT_URL}?t=${Date.now()}`),
@@ -356,7 +360,7 @@ async function fetchAllData(showAlert=false){
     renderCalendar();
     selectDate(selectedDateStr);
     
-    if(showAlert) showSuccess('อัปเดตด่วนสำเร็จ', 'ซิงค์ข้อมูลกับ Google Sheets เรียบร้อย');
+    if(showAlert) showSuccess('ซิงค์ข้อมูลสำเร็จ', 'อัปเดตข้อมูลล่าสุดเรียบร้อยแล้ว');
     return true;
   }catch(e){
     console.error('Turbo Fetch Error:', e);
@@ -614,7 +618,28 @@ async function loadLogs(){
   }
 }
 
-function openManageModal(){
+async function clearLogs(){
+  if(currentRole!=='admin')return alert('ไม่มีสิทธิ์เข้าถึง');
+  if(!confirm('คุณต้องการล้างประวัติการใช้งานทั้งหมดใช่หรือไม่?'))return;
+  
+  showLoading('กำลังล้างประวัติ...');
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'clearLogs',username:currentUsername})
+    });
+    await new Promise(r=>setTimeout(r,600));
+    await loadLogs();
+    hideLoading();
+    showSuccess('ล้างประวัติสำเร็จ', 'ลบประวัติการใช้งานทั้งหมดเรียบร้อยแล้ว');
+  }catch(e){
+    hideLoading();
+    alert('ล้างประวัติไม่สำเร็จ: '+e.message);
+  }
+}
+
+async function openManageModal(){
   if(currentRole!=='admin')return alert('ไม่มีสิทธิ์เข้าถึง');
   document.getElementById('manage-modal').classList.remove('hidden');
   loadOptions();
