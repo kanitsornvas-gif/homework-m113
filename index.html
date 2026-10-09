@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Homework M.113 - V.1.50</title>
+<title>Homework M.113 - V.1.51</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,7 +35,7 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
       <i class="fa-solid fa-book-open-reader text-2xl text-white"></i>
     </div>
     <h1 class="text-2xl font-extrabold text-slate-800">Homework M.113</h1>
-    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.50)</p>
+    <p class="text-xs text-slate-400 mt-1 font-semibold text-pink-600">ระบบการบ้านห้อง M.113 (V.1.51)</p>
   </div>
   <div class="space-y-1.5 mb-6">
     <label class="block text-[11px] font-bold text-slate-600">ชื่อผู้ใช้งาน (USERNAME)</label>
@@ -59,7 +59,6 @@ body{font-family:'Sarabun','Plus Jakarta Sans',sans-serif;background:linear-grad
     <div class="flex items-center gap-1.5">
       <button onclick="openLogsModal()" id="btn-view-logs" title="ประวัติ" class="hidden text-xs bg-purple-100 text-purple-700 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-clock-rotate-left"></i></button>
       <button onclick="openManageModal()" id="btn-manage-history" title="จัดการตัวเลือก" class="hidden text-xs bg-sky-100 text-sky-700 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-list-check"></i></button>
-      <!-- เปลี่ยนจากรูปสายฟ้าเป็นรูปซิงค์หมุน -->
       <button onclick="fetchAllData(true)" title="ซิงค์ข้อมูล" class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-xl"><i class="fa-solid fa-rotate"></i></button>
       <button onclick="logout()" class="text-xs bg-rose-50 text-rose-500 px-3 py-1.5 rounded-xl font-bold">LOGOUT</button>
     </div>
@@ -247,6 +246,47 @@ let currentDate=new Date(), selectedDateStr=getFormattedDate(new Date());
 let tasks=[], dailyEvents={}, allowedUsersList=[...FALLBACK_USERS];
 let subjectOptions={codes:[],subjects:[]};
 
+// ระบบจัดการ Timeout (7 นาที) และการ Freeze ของแอป
+let lastActivityTime = Date.now();
+const IDLE_TIMEOUT_MS = 7 * 60 * 1000; // 7 นาที
+
+function resetIdleTimer() {
+  lastActivityTime = Date.now();
+}
+
+// ตรวจจับความเคลื่อนไหวของผู้ใช้เพื่อรีเซ็ตเวลา Idle
+['click', 'touchstart', 'keypress', 'scroll', 'mousemove'].forEach(evt => {
+  window.addEventListener(evt, resetIdleTimer, { passive: true });
+});
+
+// ตรวจสอบสถานะการไม่ได้ใช้งานทุกๆ 30 วินาที
+setInterval(() => {
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    if (Date.now() - lastActivityTime > IDLE_TIMEOUT_MS) {
+      logoutDueToTimeout();
+    }
+  }
+}, 30000);
+
+function logoutDueToTimeout() {
+  alert('เซสชันหมดอายุเนื่องจากไม่มีการใช้งานเกิน 7 นาที');
+  logout();
+}
+
+// ตรวจจับเมื่อแอปถูก Freezed/Background แล้วกลับมาเปิดใหม่ (Visibility Change)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      if (Date.now() - lastActivityTime > IDLE_TIMEOUT_MS) {
+        logoutDueToTimeout();
+      } else {
+        // ถ้าน้อยกว่า 7 นาที แต่แอปเพิ่งฟื้นจากฟรีซ ให้ซิงค์ข้อมูลใหม่ทันที
+        fetchAllData(false);
+      }
+    }
+  }
+});
+
 const MONTH_NAMES_TH=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const MONTH_SHORT_TH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 const DAY_SHORT_TH=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
@@ -399,6 +439,7 @@ async function login(){
   localStorage.setItem('userName',user.name);
   localStorage.setItem('usernameKey',currentUsername);
   
+  resetIdleTimer();
   hideLoading();
   btn.disabled=false;
   openDashboard(user.name);
@@ -620,7 +661,7 @@ async function loadLogs(){
 
 async function clearLogs(){
   if(currentRole!=='admin')return alert('ไม่มีสิทธิ์เข้าถึง');
-  if(!confirm('คุณต้องการล้างประวัติการใช้งานทั้งหมดใช่หรือไม่?'))return;
+  if(!confirm('คุณต้องการลบประวัติการใช้งานทั้งหมดใช่หรือไม่?'))return;
   
   showLoading('กำลังล้างประวัติ...');
   try{
