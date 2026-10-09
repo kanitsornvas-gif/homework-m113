@@ -85,7 +85,7 @@
         <div class="space-y-2 mb-4">
             <div class="flex bg-slate-100/80 p-1 rounded-2xl text-center text-xs font-bold gap-1">
                 <button id="tab-pending" onclick="switchTab('pending')" class="flex-1 py-2.5 rounded-xl transition bg-[#FF75BC] text-white shadow-sm">งานค้าง</button>
-                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทิน</button>
+                <button id="tab-calendar" onclick="switchTab('calendar')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">ปฏิทินงาน</button>
             </div>
             
             <div id="creator-action-buttons" class="grid grid-cols-2 gap-2">
@@ -214,6 +214,7 @@
 
     <div class="flex-grow"></div>
 
+    <!-- Footer เป็น Homework M.113 ตามต้องการ -->
     <footer class="py-4 text-center z-20 w-full">
         <span class="text-[11px] font-extrabold text-slate-500 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/80 shadow-sm">
             Homework M.113
@@ -251,36 +252,6 @@
             </div>
             <div class="pt-2">
                 <button onclick="saveDailyEvent()" class="w-full py-2.5 bg-[#50D8FF] hover:bg-[#3bc2eb] text-slate-900 font-extrabold text-xs rounded-xl transition shadow-md shadow-[#50D8FF]/20">เพิ่มกิจกรรมนี้</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- LOGS MODAL -->
-    <div id="logs-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-xs font-extrabold text-purple-900 flex items-center gap-1.5">
-                    <i class="fa-solid fa-clock-rotate-left text-purple-500"></i> ประวัติการใช้งาน
-                </h3>
-                <button onclick="document.getElementById('logs-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
-            </div>
-            <div id="logs-content" class="text-xs text-slate-600 max-h-[200px] overflow-y-auto space-y-1">
-                <p class="text-slate-400 text-center py-4">กำลังโหลดข้อมูลประวัติ...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- MANAGE MODAL -->
-    <div id="manage-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
-        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="text-xs font-extrabold text-sky-900 flex items-center gap-1.5">
-                    <i class="fa-solid fa-list-check text-sky-500"></i> จัดการประวัติวิชา
-                </h3>
-                <button onclick="document.getElementById('manage-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
-            </div>
-            <div id="manage-content" class="text-xs text-slate-600 max-h-[200px] overflow-y-auto space-y-1">
-                <p class="text-slate-400 text-center py-4">ไม่มีรายการที่ต้องจัดการ</p>
             </div>
         </div>
     </div>
@@ -352,11 +323,6 @@
             return `${DAY_SHORT_TH[d.getDay()]}${day} ${MONTH_SHORT_TH[month]} ${(year + 543).toString().slice(-2)}`;
         }
 
-        function getShortName(nameStr) {
-            if (!nameStr) return '';
-            return nameStr.split(/[_ ]/)[0];
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
             const savedTasks = localStorage.getItem('homework_cached_tasks');
             if (savedTasks) {
@@ -413,8 +379,7 @@
         function openDashboard(roleName, animate = true) {
             document.getElementById('login-page').classList.add('hidden');
             document.getElementById('main-page').classList.remove('hidden');
-            
-            document.getElementById('guest-badge').innerText = getShortName(roleName);
+            document.getElementById('guest-badge').innerText = roleName;
 
             const btnManageHistory = document.getElementById('btn-manage-history');
             const btnViewLogs = document.getElementById('btn-view-logs');
@@ -437,22 +402,6 @@
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
             document.getElementById('username').value = '';
-        }
-
-        function openLogsModal() {
-            document.getElementById('logs-modal').classList.remove('hidden');
-            const container = document.getElementById('logs-content');
-            container.innerHTML = tasks.length === 0 
-                ? '<p class="text-slate-400 text-center py-2">ไม่มีประวัติการใช้งาน</p>'
-                : tasks.map(t => `<div class="p-2 bg-slate-50 rounded-xl mb-1 flex justify-between items-center"><span><b>${escapeHtml(t.code || t.subject)}</b>: ${escapeHtml(t.detail)}</span><span class="text-[10px] text-slate-400">${escapeHtml(t.createdByName || '')}</span></div>`).join('');
-        }
-
-        function openManageModal() {
-            document.getElementById('manage-modal').classList.remove('hidden');
-            const container = document.getElementById('manage-content');
-            container.innerHTML = tasks.length === 0 
-                ? '<p class="text-slate-400 text-center py-2">ไม่มีวิชาในระบบ</p>'
-                : tasks.map(t => `<div class="p-2 bg-slate-50 rounded-xl mb-1 flex justify-between items-center"><span><b>${escapeHtml(t.code)}</b> - ${escapeHtml(t.subject)}</span><button onclick="deleteTask('${t.id}')" class="text-rose-500 text-[10px] font-bold px-2 py-1 bg-rose-50 rounded">ลบ</button></div>`).join('');
         }
 
         function toggleAddForm() {
@@ -641,17 +590,7 @@
             const pinBtn = currentRole === 'admin' ? `<button onclick="togglePin('${item.id}')" class="text-xs p-1 ${isPinned ? 'text-amber-500' : 'text-slate-300 hover:text-amber-500'} transition"><i class="fa-solid fa-thumbtack"></i></button>` : '';
             const delBtn = `<button onclick="deleteTask('${item.id}')" class="text-xs p-1 text-slate-300 hover:text-rose-500 transition"><i class="fa-solid fa-trash-can"></i></button>`;
             const label = escapeHtml(item.code || item.subject);
-            
-            let createdDateFormatted = '-';
-            if (item.id && !isNaN(item.id)) {
-                createdDateFormatted = formatThaiShortDate(new Date(parseInt(item.id, 10)));
-            } else if (item.assignDate) {
-                createdDateFormatted = formatThaiShortDate(item.assignDate);
-            }
-
-            const rawName = item.createdByName || '';
-            const shortCreatorName = getShortName(rawName);
-            const creator = shortCreatorName ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(shortCreatorName)} เพิ่มเมื่อวันที่ ${createdDateFormatted}</span>` : '';
+            const creator = item.createdByName ? `<span class="text-[9px] text-slate-400">โดย: ${escapeHtml(item.createdByName)}</span>` : '';
 
             return `
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm space-y-1.5 relative">
@@ -716,7 +655,6 @@
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
-                openManageModal();
 
                 fetch(SCRIPT_URL, {
                     method: 'POST',
