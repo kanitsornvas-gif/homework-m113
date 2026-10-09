@@ -255,6 +255,36 @@
         </div>
     </div>
 
+    <!-- LOGS MODAL -->
+    <div id="logs-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-xs font-extrabold text-purple-900 flex items-center gap-1.5">
+                    <i class="fa-solid fa-clock-rotate-left text-purple-500"></i> ประวัติการใช้งาน
+                </h3>
+                <button onclick="document.getElementById('logs-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
+            </div>
+            <div id="logs-content" class="text-xs text-slate-600 max-h-[200px] overflow-y-auto space-y-1">
+                <p class="text-slate-400 text-center py-4">กำลังโหลดข้อมูลประวัติ...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MANAGE MODAL -->
+    <div id="manage-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl border border-slate-100 animate-pop space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-xs font-extrabold text-sky-900 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-sky-500"></i> จัดการประวัติวิชา
+                </h3>
+                <button onclick="document.getElementById('manage-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-xs font-bold px-2 py-1">✕</button>
+            </div>
+            <div id="manage-content" class="text-xs text-slate-600 max-h-[200px] overflow-y-auto space-y-1">
+                <p class="text-slate-400 text-center py-4">ไม่มีรายการที่ต้องจัดการ</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybX962kjcskmLNprzLfsi2p9o2J-EyGlqWOHIAv7DmIr1eV_F-xW62CZpeSk0MilQbQA/exec';
         const USERS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxG5ZiU0Yzsw963co0Wjp9HoTxrSX5h3WxUQ91IepFhenyZOfpqMvH601Rx-kqTePEI/exec';
@@ -407,6 +437,22 @@
             document.getElementById('main-page').classList.add('hidden');
             document.getElementById('login-page').classList.remove('hidden');
             document.getElementById('username').value = '';
+        }
+
+        function openLogsModal() {
+            document.getElementById('logs-modal').classList.remove('hidden');
+            const container = document.getElementById('logs-content');
+            container.innerHTML = tasks.length === 0 
+                ? '<p class="text-slate-400 text-center py-2">ไม่มีประวัติการใช้งาน</p>'
+                : tasks.map(t => `<div class="p-2 bg-slate-50 rounded-xl mb-1 flex justify-between items-center"><span><b>${escapeHtml(t.code || t.subject)}</b>: ${escapeHtml(t.detail)}</span><span class="text-[10px] text-slate-400">${escapeHtml(t.createdByName || '')}</span></div>`).join('');
+        }
+
+        function openManageModal() {
+            document.getElementById('manage-modal').classList.remove('hidden');
+            const container = document.getElementById('manage-content');
+            container.innerHTML = tasks.length === 0 
+                ? '<p class="text-slate-400 text-center py-2">ไม่มีวิชาในระบบ</p>'
+                : tasks.map(t => `<div class="p-2 bg-slate-50 rounded-xl mb-1 flex justify-between items-center"><span><b>${escapeHtml(t.code)}</b> - ${escapeHtml(t.subject)}</span><button onclick="deleteTask('${t.id}')" class="text-rose-500 text-[10px] font-bold px-2 py-1 bg-rose-50 rounded">ลบ</button></div>`).join('');
         }
 
         function toggleAddForm() {
@@ -670,6 +716,7 @@
                 renderTasks();
                 renderCalendar();
                 selectDate(selectedDateStr);
+                openManageModal();
 
                 fetch(SCRIPT_URL, {
                     method: 'POST',
